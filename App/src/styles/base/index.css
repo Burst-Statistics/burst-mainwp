@@ -119,6 +119,10 @@
 		}
 	}
 
+	.mainwp-ui .burst {
+		margin-left: 0 !important;
+	}
+
 	/* Responsive adjustment */
 	body.dashboard-default-theme {
 		.burst-statistics-wrapper {
@@ -139,8 +143,11 @@
 		.burst-statistics-wrapper p {
 			color: theme(colors.dashboard-dark.text) !important;
 		}
+	}
 
-		/* Share-link modal content can render in portals outside #burst-statistics. */
+	/* Shared share-link dark mode rules for both portal and in-app paths. */
+	body.dashboard-default-dark-theme,
+	#burst-statistics.dark {
 		.burst-share-link-panel,
 		.burst-share-link-card {
 			background-color: theme(colors.dashboard-dark.surface) !important;
@@ -362,38 +369,6 @@
 			stroke: currentColor;
 		}
 
-		/* Same share-link overrides for in-app content (non-portal path). */
-		.burst-share-link-panel,
-		.burst-share-link-card {
-			background-color: theme(colors.dashboard-dark.surface) !important;
-			border-color: rgb(242 242 242 / 18%) !important;
-		}
-
-		.burst-share-link-card--copied {
-			background-color: rgb(108 152 0 / 16%) !important;
-			border-color: theme(colors.dashboard-dark.accent) !important;
-		}
-
-		.burst-share-link-card {
-			transition-property: opacity, transform !important;
-		}
-
-		.burst-share-link-output {
-			background-color: theme(colors.dashboard-dark.base) !important;
-			color: theme(colors.dashboard-dark.text) !important;
-			border-color: rgb(242 242 242 / 20%) !important;
-		}
-
-		.burst-share-link-copy-btn:hover {
-			background-color: rgb(242 242 242 / 12%) !important;
-			color: theme(colors.dashboard-dark.text) !important;
-		}
-
-		.burst-share-link-revoke-btn:hover {
-			background-color: rgb(217 94 94 / 16%) !important;
-			color: theme(colors.dashboard-dark.danger) !important;
-		}
-
 		/* No-custom table empty-state and pager blocks */
 		.burst-data-table.no-custom-burst-style,
 		.burst-data-table.no-custom-burst-style .rdt_Table,
@@ -543,6 +518,10 @@
 		.group:hover [class*='group-hover:bg-gray-100'] {
 			background-color: theme(colors.dashboard-dark.surface) !important;
 			color: theme(colors.dashboard-dark.accent) !important;
+		}
+
+		.map-statistics-info {
+			background-color: theme(colors.dashboard-dark.surface) !important;
 		}
 
 		/* Icon buttons (circular, e.g. delete/trash) */

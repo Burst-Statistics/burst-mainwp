@@ -1433,6 +1433,10 @@ img[src*="burst-wink.svg"]{
   }
 	}
 
+.mainwp-ui .burst {
+		margin-left: 0 !important;
+	}
+
 /* Responsive adjustment */
 
 body.dashboard-default-theme {
@@ -1454,8 +1458,12 @@ body.dashboard-default-dark-theme {
 		.burst-statistics-wrapper p {
 			color: #F2F2F2 !important;
 		}
+	}
 
-		/* Share-link modal content can render in portals outside #burst-statistics. */
+/* Shared share-link dark mode rules for both portal and in-app paths. */
+
+body.dashboard-default-dark-theme,
+	#burst-statistics.dark {
 		.burst-share-link-panel,
 		.burst-share-link-card {
 			background-color: #1c1d1b !important;
@@ -1681,38 +1689,6 @@ body.dashboard-default-dark-theme {
 			stroke: currentColor;
 		}
 
-		/* Same share-link overrides for in-app content (non-portal path). */
-		.burst-share-link-panel,
-		.burst-share-link-card {
-			background-color: #1c1d1b !important;
-			border-color: rgb(242 242 242 / 18%) !important;
-		}
-
-		.burst-share-link-card--copied {
-			background-color: rgb(108 152 0 / 16%) !important;
-			border-color: #2B8133 !important;
-		}
-
-		.burst-share-link-card {
-			transition-property: opacity, transform !important;
-		}
-
-		.burst-share-link-output {
-			background-color: #121313 !important;
-			color: #F2F2F2 !important;
-			border-color: rgb(242 242 242 / 20%) !important;
-		}
-
-		.burst-share-link-copy-btn:hover {
-			background-color: rgb(242 242 242 / 12%) !important;
-			color: #F2F2F2 !important;
-		}
-
-		.burst-share-link-revoke-btn:hover {
-			background-color: rgb(217 94 94 / 16%) !important;
-			color: #c6273b !important;
-		}
-
 		/* No-custom table empty-state and pager blocks */
 		.burst-data-table.no-custom-burst-style,
 		.burst-data-table.no-custom-burst-style .rdt_Table,
@@ -1862,6 +1838,10 @@ body.dashboard-default-dark-theme {
 		.group:hover [class*='group-hover:bg-gray-100'] {
 			background-color: #1c1d1b !important;
 			color: #2B8133 !important;
+		}
+
+		.map-statistics-info {
+			background-color: #1c1d1b !important;
 		}
 
 		/* Icon buttons (circular, e.g. delete/trash) */
