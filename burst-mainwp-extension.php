@@ -17,12 +17,12 @@ defined( 'ABSPATH' ) || die();
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
-define( 'BURST_VERSION', '1.0.0' );
-define( 'BURST_FILE', __FILE__ );
-define( 'BURST_PATH', plugin_dir_path( __FILE__ ) );
-define( 'BURST_URL', plugins_url( '', __FILE__ ) );
-define( 'BURST_APP_URL', plugins_url( 'App', __FILE__ ) );
-define( 'BURST_APP_PATH', plugin_dir_path( __FILE__ ) . 'App' );
+define( 'BURST_MAINWP_VERSION', '1.0.0' );
+define( 'BURST_MAINWP_FILE', __FILE__ );
+define( 'BURST_MAINWP_PATH', plugin_dir_path( __FILE__ ) );
+define( 'BURST_MAINWP_URL', plugins_url( '', __FILE__ ) );
+define( 'BURST_MAINWP_APP_URL', plugins_url( 'App', __FILE__ ) );
+define( 'BURST_MAINWP_APP_PATH', plugin_dir_path( __FILE__ ) . 'App' );
 
 // ── Autoloader ───────────────────────────────────────────────────────────────
 
@@ -48,7 +48,7 @@ function burst_mainwp_autoload( string $_class ): void {
 		return;
 	}
 
-	$path = BURST_PATH . 'class/' . $filename;
+	$path = BURST_MAINWP_PATH . 'class/' . $filename;
 
 	if ( file_exists( $path ) ) {
 		require_once $path;
@@ -69,7 +69,7 @@ add_filter( 'mainwp_getextensions', 'burst_mainwp_register_extension' );
  */
 function burst_mainwp_register_extension( array $extensions ): array {
 	$extensions[] = [
-		'plugin' => BURST_FILE,
+		'plugin' => BURST_MAINWP_FILE,
 		'api'    => 'burst_mainwp_extension_api',
 		'mainwp' => true,
 		'slug'   => 'burst-mainwp-extension',
@@ -101,7 +101,7 @@ function burst_mainwp_init(): void {
 
 	// Extension must be enabled / licensed in MainWP.
 	// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
-	$check = apply_filters( 'mainwp_extension_enabled_check', BURST_FILE );
+	$check = apply_filters( 'mainwp_extension_enabled_check', BURST_MAINWP_FILE );
 	if ( ! is_array( $check ) || ! isset( $check['key'] ) ) {
 		return;
 	}
@@ -113,14 +113,14 @@ function burst_mainwp_init(): void {
 
 // ── Activation ────────────────────────────────────────────────────────────────
 
-register_activation_hook( BURST_FILE, 'burst_mainwp_activate' );
+register_activation_hook( BURST_MAINWP_FILE, 'burst_mainwp_activate' );
 
 /**
  * Prevent activation when MainWP Dashboard is not active.
  */
 function burst_mainwp_activate(): void {
 	if ( ! is_plugin_active( 'mainwp/mainwp.php' ) ) {
-		deactivate_plugins( plugin_basename( BURST_FILE ) );
+		deactivate_plugins( plugin_basename( BURST_MAINWP_FILE ) );
 		wp_die(
 			esc_html__( 'Burst MainWP Extension requires MainWP Dashboard to be installed and activated.', 'burst-statistics' ),
 			esc_html__( 'Plugin Activation Error', 'burst-statistics' ),

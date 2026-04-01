@@ -131,7 +131,7 @@ class Individual {
 
 		wp_enqueue_style(
 			'burst-tailwind',
-			BURST_APP_URL . '/src/tailwind.generated.css',
+			BURST_MAINWP_APP_URL . '/src/tailwind.generated.css',
 			[],
 			$version
 		);
@@ -141,7 +141,7 @@ class Individual {
 
 		wp_enqueue_script(
 			'burst-settings',
-			BURST_APP_URL . '/build/' . $js_data['js_file'],
+			BURST_MAINWP_APP_URL . '/build/' . $js_data['js_file'],
 			$dependencies,
 			$version,
 			[
@@ -177,7 +177,7 @@ class Individual {
 
 		$settings = [
 			// ── Core plugin information ──────────────────────────────────────
-			'plugin_url'        => trailingslashit( BURST_URL ),
+			'plugin_url'        => trailingslashit( BURST_MAINWP_URL ),
 
 			// ── Child-site REST credentials ──────────────────────────────────
 			// These override the dashboard URLs so apiFetch calls the child.
@@ -211,7 +211,7 @@ class Individual {
 	 * match the current locale, temporarily registering a dummy script handle
 	 * to load the translation data, then immediately de-registering it.
 	 *
-	 * @param string $dir Path relative to BURST_PATH (e.g. 'App/build').
+	 * @param string $dir Path relative to BURST_MAINWP_PATH (e.g. 'App/build').
 	 * @return array{json_translations:array,js_file:string,dependencies:array,version:string}
 	 */
 	public static function get_chunk_translations( string $dir ): array {
@@ -247,7 +247,7 @@ class Individual {
 			}
 		}
 
-		$build_path  = BURST_PATH . $dir . '/';
+		$build_path  = BURST_MAINWP_PATH . $dir . '/';
 		$js_files    = glob( $build_path . 'index*.js' ) ?: [];
 		$asset_files = glob( $build_path . 'index*.asset.php' ) ?: [];
 
@@ -269,7 +269,7 @@ class Individual {
 			'json_translations' => $json_translations,
 			'js_file'           => $js_filename,
 			'dependencies'      => $asset_file['dependencies'] ?? [],
-			'version'           => $asset_file['version'] ?? BURST_VERSION,
+			'version'           => $asset_file['version'] ?? BURST_MAINWP_VERSION,
 		];
 	}
 }
