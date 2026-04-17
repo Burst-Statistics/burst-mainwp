@@ -251,6 +251,7 @@ class API {
 	 */
 	private function debug_log( string $message ): void {
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			// phpcs:ignore
 			error_log( '[Burst MainWP] ' . $message );
 		}
 	}
