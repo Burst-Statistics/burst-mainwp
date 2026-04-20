@@ -178,9 +178,10 @@ class API {
 	 * @return array<string,mixed>|false Signed body ready to JSON-encode, or false on failure.
 	 */
 	private function build_signed_body( object $site_data, string $_function, array $extra = [] ): array|false {
-		$nonce        = wp_rand( 0, 9999 );
-		$sign_payload = $_function . $nonce;
-		$signed       = $this->sign_payload( $sign_payload, $site_data );
+		$nonce            = wp_rand( 0, 9999 );
+		$sign_payload     = $_function . $nonce;
+		$signed           = $this->sign_payload( $sign_payload, $site_data );
+		$dashboard_origin = $this->get_dashboard_origin();
 
 		if ( ! $signed ) {
 			return false;
@@ -188,14 +189,34 @@ class API {
 
 		return array_merge(
 			[
-				'user'            => $site_data->adminname,
-				'nonce'           => $nonce,
-				'mainwpsignature' => $signed['signature'],
-				'function'        => $_function,
-				'verifylib'       => $signed['use_seclib'] ? 1 : 0,
+				'user'             => $site_data->adminname,
+				'nonce'            => $nonce,
+				'mainwpsignature'  => $signed['signature'],
+				'function'         => $_function,
+				'verifylib'        => $signed['use_seclib'] ? 1 : 0,
+				'dashboard_origin' => $dashboard_origin,
 			],
 			$extra
 		);
+	}
+
+	/**
+	 * Build the dashboard site origin used by child-side CORS allowlisting.
+	 */
+	private function get_dashboard_origin(): string {
+		$home  = home_url( '/' );
+		$parts = wp_parse_url( $home );
+
+		if ( empty( $parts['scheme'] ) || empty( $parts['host'] ) ) {
+			return '';
+		}
+
+		$origin = strtolower( $parts['scheme'] . '://' . $parts['host'] );
+		if ( ! empty( $parts['port'] ) ) {
+			$origin .= ':' . (int) $parts['port'];
+		}
+
+		return $origin;
 	}
 
 	/**
