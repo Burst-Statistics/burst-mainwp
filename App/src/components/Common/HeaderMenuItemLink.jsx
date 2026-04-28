@@ -161,7 +161,7 @@ const MenuItemLink = ({ menuItem, linkClassName, activeClassName, isTrial }) => 
 						{menuItem.pro && (
 							<ProBadge
 								type={isTrial ? 'icon' : 'badge'}
-								label={__( 'Pro', 'burst-statistics' )}
+								label={__( 'Pro', 'burst-mainwp' )}
 								id={menuItem.id}
 								hasLink={false}
 							/>

@@ -27,15 +27,15 @@ export function RetentionTooltip({ cell }) {
 		const periodIndex = parseInt( matches[2], 10 );
 		const periodLabel = 'Q' === periodUnit ?
 			1 === periodIndex ?
-				__( '1 quarter later', 'burst-statistics' ) :
-				`${ periodIndex } ${ __( 'quarters later', 'burst-statistics' ) }` :
+				__( '1 quarter later', 'burst-mainwp' ) :
+				`${ periodIndex } ${ __( 'quarters later', 'burst-mainwp' ) }` :
 			'Y' === periodUnit ?
 				1 === periodIndex ?
-					__( '1 year later', 'burst-statistics' ) :
-					`${ periodIndex } ${ __( 'years later', 'burst-statistics' ) }` :
+					__( '1 year later', 'burst-mainwp' ) :
+					`${ periodIndex } ${ __( 'years later', 'burst-mainwp' ) }` :
 				1 === periodIndex ?
-					__( '1 month later', 'burst-statistics' ) :
-					`${ periodIndex } ${ __( 'months later', 'burst-statistics' ) }`;
+					__( '1 month later', 'burst-mainwp' ) :
+					`${ periodIndex } ${ __( 'months later', 'burst-mainwp' ) }`;
 
 	return (
 		<ChartTooltip className="min-w-44">

@@ -64,7 +64,7 @@ const getNonce = () => {
 let lastErrorMessage = '';
 let lastErrorTime = 0;
 const generateError = ( error, path = false ) => {
-	let message = __( 'Server error', 'burst-statistics' );
+	let message = __( 'Server error', 'burst-mainwp' );
 	error = error.replace( /(<([^>]+)>)/gi, '' );
 
 	if ( path ) {
@@ -73,7 +73,7 @@ const generateError = ( error, path = false ) => {
 		const urlParts = urlWithoutQueryParams.split( '/' );
 		const index = urlParts.indexOf( 'v1' ) + 1;
 		message =
-			__( 'Server error in', 'burst-statistics' ) +
+			__( 'Server error in', 'burst-mainwp' ) +
 			' ' +
 			urlParts[index] +
 			'/' +
@@ -94,11 +94,11 @@ const generateError = ( error, path = false ) => {
 	// message and send it to us
 	const messageDiv = (
 		<div
-			title={__( 'Click to copy', 'burst-statistics' )}
+			title={__( 'Click to copy', 'burst-mainwp' )}
 			onClick={() => {
 				navigator.clipboard.writeText( message );
 				toast.success(
-					__( 'Error copied to clipboard', 'burst-statistics' )
+					__( 'Error copied to clipboard', 'burst-mainwp' )
 				);
 			}}
 		>

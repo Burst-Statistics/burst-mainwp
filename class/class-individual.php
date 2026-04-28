@@ -47,7 +47,7 @@ class Individual {
 	 */
 	public function add_subpage( array $subpages ): array {
 		$subpages[] = [
-			'title'       => esc_html__( 'Burst Statistics', 'burst-statistics' ),
+			'title'       => esc_html__( 'Burst Statistics', 'burst-mainwp' ),
 			'slug'        => 'BurstStatistics',
 			'sitetab'     => true,
 			'menu_hidden' => true,
@@ -71,7 +71,7 @@ class Individual {
 		$site_id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0;
 
 		if ( 0 === $site_id ) {
-			echo '<div class="ui red message">' . esc_html__( 'Invalid site ID.', 'burst-statistics' ) . '</div>';
+			echo '<div class="ui red message">' . esc_html__( 'Invalid site ID.', 'burst-mainwp' ) . '</div>';
 			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 			do_action( 'mainwp_pagefooter_sites', 'BurstStatistics' );
 			return;
@@ -80,7 +80,7 @@ class Individual {
 		$website = API::instance()->get_site_data( $site_id );
 
 		if ( ! $website ) {
-			echo '<div class="ui red message">' . esc_html__( 'Site not found.', 'burst-statistics' ) . '</div>';
+			echo '<div class="ui red message">' . esc_html__( 'Site not found.', 'burst-mainwp' ) . '</div>';
 			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 			do_action( 'mainwp_pagefooter_sites', 'BurstStatistics' );
 			return;
@@ -170,7 +170,7 @@ class Individual {
 		}
 
 		// Fallback for unexpected template loading issues.
-		echo '<div class="ui negative message">' . esc_html__( 'Could not connect to child site.', 'burst-statistics' ) . '</div>';
+		echo '<div class="ui negative message">' . esc_html__( 'Could not connect to child site.', 'burst-mainwp' ) . '</div>';
 	}
 
 	/**
@@ -313,7 +313,7 @@ class Individual {
 			'version'           => '',
 		];
 
-		$text_domain   = 'burst-statistics';
+		$text_domain   = 'burst-mainwp';
 		$languages_dir = WP_CONTENT_DIR . '/languages/plugins';
 
 		$locale            = determine_locale();

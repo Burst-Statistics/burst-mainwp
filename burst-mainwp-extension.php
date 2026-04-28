@@ -7,7 +7,7 @@
  * Author:      Burst Statistics
  * Author URI:  https://burst-statistics.com
  * License:     GPL v3
- * Text Domain: burst-statistics
+ * Text Domain: burst-mainwp
  * Requires PHP: 8.0
  *
  * @package BurstMainWP
@@ -93,14 +93,14 @@ function burst_mainwp_extension(): void {
 	do_action( 'mainwp_pageheader_extensions', BURST_MAINWP_FILE );
 
 	echo '<div class="ui segment">';
-	echo '<h2 style="color: #fff;">' . esc_html__( 'Burst Statistics', 'burst-statistics' ) . '</h2>';
-	echo '<p>' . esc_html__( 'This MainWP extension does not have a separate global settings screen. Use Burst Statistics from each child site page in MainWP.', 'burst-statistics' ) . '</p>';
+	echo '<h2 style="color: #fff;">' . esc_html__( 'Burst Statistics', 'burst-mainwp' ) . '</h2>';
+	echo '<p>' . esc_html__( 'This MainWP extension does not have a separate global settings screen. Use Burst Statistics from each child site page in MainWP.', 'burst-mainwp' ) . '</p>';
 	echo '<ol>';
-	echo '<li>' . esc_html__( 'Open MainWP -> Sites.', 'burst-statistics' ) . '</li>';
-	echo '<li>' . esc_html__( 'Open any child site.', 'burst-statistics' ) . '</li>';
-	echo '<li>' . esc_html__( 'Click Burst Statistics in the site sidebar to open the full dashboard.', 'burst-statistics' ) . '</li>';
+	echo '<li>' . esc_html__( 'Open MainWP -> Sites.', 'burst-mainwp' ) . '</li>';
+	echo '<li>' . esc_html__( 'Open any child site.', 'burst-mainwp' ) . '</li>';
+	echo '<li>' . esc_html__( 'Click Burst Statistics in the site sidebar to open the full dashboard.', 'burst-mainwp' ) . '</li>';
 	echo '</ol>';
-	echo '<p><a class="ui button green" href="' . esc_url( $manage_sites_url ) . '">' . esc_html__( 'Go to Sites', 'burst-statistics' ) . '</a></p>';
+	echo '<p><a class="ui button green" href="' . esc_url( $manage_sites_url ) . '">' . esc_html__( 'Go to Sites', 'burst-mainwp' ) . '</a></p>';
 	echo '</div>';
 
 	// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
@@ -151,8 +151,8 @@ function burst_mainwp_activate(): void {
 	if ( ! is_plugin_active( 'mainwp/mainwp.php' ) ) {
 		deactivate_plugins( plugin_basename( BURST_MAINWP_FILE ) );
 		wp_die(
-			esc_html__( 'Burst MainWP Extension requires MainWP Dashboard to be installed and activated.', 'burst-statistics' ),
-			esc_html__( 'Plugin Activation Error', 'burst-statistics' ),
+			esc_html__( 'Burst MainWP Extension requires MainWP Dashboard to be installed and activated.', 'burst-mainwp' ),
+			esc_html__( 'Plugin Activation Error', 'burst-mainwp' ),
 			[ 'back_link' => true ]
 		);
 	}

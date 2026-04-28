@@ -14,11 +14,11 @@ import { useBlockConfig } from '@/hooks/useBlockConfig';
  * Mirrors the options defined in InsightsHeader to keep them in sync.
  */
 const METRIC_LABELS = {
-	pageviews: __( 'Pageviews', 'burst-statistics' ),
-	visitors: __( 'Visitors', 'burst-statistics' ),
-	sessions: __( 'Sessions', 'burst-statistics' ),
-	bounces: __( 'Bounces', 'burst-statistics' ),
-	conversions: __( 'Conversions', 'burst-statistics' )
+	pageviews: __( 'Pageviews', 'burst-mainwp' ),
+	visitors: __( 'Visitors', 'burst-mainwp' ),
+	sessions: __( 'Sessions', 'burst-mainwp' ),
+	bounces: __( 'Bounces', 'burst-mainwp' ),
+	conversions: __( 'Conversions', 'burst-mainwp' )
 };
 
 /**
@@ -97,7 +97,7 @@ const InsightsBlock = (props) => {
 	return (
 		<Block className="row-span-1 lg:col-span-12 xl:col-span-6 min-h-96 group/root">
 			<BlockHeading
-				title={__( 'Insights', 'burst-statistics' )}
+				title={__( 'Insights', 'burst-mainwp' )}
 				className="border-b border-gray-200"
 				isReport={isReport}
 				reportBlockIndex={index}

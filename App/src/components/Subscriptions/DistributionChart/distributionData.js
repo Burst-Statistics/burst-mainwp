@@ -92,7 +92,7 @@ export async function fetchDistributionData( view, { startDate, endDate, range, 
 	if ( 0 < smallItems.length ) {
 		output.push({
 			id: 'others',
-			label: __( 'Others', 'burst-statistics' ),
+			label: __( 'Others', 'burst-mainwp' ),
 			value: Number( othersPercent.toFixed( 2 ) ),
 			items: smallItems.map( ( item ) => ({
 				id: item.id,

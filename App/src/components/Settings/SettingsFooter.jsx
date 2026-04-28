@@ -11,17 +11,17 @@ function SettingsFooter({ onSubmit, control }) {
 	const formStates = [
 		{
 			condition: isSubmitting,
-			message: __( 'Saving…', 'burst-statistics' ),
+			message: __( 'Saving…', 'burst-mainwp' ),
 			color: 'black'
 		},
 		{
 			condition: isValidating,
-			message: __( 'Validating…', 'burst-statistics' ),
+			message: __( 'Validating…', 'burst-mainwp' ),
 			color: 'black'
 		},
 		{
 			condition: isDirty,
-			message: __( 'You have unsaved changes', 'burst-statistics' ),
+			message: __( 'You have unsaved changes', 'burst-mainwp' ),
 			color: 'black'
 		}
 	];
@@ -57,7 +57,7 @@ function SettingsFooter({ onSubmit, control }) {
 					</div>
 				)}
 				<ButtonInput className="burst-save" onClick={onSubmit}>
-					{__( 'Save', 'burst-statistics' )}
+					{__( 'Save', 'burst-mainwp' )}
 				</ButtonInput>
 			</div>
 		</div>

@@ -41,7 +41,7 @@ const ProPopover = ({
 					</div>
 					<div className="px-6 py-4">
 						<p className="mb-3 text-xs font-medium uppercase tracking-wide text-text-gray">
-							{__( 'Pro features include:', 'burst-statistics' )}
+							{__( 'Pro features include:', 'burst-mainwp' )}
 						</p>
 						<div className="flex flex-col gap-2">
 							{bulletPoints.map( ({ text, icon }) => (
@@ -70,7 +70,7 @@ const ProPopover = ({
 							rel="noopener noreferrer"
 							className="w-full rounded bg-primary px-4 py-1 text-center text-base font-normal text-text-white no-underline transition-all duration-200 hover:bg-primary hover:[box-shadow:0_0_0_3px_rgba(43,129,51,0.5)]"
 						>
-							{__( 'Upgrade to Pro', 'burst-statistics' )}
+							{__( 'Upgrade to Pro', 'burst-mainwp' )}
 						</a>
 						<a
 							href={secondaryButtonUrl}
@@ -78,7 +78,7 @@ const ProPopover = ({
 							rel="noopener noreferrer"
 							className="w-full rounded border border-gray-400 bg-gray-100 px-4 py-1 text-center text-base font-normal text-text-gray no-underline transition-all duration-200 hover:bg-gray-200 hover:text-text-gray hover:[box-shadow:0_0_0_3px_rgba(0,0,0,0.1)]"
 						>
-							{__( 'Learn More', 'burst-statistics' )}
+							{__( 'Learn More', 'burst-mainwp' )}
 						</a>
 					</div>
 				</Popover.Content>

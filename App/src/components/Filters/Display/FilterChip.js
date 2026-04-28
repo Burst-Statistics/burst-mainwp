@@ -107,12 +107,12 @@ const FilterChip = ({
 			onKeyDown={handleKeyDown}
 			role="button"
 			tabIndex={disabled ? -1 : 0}
-			aria-label={__( 'Edit %s filter', 'burst-statistics' ).replace(
+			aria-label={__( 'Edit %s filter', 'burst-mainwp' ).replace(
 				'%s',
 				filter.config.label
 			)}
 			aria-disabled={disabled}
-			title={disabled ? '' : __( 'Click to edit filter', 'burst-statistics' )}
+			title={disabled ? '' : __( 'Click to edit filter', 'burst-mainwp' )}
 		>
 			{/* Filter Icon */}
 			<Icon name={filter.config.icon} size={smallLabels ? 14 : 16} />
@@ -159,8 +159,8 @@ const FilterChip = ({
 							'hover:bg-gray-200': ! disabled
 						}
 					)}
-					aria-label={__( 'Remove filter', 'burst-statistics' )}
-					title={disabled ? '' : __( 'Remove filter', 'burst-statistics' )}
+					aria-label={__( 'Remove filter', 'burst-mainwp' )}
+					title={disabled ? '' : __( 'Remove filter', 'burst-mainwp' )}
 				>
 					<Icon
 						name="times"

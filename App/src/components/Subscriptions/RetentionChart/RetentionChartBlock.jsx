@@ -42,12 +42,12 @@ const RETENTION_PLACEHOLDER_RESPONSE = {
 function RetentionLegend() {
 	return (
 		<div className="flex items-center gap-2">
-			<span className="text-sm text-gray-500">{ __( 'Low', 'burst-statistics' ) }</span>
+			<span className="text-sm text-gray-500">{ __( 'Low', 'burst-mainwp' ) }</span>
 			<div
 				className="w-24 h-3 rounded-sm"
 				style={{ background: 'linear-gradient(to right, #dcfce7, #2E8A37)' }}
 			/>
-			<span className="text-sm text-gray-500">{ __( 'High retention', 'burst-statistics' ) }</span>
+			<span className="text-sm text-gray-500">{ __( 'High retention', 'burst-mainwp' ) }</span>
 		</div>
 	);
 }
@@ -139,7 +139,7 @@ export function RetentionChartBlock() {
 
 	const productOptions = useMemo( () => {
 		const options = [
-			{ label: __( 'All products', 'burst-statistics' ), value: 'all' }
+			{ label: __( 'All products', 'burst-mainwp' ), value: 'all' }
 		];
 
 		retentionData.products.forEach( ( product ) => {
@@ -185,7 +185,7 @@ export function RetentionChartBlock() {
 	return (
 		<Block className="row-span-1 lg:col-span-12 xl:col-span-6">
 			<BlockHeading
-				title={ __( 'Customer retention', 'burst-statistics' ) }
+				title={ __( 'Customer retention', 'burst-mainwp' ) }
 				className="border-b border-gray-200"
 				controls={
 					<div className="flex items-center gap-3 flex-wrap justify-end">
@@ -204,7 +204,7 @@ export function RetentionChartBlock() {
 			<BlockContent className="px-0 py-0">
 				{ retentionQuery.isError && (
 					<p className="px-6 py-4 text-sm text-red-600">
-						{ __( 'Failed to load retention data.', 'burst-statistics' ) }
+						{ __( 'Failed to load retention data.', 'burst-mainwp' ) }
 					</p>
 				) }
 
@@ -212,11 +212,11 @@ export function RetentionChartBlock() {
 					<div className="h-[440px] flex items-center justify-center px-6 py-8 text-center">
 						<div className="max-w-md">
 							<h3 className="mb-1 text-base font-medium text-gray-600">
-								{ __( 'Not enough renewal history yet', 'burst-statistics' ) }
+								{ __( 'Not enough renewal history yet', 'burst-mainwp' ) }
 							</h3>
 
 							<p className="text-sm text-gray-400">
-								{ __( 'Select a wider date range to see completed monthly retention cohorts.', 'burst-statistics' ) }
+								{ __( 'Select a wider date range to see completed monthly retention cohorts.', 'burst-mainwp' ) }
 							</p>
 						</div>
 					</div>

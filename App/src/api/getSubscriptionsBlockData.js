@@ -113,14 +113,14 @@ const transformMetric = ( key, metric ) => {
  */
 const getDefaultSubtitle = ( key ) => {
 	const subtitles = {
-		[ METRIC_KEYS.AVERAGE_LIFETIME_VALUE ]: __( 'No subscription data available', 'burst-statistics' ),
-		[ METRIC_KEYS.ACTIVE_SUBSCRIPTIONS ]: __( 'No subscription data available', 'burst-statistics' ),
-		[ METRIC_KEYS.CANCELED_SUBSCRIPTIONS ]: __( 'No cancellation data available', 'burst-statistics' ),
-		[ METRIC_KEYS.REVENUE_CHURN ]: __( 'No churn data available', 'burst-statistics' ),
-		[ METRIC_KEYS.MONTHLY_RECURRING_REVENUE ]: __( 'No revenue data available', 'burst-statistics' )
+		[ METRIC_KEYS.AVERAGE_LIFETIME_VALUE ]: __( 'No subscription data available', 'burst-mainwp' ),
+		[ METRIC_KEYS.ACTIVE_SUBSCRIPTIONS ]: __( 'No subscription data available', 'burst-mainwp' ),
+		[ METRIC_KEYS.CANCELED_SUBSCRIPTIONS ]: __( 'No cancellation data available', 'burst-mainwp' ),
+		[ METRIC_KEYS.REVENUE_CHURN ]: __( 'No churn data available', 'burst-mainwp' ),
+		[ METRIC_KEYS.MONTHLY_RECURRING_REVENUE ]: __( 'No revenue data available', 'burst-mainwp' )
 	};
 
-	return subtitles[ key ] ?? __( 'No data available', 'burst-statistics' );
+	return subtitles[ key ] ?? __( 'No data available', 'burst-mainwp' );
 };
 
 /**
@@ -329,7 +329,7 @@ const getAverageLifetimeValueData = ( metric ) => {
  */
 const getLifetimeValueSubtitle = ( subscriptionCount ) => {
 	if ( 0 >= subscriptionCount ) {
-		return __( 'No active subscriptions', 'burst-statistics' );
+		return __( 'No active subscriptions', 'burst-mainwp' );
 	}
 
 	return sprintf(
@@ -337,7 +337,7 @@ const getLifetimeValueSubtitle = ( subscriptionCount ) => {
 			'From %d customer',
 			'From %d customers',
 			subscriptionCount,
-			'burst-statistics'
+			'burst-mainwp'
 		),
 		subscriptionCount
 	);
@@ -400,12 +400,12 @@ const getRevenueChurnPercentage = ( churnData ) => {
 const getRevenueChurnSubtitle = ( current, previous, rateChange ) => {
 	if ( null !== rateChange && undefined !== rateChange ) {
 		if ( 0 === rateChange ) {
-			return __( 'No change from last period', 'burst-statistics' );
+			return __( 'No change from last period', 'burst-mainwp' );
 		}
 
 		const direction = 0 < rateChange ?
-			__( 'Up %s from last period', 'burst-statistics' ) :
-			__( 'Down %s from last period', 'burst-statistics' );
+			__( 'Up %s from last period', 'burst-mainwp' ) :
+			__( 'Down %s from last period', 'burst-mainwp' );
 
 		return sprintf( direction, formatPercentage( Math.abs( rateChange ) ) );
 	}
@@ -418,12 +418,12 @@ const getRevenueChurnSubtitle = ( current, previous, rateChange ) => {
 		const difference = churnPercentage - previousPercentage;
 
 		if ( 0 === difference ) {
-			return __( 'No change from last period', 'burst-statistics' );
+			return __( 'No change from last period', 'burst-mainwp' );
 		}
 
 		const direction = 0 < difference ?
-			__( 'Up %s from last period', 'burst-statistics' ) :
-			__( 'Down %s from last period', 'burst-statistics' );
+			__( 'Up %s from last period', 'burst-mainwp' ) :
+			__( 'Down %s from last period', 'burst-mainwp' );
 
 		return sprintf(
 			direction,
@@ -433,7 +433,7 @@ const getRevenueChurnSubtitle = ( current, previous, rateChange ) => {
 
 	// Fall back to an absolute percentage subtitle when no comparison period is available.
 	return sprintf(
-		__( 'Current period churn: %s', 'burst-statistics' ),
+		__( 'Current period churn: %s', 'burst-mainwp' ),
 		formatPercentage( churnPercentage )
 	);
 };
@@ -479,20 +479,20 @@ const getActiveSubscriptionsSubtitle = ( activeCount, previous ) => {
 		const difference = activeCount - previousCount;
 
 		if ( 0 === difference ) {
-			return __( 'No change from last period', 'burst-statistics' );
+			return __( 'No change from last period', 'burst-mainwp' );
 		}
 
 		const abs = Math.abs( difference );
 		const text = 0 < difference ?
-			_n( '%d new subscription', '%d new subscriptions', abs, 'burst-statistics' ) :
-			_n( '%d subscription canceled', '%d subscriptions canceled', abs, 'burst-statistics' );
+			_n( '%d new subscription', '%d new subscriptions', abs, 'burst-mainwp' ) :
+			_n( '%d subscription canceled', '%d subscriptions canceled', abs, 'burst-mainwp' );
 
 		return sprintf( text, abs );
 	}
 
 	// Fall back to current count
 	if ( 0 >= activeCount ) {
-		return __( 'No active subscriptions', 'burst-statistics' );
+		return __( 'No active subscriptions', 'burst-mainwp' );
 	}
 
 	return sprintf(
@@ -500,7 +500,7 @@ const getActiveSubscriptionsSubtitle = ( activeCount, previous ) => {
 			'%d active subscription',
 			'%d active subscriptions',
 			activeCount,
-			'burst-statistics'
+			'burst-mainwp'
 		),
 		activeCount
 	);
@@ -547,20 +547,20 @@ const getCanceledSubscriptionsSubtitle = ( canceledCount, previous ) => {
 		const difference = canceledCount - previousCount;
 
 		if ( 0 === difference ) {
-			return __( 'No change from last period', 'burst-statistics' );
+			return __( 'No change from last period', 'burst-mainwp' );
 		}
 
 		const abs = Math.abs( difference );
 		const text = 0 < difference ?
-			_n( '%d new cancellation', '%d new cancellations', abs, 'burst-statistics' ) :
-			_n( '%d cancellation reversed', '%d cancellations reversed', abs, 'burst-statistics' );
+			_n( '%d new cancellation', '%d new cancellations', abs, 'burst-mainwp' ) :
+			_n( '%d cancellation reversed', '%d cancellations reversed', abs, 'burst-mainwp' );
 
 		return sprintf( text, abs );
 	}
 
 	// Fall back to current count
 	if ( 0 >= canceledCount ) {
-		return __( 'No canceled subscriptions', 'burst-statistics' );
+		return __( 'No canceled subscriptions', 'burst-mainwp' );
 	}
 
 	return sprintf(
@@ -568,7 +568,7 @@ const getCanceledSubscriptionsSubtitle = ( canceledCount, previous ) => {
 			'%d canceled subscription',
 			'%d canceled subscriptions',
 			canceledCount,
-			'burst-statistics'
+			'burst-mainwp'
 		),
 		canceledCount
 	);
@@ -618,12 +618,12 @@ const getMonthlyRecurringRevenueSubtitle = ( current, previous, currency ) => {
 		const difference = mrr - previousMrr;
 
 		if ( 0 === difference ) {
-			return __( 'No change from last period', 'burst-statistics' );
+			return __( 'No change from last period', 'burst-mainwp' );
 		}
 
 		const direction = 0 < difference ?
-			__( 'Up %s from last period', 'burst-statistics' ) :
-			__( 'Down %s from last period', 'burst-statistics' );
+			__( 'Up %s from last period', 'burst-mainwp' ) :
+			__( 'Down %s from last period', 'burst-mainwp' );
 
 		return sprintf(
 			direction,
@@ -635,7 +635,7 @@ const getMonthlyRecurringRevenueSubtitle = ( current, previous, currency ) => {
 	const subscriptionCount = parseInt( current.count, 10 ) || 0;
 
 	if ( 0 >= subscriptionCount ) {
-		return __( 'No active subscriptions', 'burst-statistics' );
+		return __( 'No active subscriptions', 'burst-mainwp' );
 	}
 
 	return sprintf(
@@ -643,7 +643,7 @@ const getMonthlyRecurringRevenueSubtitle = ( current, previous, currency ) => {
 			'%d active subscription',
 			'%d active subscriptions',
 			subscriptionCount,
-			'burst-statistics'
+			'burst-mainwp'
 		),
 		subscriptionCount
 	);

@@ -33,7 +33,7 @@ export const Route = createFileRoute( '/sales' )({
 				type: 'UNAUTHORIZED',
 				message: __(
 					'You do not have permission to view sales data.',
-					'burst-statistics'
+					'burst-mainwp'
 				)
 			};
 		}
@@ -51,9 +51,9 @@ export const Route = createFileRoute( '/sales' )({
 		if ( 'UNAUTHORIZED' === error.type ) {
 			return (
 				<UnauthorizedModal
-					header={__( 'Unauthorized Access', 'burst-statistics' )}
+					header={__( 'Unauthorized Access', 'burst-mainwp' )}
 					message={error.message}
-					actionLabel={__( 'Go Back', 'burst-statistics' )}
+					actionLabel={__( 'Go Back', 'burst-mainwp' )}
 				/>
 			);
 		}
@@ -63,7 +63,7 @@ export const Route = createFileRoute( '/sales' )({
 				{error.message ||
 					__(
 						'An error occurred loading sales',
-						'burst-statistics'
+						'burst-mainwp'
 					)}
 			</div>
 		);
