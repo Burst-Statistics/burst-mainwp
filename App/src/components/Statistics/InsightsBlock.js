@@ -8,18 +8,7 @@ import InsightsGraph from './InsightsGraph';
 import { useQuery } from '@tanstack/react-query';
 import getInsightsData from '../../api/getInsightsData';
 import { useBlockConfig } from '@/hooks/useBlockConfig';
-
-/**
- * Maps metric keys to their translatable display labels.
- * Mirrors the options defined in InsightsHeader to keep them in sync.
- */
-const METRIC_LABELS = {
-	pageviews: __( 'Pageviews', 'burst-mainwp' ),
-	visitors: __( 'Visitors', 'burst-mainwp' ),
-	sessions: __( 'Sessions', 'burst-mainwp' ),
-	bounces: __( 'Bounces', 'burst-mainwp' ),
-	conversions: __( 'Conversions', 'burst-mainwp' )
-};
+import { METRIC_LABELS, METRIC_COLORS } from './insightsConfig';
 
 /**
  * Legend displayed in the BlockHeading controls area.
@@ -32,21 +21,21 @@ const METRIC_LABELS = {
  * @param {boolean}  props.loading  - Whether the chart is in a loading state.
  * @return {JSX.Element|null} The legend element, or null when no metrics are selected.
  */
-function InsightsLegend({ metrics, datasets, loading }) {
+function InsightsLegend({ metrics, loading }) {
 	if ( ! metrics?.length ) {
 		return null;
 	}
 
 	return (
 		<div className="flex items-center gap-4">
-			{ metrics.map( ( key, index ) => (
+			{ metrics.map( ( key ) => (
 				<div key={ key } className="flex items-center gap-1.5">
 					<span
 						className="inline-block w-2.5 h-2.5 rounded-full flex-shrink-0"
 						style={{
 							backgroundColor: loading ?
-								'#D1D5DB' :
-								( datasets?.[ index ]?.borderColor ?? '#D1D5DB' )
+								'var(--color-gray-400)' :
+								( METRIC_COLORS[ key ] ?? 'var(--color-gray-400)' )
 						}}
 					/>
 					<span className="text-sm text-gray-500">
@@ -76,15 +65,15 @@ const InsightsBlock = (props) => {
 			datasets: [
 				{
 					data: [ 0, 0, 0, 0, 0, 0, 0 ],
-					backgroundColor: 'rgba(41, 182, 246, 0.2)',
-					borderColor: 'rgba(41, 182, 246, 1)',
+					backgroundColor: 'var(--color-blue-400)',
+					borderColor: 'var(--color-blue-400)',
 					label: '-',
 					fill: 'false'
 				},
 				{
 					data: [ 0, 0, 0, 0, 0, 0, 0 ],
-					backgroundColor: 'rgba(244, 191, 62, 0.2)',
-					borderColor: 'rgba(244, 191, 62, 1)',
+					backgroundColor: 'var(--color-yellow-500)',
+					borderColor: 'var(--color-yellow-500)',
 					label: '-',
 					fill: 'false'
 				}
@@ -118,16 +107,19 @@ const InsightsBlock = (props) => {
 					</div>
 				}
 			/>
-			<BlockContent className="px-0 py-0">
-				{query.data && InsightsGraph && (
-					<InsightsGraph
-						loading={loading}
-						data={query.data}
-						timestamps={query.data.timestamps}
-						interval={query.data.interval}
-						spansMultipleYears={query.data.spans_multiple_years}
-					/>
-				)}
+			<BlockContent className="px-0 py-0 h-75">
+				{
+					query.data && InsightsGraph && (
+						<InsightsGraph
+							loading={loading}
+							data={query.data}
+							timestamps={query.data.timestamps}
+							interval={query.data.interval}
+							spansMultipleYears={query.data.spans_multiple_years}
+							metrics={metrics}
+						/>
+					)
+				}
 			</BlockContent>
 		</Block>
 	);

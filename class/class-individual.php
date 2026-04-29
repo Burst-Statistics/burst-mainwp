@@ -111,7 +111,7 @@ class Individual {
 
 		?>
 		<div id="mainwp-burst-statistics">
-			<div id="burst-statistics" class="burst" data-site-id="<?php echo esc_attr( $website->id ); ?>"
+			<div id="burst-mainwp" class="burst" data-site-id="<?php echo esc_attr( $website->id ); ?>"
 				data-site-url="<?php echo esc_url( $website->url ); ?>">
 			</div>
 		</div>

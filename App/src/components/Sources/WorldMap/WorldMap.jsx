@@ -408,7 +408,7 @@ const WorldMap = ( props ) => {
 								{
 									on: 'hover',
 									style: {
-										itemTextColor: '#000000',
+										itemTextColor: 'var(--color-text-black)',
 										itemOpacity: 1
 									}
 								}

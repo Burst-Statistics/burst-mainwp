@@ -63,10 +63,37 @@ const getNonce = () => {
 
 let lastErrorMessage = '';
 let lastErrorTime = 0;
+const NONCE_TOAST_ID = 'burst-nonce-expired';
 const generateError = ( error, path = false ) => {
-	let message = __( 'Server error', 'burst-mainwp' );
-	error = error.replace( /(<([^>]+)>)/gi, '' );
+	const rawError = ( error || '' ).replace( /(<([^>]+)>)/gi, '' );
 
+	if ( /nonce|expired/i.test( rawError ) ) {
+		if ( toast.isActive( NONCE_TOAST_ID ) ) {
+			return;
+		}
+		const nonceDiv = (
+			<div>
+				<div>
+					{__( 'Connection to server expired', 'burst-mainwp' )}
+				</div>
+				<button
+					type="button"
+					className="rounded transition-all duration-200 min-w-fit focus:outline-hidden focus:ring-2 focus:ring-offset-2 bg-blue text-text-white border border-blue-700 hover:bg-wp-blue hover:shadow-ringSecondary focus:ring-blue py-2 px-6 text-m"
+					style={{ marginTop: '8px' }}
+					onClick={() => window.location.reload()}
+				>
+					{__( 'Refresh connection', 'burst-mainwp' )}
+				</button>
+			</div>
+		);
+		toast.error( nonceDiv, {
+			toastId: NONCE_TOAST_ID,
+			autoClose: false
+		});
+		return;
+	}
+
+	let message = __( 'Server error', 'burst-mainwp' );
 	if ( path ) {
 		const urlWithoutQueryParams = path.split( '?' )[0];
 
@@ -79,7 +106,7 @@ const generateError = ( error, path = false ) => {
 			'/' +
 			urlParts[index + 1];
 	}
-	message += ': ' + error;
+	message += ': ' + rawError;
 
 	// Skip if same message was shown in the last 3 seconds
 	const now = Date.now();
@@ -158,11 +185,44 @@ const makeRequest = async( path, method = 'GET', data = {}) => {
 	}
 };
 
+const isDoActionFallbackPath = ( path = '' ) => {
+	const writeFragments = [
+		'/options/set',
+		'/fields/set',
+		'/goals/add',
+		'/goals/delete',
+		'/goals/set',
+		'/goals/add_predefined',
+		'/do_action/'
+	];
+
+	return writeFragments.some( ( fragment ) => path.includes( fragment ) );
+};
+
+const withAjaxAction = ( url, action ) => {
+	if ( url.includes( 'action=' ) ) {
+		return url.replace( /([?&]action=)[^&]*/, `$1${action}` );
+	}
+
+	const separator = url.includes( '?' ) ? '&' : '?';
+	return `${url}${separator}action=${action}`;
+};
+
+const getAjaxFallbackUrl = ( method, path ) => {
+	const action =
+		'POST' === method || isDoActionFallbackPath( path ) ?
+			'burst_rest_api_fallback_do_action' :
+			'burst_rest_api_fallback_get_action';
+
+	return withAjaxAction( siteUrl( 'ajax' ), action );
+};
+
 const ajaxRequest = async( method, path, requestData = null ) => {
+	const ajaxUrl = getAjaxFallbackUrl( method, path );
 	const url =
 		'GET' === method ?
-			`${siteUrl( 'ajax' )}&rest_action=${path.replace( '?', '&' )}` :
-			siteUrl( 'ajax' );
+			`${ajaxUrl}&rest_action=${path.replace( '?', '&' )}` :
+			ajaxUrl;
 
 	const controller = new AbortController();
 	const signal = controller.signal;
@@ -181,7 +241,7 @@ const ajaxRequest = async( method, path, requestData = null ) => {
 	}
 
 	try {
-		const response = await fetch( url, options );
+		const response = await fetch( url, options ); // nosemgrep
 		if ( ! response.ok ) {
 			generateError( response.statusText );
 			throw new Error( response.statusText );
@@ -406,8 +466,6 @@ export const getData = async( type, startDate, endDate, range, args = {}) => {
 
 	return await makeRequest( path, 'GET' );
 };
-
-export const getMenu = () => makeRequest( 'burst/v1/menu/' + glue() + getNonce() );
 
 export const getReportPreview = ( blocks, frequency ) => {
 	const data = {

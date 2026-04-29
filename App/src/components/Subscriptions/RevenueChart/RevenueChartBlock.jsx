@@ -142,7 +142,7 @@ export function RevenueChartBlock() {
 		__( 'There is no revenue data available for the selected filters and date range.', 'burst-mainwp' ) :
 		__( 'There is no sales data available for the selected filters and date range.', 'burst-mainwp' );
 
-	const loadingColors = [ '#D1D5DB', '#E5E7EB' ];
+	const loadingColors = [ 'var(--color-gray-400)', 'var(--color-gray-300)' ];
 
 	return (
 		<Block className="row-span-1 lg:col-span-12 xl:col-span-6 group/root">
@@ -244,9 +244,10 @@ export function RevenueChartBlock() {
 										)
 								}
 								theme={{
-									grid: { line: { stroke: '#E5E7EB', strokeWidth: 1 } },
+									grid: { line: { stroke: 'var(--color-gray-300)', strokeWidth: 1 } },
 									axis: {
-										ticks: { text: { fill: '#6B7280', fontSize: 12 } }
+										ticks: { text: { fill: 'var(--color-gray-600)', fontSize: 12 } },
+										domain: { line: { stroke: 'var(--color-gray-400)', strokeWidth: 1 } }
 									}
 								}}
 							/>

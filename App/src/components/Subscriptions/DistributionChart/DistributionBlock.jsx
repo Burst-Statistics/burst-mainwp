@@ -93,7 +93,7 @@ export function DistributionBlock() {
 		colors = DISTRIBUTION_LOADING_COLORS;
 	} else if ( isEmptyState ) {
 		data = EMPTY_STATE_DATA;
-		colors = [ '#E5E7EB' ];
+		colors = [ 'var(--color-gray-300)' ];
 	}
 
 	return (

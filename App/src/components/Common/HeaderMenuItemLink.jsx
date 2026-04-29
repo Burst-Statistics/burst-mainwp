@@ -154,7 +154,7 @@ const MenuItemLink = ({ menuItem, linkClassName, activeClassName, isTrial }) => 
 					<span className="inline-flex items-center gap-1.5 text-base tracking-wide">
 						{menuItem.icon && '' !== menuItem.icon && (
 							<span aria-hidden="true" className="inline-flex shrink-0">
-								<Icon name={menuItem.icon} size={14} color="lightgray" strokeWidth={2.5} />
+								<Icon name={menuItem.icon} size={14} color="gray" strokeWidth={2.5} />
 							</span>
 						)}
 						<span>{menuItem.title}</span>
