@@ -12,7 +12,7 @@
  * Domain Path:       /languages
  * Requires at least: 6.6
  * Requires PHP:      8.0
- * Update URI:        https://wordpress.org/plugins/burst-mainwp/
+ * Requires Plugins:  mainwp
  *
  * @package BurstMainWP
  */

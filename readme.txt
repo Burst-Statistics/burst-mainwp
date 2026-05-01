@@ -2,10 +2,11 @@
 Contributors: hesseldejong, RogierLankhorst, sh4lin, parthnvaswani
 Tags: analytics, statistics, mainwp, burst, dashboard
 Requires at least: 6.6
-License: GPL2
-Requires PHP: 8.0
 Tested up to: 7.0
+Requires PHP: 8.0
 Stable tag: 1.0.0
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 View Burst Statistics from all your child sites in one MainWP dashboard. Privacy-friendly analytics, centrally managed.
 
@@ -28,6 +29,10 @@ The Burst Statistics MainWP Extension brings your privacy-friendly analytics int
 = About Burst Statistics =
 
 Burst Statistics is a privacy-friendly Google Analytics alternative for WordPress, trusted by 200,000+ sites. Built by the team behind UpdraftPlus, WP-Optimize, and All-In-One Security. Learn more at [burst-statistics.com](https://burst-statistics.com).
+
+= Disclaimer =
+
+This plugin is an independent extension developed by Burst Statistics. It is not affiliated with, endorsed by, or sponsored by MainWP or MainWP LLC. "MainWP" is a trademark of its respective owner and is used here only to describe compatibility with the MainWP Dashboard plugin.
 
 == Installation ==
 
@@ -53,9 +58,11 @@ No. No external account is needed for this extension itself. A Burst Pro license
 == Changelog ==
 
 = 1.0.0 =
-* April 2026
+* Release date: April 2026
 * Initial release.
 * View Burst Statistics data across all connected MainWP child sites.
 
-== Upgrade notice ==
-* Please backup before upgrading.
+== Upgrade Notice ==
+
+= 1.0.0 =
+Initial release. Please back up your site before upgrading.
