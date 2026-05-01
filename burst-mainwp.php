@@ -1,14 +1,18 @@
 <?php
 /**
- * Plugin Name: Burst MainWP Extension
- * Plugin URI:  https://burst-statistics.com
- * Description: View Burst Statistics data from child sites in your MainWP Dashboard.
- * Version:     1.0.0
- * Author:      Burst Statistics
- * Author URI:  https://burst-statistics.com
- * License:     GPL v3
- * Text Domain: burst-mainwp
- * Requires PHP: 8.0
+ * Plugin Name:       Burst Statistics - MainWP Extension
+ * Plugin URI:        https://burst-statistics.com
+ * Description:       View Burst Statistics data from child sites in your MainWP Dashboard.
+ * Version:           1.0.0
+ * Author:            Burst Statistics
+ * Author URI:        https://burst-statistics.com
+ * License:           GPLv2 or later
+ * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain:       burst-mainwp
+ * Domain Path:       /languages
+ * Requires at least: 6.6
+ * Requires PHP:      8.0
+ * Update URI:        https://wordpress.org/plugins/burst-mainwp/
  *
  * @package BurstMainWP
  */
