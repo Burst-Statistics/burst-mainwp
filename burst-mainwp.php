@@ -70,10 +70,10 @@ add_filter( 'mainwp_getextensions', 'burst_mainwp_register_extension' );
 function burst_mainwp_register_extension( array $extensions ): array {
 	$extensions[] = [
 		'plugin'   => BURST_MAINWP_FILE,
-		'api'      => 'burst-mainwp-extension',
-		'callback' => 'burst_mainwp_extension',
+		'api'      => 'burst-mainwp',
+		'callback' => 'burst_mainwp',
 		'mainwp'   => true,
-		'slug'     => 'burst-mainwp-extension',
+		'slug'     => 'burst-mainwp',
 		'name'     => 'Burst Statistics',
 	];
 	return $extensions;
@@ -85,7 +85,7 @@ function burst_mainwp_register_extension( array $extensions ): array {
  * This page intentionally keeps a short "how to use" message and points users
  * to the per-site Burst dashboard, which is where all functionality lives.
  */
-function burst_mainwp_extension(): void {
+function burst_mainwp(): void {
 	$manage_sites_url = admin_url( 'admin.php?page=managesites' );
 
 	// Render inside MainWP's standard extension page chrome.
