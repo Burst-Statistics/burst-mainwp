@@ -141,9 +141,9 @@ node_modules
 *.mdc
 /.cursor
 /.idea
+build/
 dist/
 dist-build/
 test-artifacts/lib/vendor/composer/installed.php
 includes/Admin/Dashboard_Widget/package-lock.json
 includes/Admin/App/package-lock.json
-package-lock.json
