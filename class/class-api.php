@@ -43,13 +43,11 @@ class API {
 		return self::$instance;
 	}
 
-	/** The constructor is private to enforce singleton usage.  This class is not
-	 * designed to be used with hooks or instantiated multiple times; instead, its
-	 * methods are called explicitly during page rendering when needed.
+	/**
+	 * Private constructor — use instance() instead.
+	 * No hooks: this class is called explicitly during page render.
 	 */
-	private function __construct() {
-		// No hooks — this class is called explicitly during page render.
-	}
+	private function __construct() {}
 
 	// ── Site Data ─────────────────────────────────────────────────────────────
 
@@ -95,11 +93,11 @@ class API {
 	 *  3. POST to the child's `burst/v1/mainwp-auth` endpoint.
 	 *  4. Validate the response and return the structured auth array.
 	 *
-	 * The result is intentionally not cached across requests — nonces are
-	 * single-use and the page load that needs them is infrequent.
+	 * Not cached across requests — nonces are single-use and page loads that
+	 * need them are infrequent.
 	 *
 	 * @param int $site_id MainWP site ID.
-	 * @return array{nonce:string,token:string,root_url:string,capabilities:array,options:array,extra:array}|false
+	 * @return array{nonce:string,token:string,root_url:string,localization_data:array}|false
 	 *         Auth payload on success, false on any failure.
 	 */
 	public function get_child_auth( int $site_id ): array|false {
@@ -143,9 +141,7 @@ class API {
 
 		$debug['step'] = 'request_child_auth';
 		foreach ( $endpoints as $endpoint ) {
-			$attempt = [
-				'endpoint' => $endpoint,
-			];
+			$attempt = [ 'endpoint' => $endpoint ];
 
 			$response = wp_remote_post(
 				$endpoint,
@@ -170,8 +166,7 @@ class API {
 			$http_code                = (int) wp_remote_retrieve_response_code( $response );
 			$attempt['result']        = 'http';
 			$attempt['http_code']     = $http_code;
-			$body_excerpt             = substr( wp_remote_retrieve_body( $response ), 0, 220 );
-			$attempt['body_excerpt']  = $body_excerpt;
+			$attempt['body_excerpt']  = substr( wp_remote_retrieve_body( $response ), 0, 220 );
 			$debug['http_attempts'][] = $attempt;
 
 			if ( 200 === $http_code ) {
@@ -207,7 +202,6 @@ class API {
 					$missing[] = $required_key;
 				}
 			}
-
 			$debug['reason']       = 'invalid_auth_payload';
 			$debug['missing_keys'] = $missing;
 			$this->set_last_auth_debug( $site_id, $debug );
@@ -240,27 +234,35 @@ class API {
 		if ( ! is_array( $data ) ) {
 			return false;
 		}
-
 		foreach ( [ 'token', 'root_url', 'localization_data' ] as $key ) {
 			if ( empty( $data[ $key ] ) ) {
 				return false;
 			}
 		}
-
 		return true;
 	}
 
 	/**
 	 * Build a signed request body using MainWP's asymmetric signing infrastructure.
 	 *
+	 * The nonce is generated as `bin2hex(random_bytes(16))` — a 32-char
+	 * cryptographically random hex string.  A `nonce_issued_at` timestamp is
+	 * included alongside it so the child can enforce a time-based acceptance
+	 * window in addition to the single-use check.
+	 *
+	 * The signed payload is `$_function|$nonce|$adminname` — all three fields
+	 * are cryptographically bound so neither can be substituted after signing.
+	 *
 	 * @param object $site_data MainWP website row (must include `privkey`, `adminname`, `id`).
-	 * @param string $_function  MainWP function name used as part of the signing payload.
+	 * @param string $_function  MainWP function name included in the signing payload.
 	 * @param array  $extra     Additional fields merged into the body.
 	 * @return array<string,mixed>|false Signed body ready to JSON-encode, or false on failure.
 	 */
 	private function build_signed_body( object $site_data, string $_function, array $extra = [] ): array|false {
-		$nonce            = wp_rand( 0, 9999 );
-		$sign_payload     = $_function . $nonce;
+		// 32-char hex, cryptographically random.
+		$nonce            = bin2hex( random_bytes( 16 ) );
+		$issued_at        = time();
+		$sign_payload     = $_function . '|' . $nonce . '|' . $site_data->adminname;
 		$signed           = $this->sign_payload( $sign_payload, $site_data );
 		$dashboard_origin = $this->get_dashboard_origin();
 
@@ -272,6 +274,7 @@ class API {
 			[
 				'user'             => $site_data->adminname,
 				'nonce'            => $nonce,
+				'nonce_issued_at'  => $issued_at,
 				'mainwpsignature'  => $signed['signature'],
 				'function'         => $_function,
 				'verifylib'        => $signed['use_seclib'] ? 1 : 0,
@@ -306,7 +309,7 @@ class API {
 	 * MainWP supports both OpenSSL and a phpseclib-based fallback.  This method
 	 * detects which one to use by consulting MainWP_Connect_Lib::is_use_fallback_sec_lib().
 	 *
-	 * @param string $payload   The raw string to sign (typically `$_function . $nonce`).
+	 * @param string $payload   The raw string to sign (`$_function|$nonce|$user`).
 	 * @param object $site_data MainWP website row (must include `privkey`).
 	 * @return array{signature:string,use_seclib:bool}|false Encoded signature, or false on failure.
 	 */
