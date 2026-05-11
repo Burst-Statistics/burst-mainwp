@@ -5,7 +5,7 @@
  * Handles all communication between the MainWP dashboard and child sites.
  *
  * Responsibility split:
- *   • `get_site_data()`  – read MainWP DB (or fall back to $wpdb).
+ *   • `get_site_data()`  – read MainWP site data through MainWP APIs.
  *   • `get_child_auth()` – fetch a signed auth token + nonce from the child's
  *                          REST endpoint.  Must be called during a full WP page
  *                          load so MainWP signing classes are available.
@@ -54,8 +54,7 @@ class API {
 	/**
 	 * Retrieve a MainWP website row by ID.
 	 *
-	 * Prefers the official MainWP_DB class; falls back to a raw `$wpdb` query
-	 * when it is unavailable (e.g. unit-test context).
+	 * Uses MainWP's official DB API class when available.
 	 *
 	 * @param int $site_id MainWP site (wp) ID.
 	 * @return object|null Database row or null when not found.
@@ -66,10 +65,7 @@ class API {
 			return $site ?: null;
 		}
 
-		global $wpdb;
-		return $wpdb->get_row(
-			$wpdb->prepare( "SELECT * FROM {$wpdb->prefix}mainwp_wp WHERE id = %d", $site_id )
-		) ?: null;
+		return null;
 	}
 
 	/**
