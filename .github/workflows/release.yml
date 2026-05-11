@@ -42,7 +42,10 @@ jobs:
           rsync -av --progress . staging/ \
             --exclude staging \
             --exclude .git \
+            --exclude .github \
             --exclude .gitignore \
+            --exclude .distignore \
+            --exclude .DS_Store \
             --exclude "*.yml" \
             --exclude "*.yaml" \
             --exclude "composer.json" \

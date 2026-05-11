@@ -18,6 +18,16 @@ class Individual {
 	private static ?self $instance = null;
 
 	/**
+	 * Cached child data for the current request.
+	 *
+	 * Populated by maybe_enqueue_assets() and reused by render_content() to
+	 * avoid duplicate API calls.
+	 *
+	 * @var array{website:object,child_data:array}|null
+	 */
+	private ?array $request_context = null;
+
+	/**
 	 * Singleton instance accessor.
 	 *
 	 * @return self Singleton instance of the Individual integration class.
@@ -35,6 +45,78 @@ class Individual {
 	 */
 	private function __construct() {
 		add_filter( 'mainwp_getsubpages_sites', [ $this, 'add_subpage' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'maybe_enqueue_assets' ] );
+	}
+
+	/**
+	 * Enqueue React app assets early, before MainWP prints page output.
+	 *
+	 * @param string $hook_suffix Current admin page hook suffix.
+	 */
+	public function maybe_enqueue_assets( string $hook_suffix ): void {
+		unset( $hook_suffix );
+
+		if ( ! $this->is_individual_burst_page() ) {
+			return;
+		}
+
+		$this->prepare_request_context_from_request();
+
+		if ( null === $this->request_context ) {
+			return;
+		}
+
+		$this->enqueue_react_app( $this->request_context['child_data'], $this->request_context['website'] );
+	}
+
+	/**
+	 * Prepare request context (website + child auth) for the current admin request.
+	 */
+	private function prepare_request_context_from_request(): void {
+		if ( null !== $this->request_context ) {
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$site_id = isset( $_GET['id'] ) ? absint( wp_unslash( $_GET['id'] ) ) : 0;
+		if ( 0 === $site_id ) {
+			return;
+		}
+
+		$website = API::instance()->get_site_data( $site_id );
+		if ( ! $website ) {
+			return;
+		}
+
+		$child_data = API::instance()->get_child_auth( $site_id );
+		if ( ! $child_data ) {
+			// render_content() will show the connection error panel.
+			return;
+		}
+
+		$this->request_context = [
+			'website'    => $website,
+			'child_data' => $child_data,
+		];
+	}
+
+	/**
+	 * Detect whether the current admin request targets the Burst sub-page.
+	 */
+	private function is_individual_burst_page(): bool {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		if ( ! is_admin() || ! isset( $_GET['page'] ) ) {
+			return false;
+		}
+
+		$page = sanitize_key( wp_unslash( $_GET['page'] ) );
+		if ( 'managedsitesdashboard' !== $page && 'managesites' !== $page ) {
+			return false;
+		}
+
+		$dashboard = isset( $_GET['dashboard'] ) ? sanitize_key( wp_unslash( $_GET['dashboard'] ) ) : '';
+		return 'burststatistics' === $dashboard;
+		// phpcs:enable
 	}
 
 	// ── MainWP Hooks ──────────────────────────────────────────────────────────
@@ -64,11 +146,17 @@ class Individual {
 	 * MainWP calls this as the registered `callback` for the BurstStatistics sub-page.
 	 */
 	public function render_individual_site(): void {
+		$this->prepare_request_context_from_request();
+
+		if ( null !== $this->request_context && ! wp_script_is( 'burst-mainwp-settings', 'enqueued' ) ) {
+			$this->enqueue_react_app( $this->request_context['child_data'], $this->request_context['website'] );
+		}
+
 		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 		do_action( 'mainwp_pageheader_sites', 'BurstStatistics' );
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$site_id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0;
+		$site_id = isset( $_GET['id'] ) ? absint( wp_unslash( $_GET['id'] ) ) : 0;
 
 		if ( 0 === $site_id ) {
 			echo '<div class="ui red message">' . esc_html__( 'Invalid site ID.', 'burst-mainwp' ) . '</div>';
@@ -77,7 +165,14 @@ class Individual {
 			return;
 		}
 
-		$website = API::instance()->get_site_data( $site_id );
+		$website = null;
+		if ( null !== $this->request_context && isset( $this->request_context['website'] ) && is_object( $this->request_context['website'] ) ) {
+			$website = $this->request_context['website'];
+		}
+
+		if ( ! $website ) {
+			$website = API::instance()->get_site_data( $site_id );
+		}
 
 		if ( ! $website ) {
 			echo '<div class="ui red message">' . esc_html__( 'Site not found.', 'burst-mainwp' ) . '</div>';
@@ -93,18 +188,12 @@ class Individual {
 	}
 
 	/**
-	 * Render the React app shell and enqueue all required assets.
-	 *
-	 * Child-site REST credentials are fetched here (during a full MainWP page
-	 * load where signing infrastructure is available) and forwarded to the
-	 * React app via `wp_localize_script`.
+	 * Render the React app shell for a single site.
 	 *
 	 * @param object $website MainWP website row object.
 	 */
 	public function render_content( object $website ): void {
-		$child_data = API::instance()->get_child_auth( (int) $website->id );
-
-		if ( ! $child_data ) {
+		if ( null === $this->request_context ) {
 			$this->render_connection_error_panel( $website );
 			return;
 		}
@@ -116,7 +205,15 @@ class Individual {
 			</div>
 		</div>
 		<?php
+	}
 
+	/**
+	 * Enqueue the main React app assets and localized settings object.
+	 *
+	 * @param array  $child_data Auth data for the child site.
+	 * @param object $website MainWP website row object.
+	 */
+	private function enqueue_react_app( array $child_data, object $website ): void {
 		$js_data = self::get_chunk_translations( 'App/build' );
 		if ( empty( $js_data['js_file'] ) ) {
 			return;
@@ -125,7 +222,7 @@ class Individual {
 		$version = $js_data['version'];
 
 		wp_enqueue_style(
-			'burst-tailwind',
+			'burst-mainwp-tailwind',
 			BURST_MAINWP_APP_URL . '/src/tailwind.generated.css',
 			[],
 			$version
@@ -135,7 +232,7 @@ class Individual {
 		$dependencies[] = 'wp-core-data';
 
 		wp_enqueue_script(
-			'burst-settings',
+			'burst-mainwp-settings',
 			BURST_MAINWP_APP_URL . '/build/' . $js_data['js_file'],
 			$dependencies,
 			$version,
@@ -145,8 +242,9 @@ class Individual {
 			]
 		);
 
+		// Keep the global name `burst_settings` for compatibility with the shared Burst React app.
 		wp_localize_script(
-			'burst-settings',
+			'burst-mainwp-settings',
 			'burst_settings',
 			$this->build_localized_settings( $js_data, $child_data, $website )
 		);
@@ -162,6 +260,23 @@ class Individual {
 		$burst_mainwp_status_id   = 'burst-mainwp-support-copy-status-' . $site_id;
 		$burst_mainwp_button_id   = 'burst-mainwp-copy-report-' . $site_id;
 		$burst_mainwp_report      = $this->build_connection_error_report( $website );
+
+		wp_enqueue_script(
+			'burst-mainwp-connection-error-panel',
+			plugins_url( 'assets/js/connection-error-panel.js', BURST_MAINWP_FILE ),
+			[],
+			BURST_MAINWP_VERSION,
+			true
+		);
+
+		wp_localize_script(
+			'burst-mainwp-connection-error-panel',
+			'burstMainwpConnectionErrorL10n',
+			[
+				'copied'   => __( 'Report copied. Paste it in your support message.', 'burst-mainwp' ),
+				'fallback' => __( 'Copy failed. Please select the report text manually and copy it.', 'burst-mainwp' ),
+			]
+		);
 
 		$template_path = BURST_MAINWP_PATH . 'class/templates/connection-error-panel.php';
 		if ( file_exists( $template_path ) ) {
@@ -289,10 +404,7 @@ class Individual {
 			unset( $menu_item );
 		}
 
-		return apply_filters(
-			'burst_localize_script',
-			$localization_data
-		);
+		return apply_filters( 'burst_mainwp_localize_script', $localization_data );
 	}
 
 	/**
@@ -314,7 +426,7 @@ class Individual {
 		];
 
 		$text_domain   = 'burst-mainwp';
-		$languages_dir = WP_CONTENT_DIR . '/languages/plugins';
+		$languages_dir = trailingslashit( WP_LANG_DIR ) . 'plugins';
 
 		$locale            = determine_locale();
 		$json_translations = [];
@@ -328,8 +440,9 @@ class Individual {
 		foreach ( $language_files as $language_file ) {
 			$src    = basename( $language_file );
 			$handle = str_replace( [ $text_domain . '-', $locale . '-', '.json' ], '', $src );
+			$url    = content_url( 'languages/plugins/' . $src );
 
-			wp_register_script( $handle, plugins_url( $src, __FILE__ ), [], true, true );
+			wp_register_script( $handle, $url, [], BURST_MAINWP_VERSION, true );
 			$locale_data = load_script_textdomain( $handle, $text_domain, $languages_dir );
 			wp_deregister_script( $handle );
 
