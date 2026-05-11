@@ -441,8 +441,14 @@ class Individual {
 			'version'           => '',
 		];
 
-		$text_domain   = 'burst-mainwp';
-		$languages_dir = trailingslashit( WP_LANG_DIR ) . 'plugins';
+		$text_domain = 'burst-mainwp';
+
+		// Resolve <wp-content>/languages/plugins/ without referencing the internal
+		// WP_LANG_DIR / WP_CONTENT_DIR constants.
+		// BURST_MAINWP_PATH is built from plugin_dir_path(), so going two levels up
+		// from the plugin folder (wp-content/plugins/burst-mainwp/) lands on
+		// wp-content/, where WordPress stores translation packs under languages/plugins/.
+		$languages_dir = trailingslashit( wp_normalize_path( dirname( BURST_MAINWP_PATH, 2 ) ) ) . 'languages/plugins';
 
 		$locale            = determine_locale();
 		$json_translations = [];
