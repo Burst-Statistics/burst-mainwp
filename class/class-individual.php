@@ -77,6 +77,16 @@ class Individual {
 			return;
 		}
 
+		// Defense-in-depth: only dashboard admins should ever trigger child-auth fetches.
+		// The MainWP sub-page itself is also capability-gated by MainWP core.
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		// No nonce check: `?id=` is part of MainWP's own sub-page navigation URLs, which
+		// do not (and cannot) carry a Burst-issued nonce. This is a pure read used to
+		// pick which child site to render: no state is changed here. The actual child
+		// API call uses a signed MainWP request, not this parameter.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$site_id = isset( $_GET['id'] ) ? absint( wp_unslash( $_GET['id'] ) ) : 0;
 		if ( 0 === $site_id ) {
@@ -146,6 +156,10 @@ class Individual {
 	 * MainWP calls this as the registered `callback` for the BurstStatistics sub-page.
 	 */
 	public function render_individual_site(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
 		$this->prepare_request_context_from_request();
 
 		if ( null !== $this->request_context && ! wp_script_is( 'burst-mainwp-settings', 'enqueued' ) ) {
@@ -155,6 +169,8 @@ class Individual {
 		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 		do_action( 'mainwp_pageheader_sites', 'BurstStatistics' );
 
+		// See prepare_request_context_from_request() for why no nonce is verified:
+		// `?id=` is part of MainWP's own navigation URLs and this is a pure read.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$site_id = isset( $_GET['id'] ) ? absint( wp_unslash( $_GET['id'] ) ) : 0;
 
