@@ -20,7 +20,10 @@ $burst_mainwp_status_id   = isset( $burst_mainwp_status_id ) ? (string) $burst_m
 $burst_mainwp_button_id   = isset( $burst_mainwp_button_id ) ? (string) $burst_mainwp_button_id : '';
 $burst_mainwp_report      = isset( $burst_mainwp_report ) ? (string) $burst_mainwp_report : '';
 ?>
-<div class="ui negative message" role="alert" aria-live="assertive" style="padding:20px; margin: 20px;">
+<div class="ui negative message" role="alert" aria-live="assertive" style="padding:20px; margin: 20px;"
+	data-burst-mainwp-connection-panel="1" data-copy-button-id="<?php echo esc_attr( $burst_mainwp_button_id ); ?>"
+	data-report-id="<?php echo esc_attr( $burst_mainwp_report_id ); ?>"
+	data-status-id="<?php echo esc_attr( $burst_mainwp_status_id ); ?>">
 	<div class="header" style="margin-bottom:10px;font-size:18px;line-height:1.3;">
 		<?php esc_html_e( 'Connection to child site failed', 'burst-mainwp' ); ?>
 	</div>
@@ -55,39 +58,4 @@ $burst_mainwp_report      = isset( $burst_mainwp_report ) ? (string) $burst_main
 	</div>
 	<p id="<?php echo esc_attr( $burst_mainwp_status_id ); ?>" role="status" aria-live="polite"
 		style="margin:10px 0 0;font-size:13px;line-height:1.4;"></p>
-	<script>
-		(function () {
-			var btn = document.getElementById(<?php echo wp_json_encode( $burst_mainwp_button_id ); ?>);
-			var report = document.getElementById(<?php echo wp_json_encode( $burst_mainwp_report_id ); ?>);
-			var status = document.getElementById(<?php echo wp_json_encode( $burst_mainwp_status_id ); ?>);
-			if (!btn || !report || !status) {
-				return;
-			}
-
-			var copiedMsg = <?php echo wp_json_encode( __( 'Report copied. Paste it in your support message.', 'burst-mainwp' ) ); ?>;
-			var fallbackMsg = <?php echo wp_json_encode( __( 'Copy failed. Please select the report text manually and copy it.', 'burst-mainwp' ) ); ?>;
-
-			btn.addEventListener('click', function () {
-				report.focus();
-				report.select();
-
-				if (navigator.clipboard && navigator.clipboard.writeText) {
-					navigator.clipboard.writeText(report.value)
-						.then(function () {
-							status.textContent = copiedMsg;
-						})
-						.catch(function () {
-							status.textContent = fallbackMsg;
-						});
-				} else {
-					try {
-						document.execCommand('copy');
-						status.textContent = copiedMsg;
-					} catch (e) {
-						status.textContent = fallbackMsg;
-					}
-				}
-			});
-		})();
-	</script>
 </div>
