@@ -1,5 +1,6 @@
 === Burst MainWP ===
 Contributors: hesseldejong, RogierLankhorst, sh4lin, parthnvaswani
+Donate link: paypal.me/Burststatistics
 Tags: analytics, statistics, mainwp, burst, dashboard
 Requires at least: 6.6
 Tested up to: 7.0
@@ -18,6 +19,7 @@ The Burst Statistics MainWP Extension brings your privacy-friendly analytics int
 
 * [MainWP Dashboard](https://wordpress.org/plugins/mainwp/) on your main site
 * [Burst Statistics](https://wordpress.org/plugins/burst-statistics/) (free or Pro) on each child site
+* [MainWP Child](https://wordpress.org/plugins/mainwp-child//) on each child site
 
 = Features =
 

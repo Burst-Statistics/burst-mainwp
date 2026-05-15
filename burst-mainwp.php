@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:       Burst MainWP
- * Plugin URI:        https://github.com/Burst-Statistics/burst-mainwp
+ * Plugin URI:        https://wordpress.org/plugins/burst-mainwp
  * Description:       View Burst Statistics data from child sites in your MainWP Dashboard.
  * Version:           1.0.0
  * Author:            Burst Statistics
