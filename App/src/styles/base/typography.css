@@ -4,10 +4,10 @@
 	}
 
 	.burst-reporting-wizard-gutter {
-		@apply px-4 @md:pl-10 @md:pr-12;
+		@apply px-4 md:pl-10 md:pr-12;
 	}
 
-	@apply font-normal leading-normal box-border m-0 -ml-5 text-base text-text-black font-sans @max-md:-ml-[9px] antialiased leading-6;
+	@apply font-normal leading-normal box-border m-0 -ml-5 text-base text-text-black font-sans max-md:-ml-[9px] antialiased leading-6;
 	/* font-variant-numeric: tabular-nums; */
 
 	*,

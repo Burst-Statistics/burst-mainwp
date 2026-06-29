@@ -25,7 +25,7 @@ const resolvePaddingClasses = ( className = '' ): string => {
 
 	// Horizontal padding
 	if ( ! hasP && ! hasPx ) {
-		classes.push( 'px-2.5', '@md:px-6' );
+		classes.push( 'px-2.5', 'md:px-6' );
 	}
 
 	// Vertical padding
@@ -35,11 +35,11 @@ const resolvePaddingClasses = ( className = '' ): string => {
 
 	// Fine-grained fallbacks (only if axis not fully overridden)
 	if ( ! hasP && ! hasPx && ! hasPl ) {
-		classes.push( 'pl-2.5', '@md:pl-6' );
+		classes.push( 'pl-2.5', 'md:pl-6' );
 	}
 
 	if ( ! hasP && ! hasPx && ! hasPr ) {
-		classes.push( 'pr-2.5', '@md:pr-6' );
+		classes.push( 'pr-2.5', 'md:pr-6' );
 	}
 
 	if ( ! hasP && ! hasPy && ! hasPt ) {

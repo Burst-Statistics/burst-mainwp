@@ -6,7 +6,7 @@ import { AdminWysiwygField } from '@/components/Fields/Wysiwyg/WysiwygField';
 import WysiwygPreview from '@/components/Common/WysiwygPreview';
 import { BlockComponentProps } from '@/store/reports/types';
 import useSettingsData from '@/hooks/useSettingsData';
-import { useAttachmentUrl } from '@/hooks/useAttachmentUrl';
+import { useDarkAwareAttachmentUrl } from '@/hooks/useAttachmentUrl';
 
 const FOOTER_BLOCK_SETTING = { id: 'email_footer' };
 
@@ -46,7 +46,9 @@ const FooterBlock: React.FC<BlockComponentProps> = ({ reportBlockIndex = 0 }) =>
 	const { isDarkTheme } = useTheme();
 	const { getValue } = useSettingsData();
 	const logoId = getValue( 'logo_attachment_id' );
-	const logoQuery = useAttachmentUrl( logoId );
+	const logoIdDark = getValue( 'logo_attachment_id_dark' );
+	const darkLogoDefaultUrl = ( window as any ).burst_settings.plugin_url + 'assets/img/burst-email-logo-dark.png'; // eslint-disable-line @typescript-eslint/no-explicit-any
+	const logoQuery = useDarkAwareAttachmentUrl( logoId, logoIdDark, isDarkTheme, undefined, darkLogoDefaultUrl );
 	const logoUrl = logoQuery.data?.attachmentUrl ?? '';
 
 	const didSeedTemplate = useRef( false );

@@ -1,6 +1,7 @@
 import { __ } from '@wordpress/i18n';
-import { useState, useEffect, useMemo, memo } from 'react';
+import { useState, useMemo, memo } from 'react';
 import Tooltip from '@/components/Common/Tooltip';
+import MetricInfo from '@/components/Common/MetricInfo';
 import ClickToFilter from '@/components/Common/ClickToFilter';
 import Icon from '@//utils/Icon';
 import { endOfDay, format, startOfDay } from 'date-fns';
@@ -75,10 +76,9 @@ const TotalFilterItem = memo(
 );
 
 TotalFilterItem.displayName = 'TotalFilterItem';
-
 const GoalsBlock = () => {
 	const [ interval, setInterval ] = useState( 15000 );
-	const [ goalId, setGoalId ] = useState( false );
+	const [ goalId, setGoalId ] = useState( 'all' );
 
 	// Replace useGoalsStore with useGoalsData
 	const { goals, isLoading: isGoalsLoading } = useGoalsData();
@@ -97,16 +97,14 @@ const GoalsBlock = () => {
 		[ currentDateWithOffset ]
 	);
 
-	useEffect( () => {
-		if ( ! goalId && 0 < goals.length ) {
-			setGoalId( goals[0].id );
-		}
-	}, [ goals, goalId ]);
-
 	// Derive values using memoization instead of recalculating on every render
 	const { goalStart, goalEnd } = useMemo( () => {
-		let start = goals[goalId]?.date_start;
-		let end = goals[goalId]?.date_end;
+		if ( 'all' === goalId ) {
+			return { goalStart: startDate, goalEnd: endDate };
+		}
+		const currentGoal = goals.find( ( g ) => String( g.id ) === String( goalId ) );
+		let start = currentGoal?.date_start;
+		let end = currentGoal?.date_end;
 
 		if ( 0 == start || start === undefined ) {
 			start = startDate;
@@ -165,7 +163,7 @@ const GoalsBlock = () => {
 		[]
 	);
 
-	// Only run queries if we have a valid goalId
+	// Only run queries if we have a valid goalId and goals exist
 	const queries = useQueries({
 		queries: [
 			{
@@ -184,7 +182,7 @@ const GoalsBlock = () => {
 					console.error( 'Error fetching live goals:', error );
 					setInterval( 0 );
 				},
-				enabled: !! goalId
+				enabled: !! goalId && 0 < goals.length
 			},
 			{
 				queryKey: [ 'goals', goalId ],
@@ -202,7 +200,7 @@ const GoalsBlock = () => {
 					console.error( 'Error fetching goals data:', error );
 					setInterval( 0 );
 				},
-				enabled: !! goalId
+				enabled: !! goalId && 0 < goals.length
 			}
 		]
 	});
@@ -280,13 +278,13 @@ const GoalsBlock = () => {
 					</div>
 				) : (
 					<>
-						<div className="px-2.5 py-5 @md:px-6 grid w-full grid-cols-2 gap-4 bg-yellow-50">
+						<div className="px-2.5 py-5 md:px-6 grid w-full grid-cols-2 gap-4 bg-yellow-50">
 							<TodayFilterItem {...todayFilterProps} />
 							<TotalFilterItem {...totalFilterProps} />
 						</div>
 						<div className="w-full">
 							<Tooltip content={data.topPerformer?.tooltip}>
-								<div className="w-full grid justify-items-start grid-cols-auto-1fr-auto gap-4 py-2.5 px-2.5 @md:px-6 even:bg-gray-100">
+								<div className="w-full grid justify-items-start grid-cols-auto-1fr-auto gap-4 py-2.5 px-2.5 md:px-6 even:bg-gray-100">
 									<Icon name="winner" />
 									<p className="w-full mr-auto">
 										{safeDecodeURI(
@@ -302,7 +300,7 @@ const GoalsBlock = () => {
 								arrow
 								title={data.conversionMetric?.tooltip}
 							>
-								<div className="w-full grid justify-items-start grid-cols-auto-1fr-auto gap-4 py-2.5 px-2.5 @md:px-6 even:bg-gray-100">
+								<div className="w-full grid justify-items-start grid-cols-auto-1fr-auto gap-4 py-2.5 px-2.5 md:px-6 even:bg-gray-100">
 									<Icon
 										name={
 											data.conversionMetric?.icon ||
@@ -320,11 +318,13 @@ const GoalsBlock = () => {
 							<Tooltip
 								content={data.conversionPercentage?.tooltip}
 							>
-								<div className="w-full grid justify-items-start grid-cols-auto-1fr-auto gap-4 py-2.5 px-2.5 @md:px-6 even:bg-gray-100">
+								<div className="w-full grid justify-items-start grid-cols-auto-1fr-auto gap-4 py-2.5 px-2.5 md:px-6 even:bg-gray-100">
 									<Icon name="graph" />
 									<p className="w-full mr-auto">
-										{data.conversionPercentage?.title ||
-											'-'}
+										<MetricInfo metricKey="conversion_rate" side="top">
+											{data.conversionPercentage?.title ||
+												'-'}
+										</MetricInfo>
 									</p>
 									<p className="font-semibold">
 										{data.conversionPercentage?.value ||
@@ -333,7 +333,7 @@ const GoalsBlock = () => {
 								</div>
 							</Tooltip>
 							<Tooltip content={data.bestDevice?.tooltip}>
-								<div className="w-full grid justify-items-start grid-cols-auto-1fr-auto gap-4 py-2.5 px-2.5 @md:px-6 even:bg-gray-100">
+								<div className="w-full grid justify-items-start grid-cols-auto-1fr-auto gap-4 py-2.5 px-2.5 md:px-6 even:bg-gray-100">
 									<Icon
 										name={
 											data.bestDevice?.icon || 'desktop'
