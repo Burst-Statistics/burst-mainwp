@@ -199,6 +199,56 @@ const upsellConfigs: UpsellConfigsProps = {
 			}
 		}
 	},
+	forms: {
+		upgradePlan: {
+			header: __( 'Unlock Forms Tracking', 'burst-mainwp' ),
+			subTitle: __(
+				'See how visitors interact with your forms, from first focus to successful submission.',
+				'burst-mainwp'
+			),
+			licenseInsufficient: __(
+				'Your current license does not include Forms tracking.',
+				'burst-mainwp'
+			)
+		},
+		testID: 'forms-upsell-copy-v1',
+		variations: {
+			A: {
+				utm_medium: 'forms-upsell-variation-a',
+				title: __(
+					'Are your forms losing you conversions?',
+					'burst-mainwp'
+				),
+				description: __(
+					'Your forms are where visitors become leads and customers. But if people start filling them in and never submit, you’re losing conversions without knowing why. Burst Pro shows you exactly how visitors interact with your forms, so you can fix what’s holding them back.',
+					'burst-mainwp'
+				),
+				bullets: [
+					{
+						icon: 'goals',
+						text: __(
+							'Track submissions: See which forms convert and which get ignored.',
+							'burst-mainwp'
+						)
+					},
+					{
+						icon: 'filter',
+						text: __(
+							'Spot abandonment: Find out where visitors give up before submitting.',
+							'burst-mainwp'
+						)
+					},
+					{
+						icon: 'goals',
+						text: __(
+							'Boost conversions: Optimize your forms based on real interaction data.',
+							'burst-mainwp'
+						)
+					}
+				]
+			}
+		}
+	},
 	external_links: {
 		upgradePlan: {
 			header: __( 'Unlock Outgoing Links Tracking', 'burst-mainwp' ),

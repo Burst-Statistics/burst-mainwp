@@ -44,6 +44,7 @@ After UI/CSS changes: run `build:css` and commit `tailwind.generated.css` when n
 - **Formatting:** grep `src/utils/formatting.ts` first — no duplicate `toLocaleString` / `Intl` in components
 - Router: add `src/routes/{name}.jsx` with `createFileRoute`; rebuild to regenerate `routeTree.gen.ts`
 - React: hooks from `react`; `createRoot` from `@wordpress/element` in `index.tsx` (webpack externals) — do not mix inconsistently
+- Use file per component structure where applicable.
 
 ## PHP boundary
 

@@ -40,7 +40,7 @@ export const BlockHeadingReport = memo( ({ title, controls, className = '', repo
 		<div
 			className={clsx(
 				className,
-				'flex min-h-14 items-center justify-between px-2.5 @md:px-6 @md:min-h-16 gap-4'
+				'flex min-h-14 items-center justify-between px-2.5 md:px-6 md:min-h-16 gap-4'
 			)}
 		>
 			<div className="flex flex-col">
