@@ -81,7 +81,10 @@ export const FunnelChartHeader: React.FC = () => {
 						<RadioInput
 							id="pages_all"
 							name="pages_selection"
-							label={__( 'All product pages', 'burst-mainwp' )}
+							label={__(
+								'Detected product pages',
+								'burst-mainwp'
+							)}
 							value="all"
 							checked={'all' === pageSettingsLocal}
 							onChange={() => {
@@ -104,6 +107,15 @@ export const FunnelChartHeader: React.FC = () => {
 								setSelectedPagesLocal([]);
 							}}
 						/>
+
+						{'all' === pageSettingsLocal && (
+							<p className="mt-2 text-xs text-text-gray">
+								{__(
+									'Automatically detects WooCommerce product and EDD download pages. If you sell through regular pages instead, choose Custom product pages.',
+									'burst-mainwp'
+								)}
+							</p>
+						)}
 
 						{'custom' === pageSettingsLocal ? (
 							<SelectPageField

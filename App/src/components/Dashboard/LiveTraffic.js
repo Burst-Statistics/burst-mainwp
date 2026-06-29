@@ -19,14 +19,14 @@ import { OverflowTooltip } from '@/components/Common/OverflowTooltip';
  */
 const parseUTMSource = ( url ) => {
 	if ( ! url ) {
-		return __( 'Direct', 'burst-mainwp' );
+		return __( 'Direct / unknown', 'burst-mainwp' );
 	}
 
 	try {
 		const uri = safeDecodeURI( url );
 		return uri.replace( /^www\./, '' );
 	} catch ( e ) { // eslint-disable-line @typescript-eslint/no-unused-vars
-		return __( 'Direct', 'burst-mainwp' );
+		return __( 'Direct / unknown', 'burst-mainwp' );
 	}
 };
 

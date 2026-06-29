@@ -16,7 +16,7 @@ import {
 } from '@/config/filterConfig';
 import { useWizardStore } from '@/store/reports/useWizardStore';
 
-export const FILTER_ENABLED_ROUTES = [ '/statistics', '/sources', '/sales' ];
+export const FILTER_ENABLED_ROUTES = [ '/statistics', '/engagement', '/sources', '/sales', '/table' ];
 
 export const isFilterEnabledRoute = ( pathname: string ): boolean => {
 	return FILTER_ENABLED_ROUTES.some( ( route ) => pathname.startsWith( route ) );
@@ -32,6 +32,13 @@ const buildSearchParams = (
 			result[key] = params[key] as string;
 		}
 	});
+
+	// Preserve the share token if it exists in the current URL so
+	// filter changes don't break shared viewer authentication.
+	const currentToken = new URLSearchParams( window.location.search ).get( 'burst_share_token' );
+	if ( currentToken ) {
+		result.burst_share_token = currentToken;
+	}
 
 	result[TRAILING_PARAM_KEY] = '';
 	return result;
@@ -238,8 +245,13 @@ export const useFilters = ( reportBlockIndex?: number ) => {
 		clearSavedFilters();
 		if ( isFilterRoute ) {
 			navigate({
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				search: ( () => ({}) ) as any,
+				search: ( () => {
+
+					// Preserve the share token when clearing filters.
+					const token = new URLSearchParams( window.location.search ).get( 'burst_share_token' );
+					return token ? { burst_share_token: token } : {};
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				}) as any,
 				replace: false
 			});
 		}

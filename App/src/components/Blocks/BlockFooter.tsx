@@ -19,7 +19,7 @@ export const BlockFooter = memo( ({ children, className = '' }: BlockFooterProps
 		<div
 			className={clsx(
 				className,
-				'flex items-center justify-between px-2.5 py-3 md:px-6'
+				'flex items-center justify-between px-2.5 py-3 @md:px-6'
 			)}
 		>
 			{children}

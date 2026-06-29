@@ -9,6 +9,7 @@ import {
 import {
 	RouterProvider,
 	createRouter,
+	createBrowserHistory,
 	createHashHistory
 } from '@tanstack/react-router';
 
@@ -51,56 +52,26 @@ const shouldForwardProp = ( prop: string ) => {
 	return isPropValid( prop );
 };
 
-export interface BurstMenuPro {
-	url: string;
-	text: string;
-}
+export type {
+	BurstMenuPro,
+	BurstMenuGroup,
+	BurstMenuItem,
+	BurstMenuPage,
+	BurstMenuConfig,
+	BurstSettings
+} from './types/burst-settings';
 
-export interface BurstMenuGroup {
-	id: string;
-	title: string;
-	pro?: BurstMenuPro;
-}
-
-export interface BurstMenuItem {
-	id: string;
-	group_id: string;
-	title: string;
-	groups: BurstMenuGroup[];
-	hidden?: boolean;
-	capabilities?: string;
-}
-
-export interface BurstMenuPage {
-	id: string;
-	title: string;
-	default_hidden: boolean;
-	menu_items: BurstMenuItem[];
-	capabilities: string;
-	menu_slug: string;
-	show_in_admin: boolean;
-	show_in_plugin_overview?: boolean;
-	shareable?: boolean;
-	pro?: boolean;
-	location?: 'left' | 'right';
-}
-
-export type BurstMenuConfig = BurstMenuPage[] | Record<number, BurstMenuPage>;
-
-// Add type declaration for window.burst_settings
 declare global {
 	interface Window {
-		burst_settings?: {
-			is_pro?: string;
-			view_sales_burst_statistics?: string;
-			menu: BurstMenuConfig;
-			[key: string]: any; // eslint-disable-line @typescript-eslint/no-explicit-any
-		};
 		burstLoaded?: boolean;
 	}
 }
 
-const hashHistory = createHashHistory();
+// This bundle is mounted in wp-admin and on shared dashboard URLs. wp-admin
+// still needs hash routing, while /burst-dashboard/<tab>/ should behave like a
+// normal path-based app.
+const isSharedDashboardRoute = /\/burst-dashboard(\/|$)/.test( window.location.pathname );
+const routerHistory = isSharedDashboardRoute ? createBrowserHistory() : createHashHistory();
 const HOUR_IN_SECONDS = 3600;
 
 interface QueryConfig {
@@ -162,7 +133,11 @@ const router = createRouter({
 			<p>{error?.message || 'An unexpected error occurred'}</p>
 		</div>
 	),
-	history: hashHistory,
+	history: routerHistory,
+
+	// Shared links are mounted under /burst-dashboard, but the route tree itself
+	// still uses app-relative paths such as /statistics and /story.
+	...( isSharedDashboardRoute ? { basepath: '/burst-dashboard' } : {}),
 	defaultPreload: 'viewport'
 
 	// Since we're using React Query, we don't want loader calls to ever be stale
@@ -174,7 +149,7 @@ const PendingComponent = () => {
 	return (
 		<>
 			{/* Left Block */}
-			<div className="col-span-6 row-span-2 bg-white shadow-sm rounded-xl p-5 dark:bg-dashboard-dark-surface max-sm:col-span-12 max-sm:row-span-1">
+			<div className="col-span-6 row-span-2 bg-white shadow-sm rounded-xl p-5 dark:bg-dashboard-dark-surface @max-sm:col-span-12 @max-sm:row-span-1">
 				<div className="h-6 w-1/2 px-5 py-2 bg-gray-200 rounded-md mb-5 animate-pulse"></div>
 				<div className="h-6 w-4/5 px-5 py-2 bg-gray-200 rounded-md mb-5 animate-pulse"></div>
 				<div className="h-6 w-full px-5 py-2 bg-gray-200 rounded-md mb-5 animate-pulse"></div>
@@ -186,7 +161,7 @@ const PendingComponent = () => {
 			</div>
 
 			{/* Middle Block */}
-			<div className="col-span-3 row-span-2 bg-white shadow-sm rounded-xl p-5 dark:bg-dashboard-dark-surface max-sm:col-span-12 max-sm:row-span-1">
+			<div className="col-span-3 row-span-2 bg-white shadow-sm rounded-xl p-5 dark:bg-dashboard-dark-surface @max-sm:col-span-12 @max-sm:row-span-1">
 				<div className="h-6 w-1/2 px-5 py-2 bg-gray-200 rounded-md mb-5 animate-pulse"></div>
 				<div className="h-6 w-4/5 px-5 py-2 bg-gray-200 rounded-md mb-5 animate-pulse"></div>
 				<div className="h-6 w-full px-5 py-2 bg-gray-200 rounded-md mb-5 animate-pulse"></div>
@@ -198,7 +173,7 @@ const PendingComponent = () => {
 			</div>
 
 			{/* Right Block */}
-			<div className="col-span-3 row-span-2 bg-white shadow-sm rounded-xl p-5 dark:bg-dashboard-dark-surface max-sm:col-span-12 max-sm:row-span-1">
+			<div className="col-span-3 row-span-2 bg-white shadow-sm rounded-xl p-5 dark:bg-dashboard-dark-surface @max-sm:col-span-12 @max-sm:row-span-1">
 				<div className="h-6 w-1/2 px-5 py-2 bg-gray-200 rounded-md mb-5 animate-pulse"></div>
 				<div className="h-6 w-4/5 px-5 py-2 bg-gray-200 rounded-md mb-5 animate-pulse"></div>
 				<div className="h-6 w-full px-5 py-2 bg-gray-200 rounded-md mb-5 animate-pulse"></div>
