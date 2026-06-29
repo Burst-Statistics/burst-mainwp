@@ -92,7 +92,7 @@ const TodayBlock = () => {
 	}
 
 	return (
-		<Block className="row-span-2 lg:col-span-6 xl:col-span-3 overflow-hidden">
+		<Block className="row-span-2 @lg:col-span-6 @xl:col-span-3 overflow-hidden">
 			<BlockHeading
 				title={__( 'Today', 'burst-mainwp' )}
 				controls={undefined}
@@ -101,7 +101,7 @@ const TodayBlock = () => {
 			/>
 			<BlockContent className="px-0 py-0">
 				<div className="burst-today">
-					<div className="px-2.5 py-6 md:px-5 grid w-full grid-cols-2 gap-4 bg-green-50">
+					<div className="px-2.5 py-6 @md:px-5 grid w-full grid-cols-2 gap-4 bg-green-50">
 						<Tooltip content={data.live.tooltip}>
 							<div className="rounded-md flex flex-col justify-center text-center py-4 items-center flex-wrap bg-white burst-tooltip-live">
 								<Icon name={liveIcon} size="26" />
@@ -133,7 +133,7 @@ const TodayBlock = () => {
 					</div>
 					<div className="w-full">
 						<Tooltip content={data.mostViewed.tooltip}>
-							<div className="w-full grid justify-items-start grid-cols-auto-1fr-auto gap-2 py-2.5 px-2.5 md:px-6 even:bg-gray-100 burst-tooltip-mostviewed">
+							<div className="w-full grid justify-items-start grid-cols-auto-1fr-auto gap-2 py-2.5 px-2.5 @md:px-6 even:bg-gray-100 burst-tooltip-mostviewed">
 								<Icon name="winner" />
 								<p className="burst-today-list-item-text w-full mr-auto">
 									{safeDecodeURI( data.mostViewed.title )}
@@ -144,7 +144,7 @@ const TodayBlock = () => {
 							</div>
 						</Tooltip>
 						<Tooltip content={data.referrer.tooltip}>
-							<div className="w-full grid justify-items-start grid-cols-auto-1fr-auto gap-2 py-2.5 px-2.5 md:px-6 even:bg-gray-100 burst-tooltip-referrer">
+							<div className="w-full grid justify-items-start grid-cols-auto-1fr-auto gap-2 py-2.5 px-2.5 @md:px-6 even:bg-gray-100 burst-tooltip-referrer">
 								<Icon name="referrer" />
 
 								<p className="burst-today-list-item-text w-full mr-auto overflow-x-auto scrollbar-hide">
@@ -157,7 +157,7 @@ const TodayBlock = () => {
 							</div>
 						</Tooltip>
 						<Tooltip content={data.pageviews.tooltip}>
-							<div className="w-full grid justify-items-start grid-cols-auto-1fr-auto gap-2 py-2.5 px-2.5 md:px-6 even:bg-gray-100 burst-tooltip-pageviews">
+							<div className="w-full grid justify-items-start grid-cols-auto-1fr-auto gap-2 py-2.5 px-2.5 @md:px-6 even:bg-gray-100 burst-tooltip-pageviews">
 								<Icon name="pageviews" />
 								<p className="burst-today-list-item-text w-full mr-auto">
 									{data.pageviews.title}
@@ -168,7 +168,7 @@ const TodayBlock = () => {
 							</div>
 						</Tooltip>
 						<Tooltip content={data.timeOnPage.tooltip}>
-							<div className="w-full grid justify-items-start grid-cols-auto-1fr-auto gap-2 py-2.5 px-2.5 md:px-6 even:bg-gray-100 burst-tooltip-timeOnPage">
+							<div className="w-full grid justify-items-start grid-cols-auto-1fr-auto gap-2 py-2.5 px-2.5 @md:px-6 even:bg-gray-100 burst-tooltip-timeOnPage">
 								<Icon name="time" />
 								<p className="burst-today-list-item-text w-full mr-auto">
 									{data.timeOnPage.title}

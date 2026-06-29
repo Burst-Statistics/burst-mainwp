@@ -31,6 +31,8 @@ import {
 	ChevronLeft,
 	ChevronRight,
 	ChevronUp,
+	ChevronsLeft,
+	ChevronsRight,
 	Circle,
 	CircleDot,
 	CircleOff,
@@ -109,7 +111,11 @@ import {
 	Settings2,
 	Key,
 	SlidersVertical,
-	HardDrive
+	HardDrive,
+	MessageCircle,
+	Maximize2,
+	Menu,
+	Table2
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -151,6 +157,8 @@ const iconComponents = {
 	'chevron-down': ChevronDown,
 	'chevron-right': ChevronRight,
 	'chevron-left': ChevronLeft,
+	'chevrons-left': ChevronsLeft,
+	'chevrons-right': ChevronsRight,
 	plus: Plus,
 	minus: Minus,
 	sync: RefreshCw,
@@ -255,10 +263,14 @@ const iconComponents = {
 	pencil: Pencil,
 	'grip-vertical': GripVertical,
 	'move-right': MoveRight,
-	'preferences': Settings2,
-	'key': Key,
+	preferences: Settings2,
+	key: Key,
 	'sliders-vertical': SlidersVertical,
 	'hard-drive': HardDrive,
+	chat: MessageCircle,
+	expand: Maximize2,
+	menu: Menu,
+	close: X,
 
 	// Sales & subscription metric icons
 	banknote: Banknote,
@@ -266,8 +278,10 @@ const iconComponents = {
 	gem: Gem,
 	'mouse-pointer-click': MousePointerClick,
 	receipt: Receipt,
-	'trending-down': TrendingDown
+	'trending-down': TrendingDown,
+	datatable: Table2
 };
+
 
 // Define types for icon names and colors
 export type IconName = keyof typeof iconComponents | string;

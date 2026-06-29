@@ -10,6 +10,12 @@ import TextInput from '@/components/Inputs/TextInput';
 import { PageFilter } from '@/components/Filters/PageFilter';
 import clsx from 'clsx';
 
+// Blocks that have no per-block data settings (date range / filters / comment).
+const BLOCKS_WITHOUT_SETTINGS = [ 'logo', 'text_block', 'hero' ];
+
+const hasBlockSettings = ( blockId: string ): boolean =>
+	! BLOCKS_WITHOUT_SETTINGS.includes( blockId );
+
 interface BlockSettingsSidebarProps {
 	reportBlockIndex: number;
 	className?: string;
@@ -100,8 +106,30 @@ export const BlockSettingsSidebar: React.FC<BlockSettingsSidebarProps> = ({ repo
 				</span>
 			</div>
 
-			{/* Scrollable content. Controls not needed for logo block.	 */}
-			{'logo' !== block.id &&
+			{/* Hero block shortcode documentation */}
+			{ 'hero' === block.id && (
+				<div className="p-4 flex flex-col gap-3 border-b border-gray-100">
+					<p className="text-sm font-medium text-text-gray">
+						{ __( 'Available shortcodes', 'burst-mainwp' ) }
+					</p>
+					<div className="flex flex-col gap-2">
+						{ [
+							[ '{created_by}', __( 'Name of the report creator', 'burst-mainwp' ) ],
+							[ '{created_at}', __( 'Date the report was created', 'burst-mainwp' ) ]
+						].map( ([ code, desc ]) => (
+							<div key={ code } className="flex items-start gap-2">
+								<code className="text-xs bg-gray-100 px-1.5 py-0.5 rounded font-mono text-text-gray flex-shrink-0">
+									{ code }
+								</code>
+								<span className="text-xs text-text-gray-light">{ desc }</span>
+							</div>
+						) ) }
+					</div>
+				</div>
+			) }
+
+			{/* Scrollable content. Date range / filters / comment only apply to data blocks. */}
+			{ hasBlockSettings( block.id ) &&
 				<div className="flex-1 overflow-y-auto p-4 flex flex-col gap-6">
 				{/* Date Range Section. */}
 				<div className="flex flex-col gap-3">

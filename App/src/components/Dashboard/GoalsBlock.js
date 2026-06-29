@@ -1,5 +1,5 @@
 import { __ } from '@wordpress/i18n';
-import { useState, useEffect, useMemo, memo, useCallback } from 'react';
+import { useState, useEffect, useMemo, memo } from 'react';
 import Tooltip from '@/components/Common/Tooltip';
 import ClickToFilter from '@/components/Common/ClickToFilter';
 import Icon from '@//utils/Icon';
@@ -12,12 +12,10 @@ import { BlockHeading } from '@/components/Blocks/BlockHeading';
 import { BlockContent } from '@/components/Blocks/BlockContent';
 import { BlockFooter } from '@/components/Blocks/BlockFooter';
 import GoalsHeader from './GoalsHeader';
-import { setOption } from '@//utils/api';
 import { useQueries } from '@tanstack/react-query';
 import getLiveGoals from '@//api/getLiveGoals';
 import getGoalsData from '@//api/getGoalsData';
-import { burst_get_website_url, safeDecodeURI } from '@//utils/lib';
-import Overlay from '@/components/Common/Overlay';
+import { safeDecodeURI } from '@//utils/lib';
 import ButtonInput from '../Inputs/ButtonInput';
 
 // Utility function to select the goal icon based on value
@@ -209,12 +207,6 @@ const GoalsBlock = () => {
 		]
 	});
 
-	const onGoalsInfoClick = useCallback( () => {
-		burst_settings.goals_information_shown = '1';
-		setOption( 'goals_information_shown', true );
-		window.location.hash = '#/settings/goals';
-	}, []);
-
 	// Safely extract data from queries
 	const isLoading =
 		queries.some( ( query ) => query.isLoading ) || isGoalsLoading;
@@ -265,42 +257,7 @@ const GoalsBlock = () => {
 	);
 
 	return (
-		<Block className="row-span-2 lg:col-span-6 xl:col-span-3">
-			{/* Example usage of the new Overlay component */}
-			{'0' === burst_settings.goals_information_shown && (
-				<Overlay>
-					<h4 className="mb-4 text-lg font-bold">
-						{__( 'Goals', 'burst-mainwp' )}
-					</h4>
-					<p className="mb-4">
-						{__(
-							'Keep track of customizable goals and get valuable insights. Add your first goal!',
-							'burst-mainwp'
-						)}
-					</p>
-					<p className="mb-4">
-						<a
-							className="text-blue underline"
-							href={burst_get_website_url( 'how-to-set-goals', {
-								utm_source: 'goals-block-overlay'
-							})}
-						>
-							{__(
-								'Learn how to set your first goal',
-								'burst-mainwp'
-							)}
-						</a>
-					</p>
-					<ButtonInput
-						onClick={onGoalsInfoClick}
-						btnVariant="secondary"
-						btnSize="small"
-					>
-						{__( 'Create my first goal', 'burst-mainwp' )}
-					</ButtonInput>
-				</Overlay>
-			)}
-
+		<Block className="row-span-2 @lg:col-span-6 @xl:col-span-3">
 		<BlockHeading
 			title={__( 'Goals', 'burst-mainwp' )}
 			controls={
@@ -323,13 +280,13 @@ const GoalsBlock = () => {
 					</div>
 				) : (
 					<>
-						<div className="px-2.5 py-5 md:px-6 grid w-full grid-cols-2 gap-4 bg-yellow-50">
+						<div className="px-2.5 py-5 @md:px-6 grid w-full grid-cols-2 gap-4 bg-yellow-50">
 							<TodayFilterItem {...todayFilterProps} />
 							<TotalFilterItem {...totalFilterProps} />
 						</div>
 						<div className="w-full">
 							<Tooltip content={data.topPerformer?.tooltip}>
-								<div className="w-full grid justify-items-start grid-cols-auto-1fr-auto gap-4 py-2.5 px-2.5 md:px-6 even:bg-gray-100">
+								<div className="w-full grid justify-items-start grid-cols-auto-1fr-auto gap-4 py-2.5 px-2.5 @md:px-6 even:bg-gray-100">
 									<Icon name="winner" />
 									<p className="w-full mr-auto">
 										{safeDecodeURI(
@@ -345,7 +302,7 @@ const GoalsBlock = () => {
 								arrow
 								title={data.conversionMetric?.tooltip}
 							>
-								<div className="w-full grid justify-items-start grid-cols-auto-1fr-auto gap-4 py-2.5 px-2.5 md:px-6 even:bg-gray-100">
+								<div className="w-full grid justify-items-start grid-cols-auto-1fr-auto gap-4 py-2.5 px-2.5 @md:px-6 even:bg-gray-100">
 									<Icon
 										name={
 											data.conversionMetric?.icon ||
@@ -363,7 +320,7 @@ const GoalsBlock = () => {
 							<Tooltip
 								content={data.conversionPercentage?.tooltip}
 							>
-								<div className="w-full grid justify-items-start grid-cols-auto-1fr-auto gap-4 py-2.5 px-2.5 md:px-6 even:bg-gray-100">
+								<div className="w-full grid justify-items-start grid-cols-auto-1fr-auto gap-4 py-2.5 px-2.5 @md:px-6 even:bg-gray-100">
 									<Icon name="graph" />
 									<p className="w-full mr-auto">
 										{data.conversionPercentage?.title ||
@@ -376,7 +333,7 @@ const GoalsBlock = () => {
 								</div>
 							</Tooltip>
 							<Tooltip content={data.bestDevice?.tooltip}>
-								<div className="w-full grid justify-items-start grid-cols-auto-1fr-auto gap-4 py-2.5 px-2.5 md:px-6 even:bg-gray-100">
+								<div className="w-full grid justify-items-start grid-cols-auto-1fr-auto gap-4 py-2.5 px-2.5 @md:px-6 even:bg-gray-100">
 									<Icon
 										name={
 											data.bestDevice?.icon || 'desktop'

@@ -20,6 +20,7 @@ import UnauthorizedModal from '@/components/Common/UnauthorizedModal';
 import { shouldLoadRoute } from '@/utils/helper';
 import NotFoundModal from '@/components/Common/NotFoundModal';
 
+
 export const Route = createFileRoute( '/sales' )({
 	beforeLoad: ({ context }) => {
 
@@ -129,7 +130,7 @@ function SalesComponent() {
 			<ErrorBoundary>
 				<DataTableBlock
 					allowedConfigs={[ 'products' ]}
-					id={'6'}
+					id="sales_products"
 					isEcommerce={true}
 				/>
 			</ErrorBoundary>

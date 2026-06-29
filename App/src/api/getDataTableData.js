@@ -1,10 +1,12 @@
-import { getData } from '@/utils/api';
+import { getDatatableData } from '@/utils/api';
 import {
+	formatNumber,
 	formatPercentage,
 	formatTime,
 	getCountryName,
 	getContinentName,
-	formatCurrency, formatCurrencyCompact
+	formatCurrency, formatCurrencyCompact,
+	truncateMiddle
 } from '@/utils/formatting';
 import Flag from '@/components/Statistics/Flag';
 import ClickToFilter from '@/components/Common/ClickToFilter';
@@ -25,7 +27,11 @@ const FORMATS = {
 	INTEGER: 'integer',
 	REFERRER: 'referrer',
 	FLOAT: 'float',
-	CURRENCY: 'currency'
+	CURRENCY: 'currency',
+	SEARCH_RESULTS: 'search_results',
+	STRING: 'string',
+	EXTERNAL_LINK: 'external_link',
+	FORM_TITLE: 'form_title'
 };
 
 // Memoized filter components - created once, reused everywhere
@@ -70,6 +76,44 @@ const ReferrerFilter = memo( ({ value }) => (
 ) );
 
 ReferrerFilter.displayName = 'ReferrerFilter';
+
+/**
+ * Renders the "Results" cell for the search-terms datatable.
+ *
+ * Zero results are highlighted with a warning icon so they stand out
+ * immediately. Non-zero values are rendered as a link that opens the live
+ * site-search results page in a new tab.
+ */
+const SearchResultsCell = memo( ({ value, term }) => {
+	if ( ! value || 0 === parseInt( value, 10 ) ) {
+		return (
+			<span className="inline-flex items-center gap-1 text-red font-medium">
+				<Icon name="warning-triangle" size={ 13 } color="red" />
+				{ __( 'None', 'burst-mainwp' ) }
+			</span>
+		);
+	}
+
+	const siteUrl =
+		window.burst_settings?.site_url?.replace( /\/$/, '' ) ??
+		window.location.origin;
+	const searchUrl = `${ siteUrl }/?s=${ encodeURIComponent( term ?? '' ) }`;
+
+	return (
+		<a
+			href={ searchUrl }
+			target="_blank"
+			rel="noopener noreferrer"
+			className="inline-flex items-center gap-1 text-text-black font-medium hover:text-blue-600 transition-colors"
+			title={ __( 'View search results', 'burst-mainwp' ) }
+		>
+			{ formatNumber( parseInt( value, 10 ), 0, false ) }
+			<Icon name="external-link" size={ 11 } color="gray" />
+		</a>
+	);
+});
+
+SearchResultsCell.displayName = 'SearchResultsCell';
 
 const CurrencyValue = memo( ({ value }) => {
 	const exactValue = value?.value || 0;
@@ -117,7 +161,69 @@ const COLUMN_FORMATTERS = {
 	[FORMATS.TEXT]: ( value, columnId ) => <TextFilter filter={columnId} value={value} />,
 	[FORMATS.REFERRER]: ( value ) => <ReferrerFilter value={value} />,
 	[FORMATS.FLOAT]: ( value ) => parseFloat( value ),
-	[FORMATS.CURRENCY]: ( value ) => <CurrencyValue value={value} />
+	[FORMATS.CURRENCY]: ( value ) => <CurrencyValue value={value} />,
+	[FORMATS.SEARCH_RESULTS]: ( value, _columnId, row ) => (
+		<SearchResultsCell value={value} term={ row?.term } />
+	),
+	[FORMATS.STRING]: ( value ) => value,
+	[FORMATS.EXTERNAL_LINK]: ( value ) => {
+		let display = value;
+		try {
+			const parsed = new URL( value );
+			display = parsed.hostname + ( '/' !== parsed.pathname ? parsed.pathname : '' );
+		} catch {
+
+			// Fall back to the raw URL if parsing fails.
+		}
+
+		return (
+			<a
+				href={ value }
+				target="_blank"
+				rel="noopener noreferrer"
+				className="inline-flex items-center gap-1 text-text-black hover:text-blue-600 transition-colors"
+				title={ value }
+			>
+				<span>{ truncateMiddle( display, 44 ) }</span>
+				<Icon name="external-link" size={ 11 } color="gray" className="shrink-0" />
+			</a>
+		);
+	},
+	[FORMATS.FORM_TITLE]: ( value, _columnId, row ) => {
+		const submissionsUrl = row?.submissions_url;
+		const providerLabel = row?.form_provider_label;
+
+		const titleContent = submissionsUrl ? (
+			<a
+				href={ submissionsUrl }
+				target="_blank"
+				rel="noopener noreferrer"
+				className="inline-flex items-center gap-1 text-text-black hover:text-blue-600 transition-colors font-medium min-w-0"
+				title={ value }
+			>
+				<span className="truncate">{ value }</span>
+				<Icon name="external-link" size={ 11 } color="gray" className="shrink-0" />
+			</a>
+		) : (
+			<span
+				className="block truncate font-medium text-text-black"
+				title={ value }
+			>
+				{ value }
+			</span>
+		);
+
+		return (
+			<span className="flex flex-col min-w-0">
+				{ titleContent }
+				{ providerLabel && (
+					<span className="text-xs text-text-gray truncate">
+						{ providerLabel }
+					</span>
+				) }
+			</span>
+		);
+	}
 };
 
 /**
@@ -363,9 +469,8 @@ const getDataTableData = async( params ) => {
 
 		const { startDate, endDate, range, args, columnsOptions, type } = params;
 
-		const endpoint = 'ecommerce-datatable' === type ? 'ecommerce/datatable' : 'datatable';
-
-		const { data } = await getData( endpoint, startDate, endDate, range, args );
+		const isEcommerce = 'ecommerce-datatable' === type;
+		const { data } = await getDatatableData( args.id, isEcommerce, startDate, endDate, range, args );
 
 		if ( ! data ) {
 			throw new Error( 'No data received from API' );
@@ -393,7 +498,8 @@ export {
 	transformColumn,
 	transformDataTableData,
 	validateResponse,
-	validateParams
+	validateParams,
+	SearchResultsCell
 };
 
 export default getDataTableData;

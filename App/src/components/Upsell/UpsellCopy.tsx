@@ -9,6 +9,7 @@ import useLicenseData from '@/hooks/useLicenseData';
 interface UpsellCopyProps {
 	className?: string;
 	type: string;
+	compact?: boolean;
 }
 
 interface UpsellConfigsProps {
@@ -197,6 +198,50 @@ const upsellConfigs: UpsellConfigsProps = {
 				]
 			}
 		}
+	},
+	external_links: {
+		upgradePlan: {
+			header: __( 'Unlock Outgoing Links Tracking', 'burst-mainwp' ),
+			subTitle: '',
+			licenseInsufficient: __(
+				'Your current license does not include Outgoing Links tracking.',
+				'burst-mainwp'
+			)
+		},
+		testID: 'external-links-upsell-copy-v1',
+		variations: {
+			A: {
+				utm_medium: 'external-links-upsell-variation-a',
+				title: __(
+					'Where are your visitors going?',
+					'burst-mainwp'
+				),
+				description: '',
+				bullets: [
+					{
+						icon: 'world',
+						text: __(
+							'Track outgoing clicks: Real-time clicks on all external domain links.',
+							'burst-mainwp'
+						)
+					},
+					{
+						icon: 'goals',
+						text: __(
+							'Measure affiliate revenue: Identify which partner links convert best.',
+							'burst-mainwp'
+						)
+					},
+					{
+						icon: 'filter',
+						text: __(
+							'Keep visitors engaged: See which content triggers exit clicks.',
+							'burst-mainwp'
+						)
+					}
+				]
+			}
+		}
 	}
 };
 
@@ -209,7 +254,8 @@ const upsellConfigs: UpsellConfigsProps = {
  */
 const UpsellCopy: React.FC<UpsellCopyProps> = ({
 	className = '',
-	type = 'sources'
+	type = 'sources',
+	compact = false
 }) => {
 	const { licenseActivated, isPro } = useLicenseData();
 
@@ -232,6 +278,45 @@ const UpsellCopy: React.FC<UpsellCopyProps> = ({
 		utm_source: 'plugin',
 		utm_medium: content.utm_medium
 	};
+
+	// Unified compact block layout for both Free and Pro configurations
+	if ( compact ) {
+		return (
+			<div className="text-center flex flex-col gap-3 w-full max-w-[220px] mx-auto items-stretch">
+				<h2 className="text-xl font-semibold text-text-gray">
+					{upsellConfig.upgradePlan.header}
+				</h2>
+
+				<div className="flex flex-col gap-2 w-full items-stretch mt-2">
+					{isPro && ! licenseActivated && (
+						<ButtonInput
+							btnVariant="primary"
+							size="md"
+							link={{ to: '/settings/license' }}
+							className="w-full text-center justify-center flex"
+						>
+							{__( 'Activate License', 'burst-mainwp' )}
+						</ButtonInput>
+					)}
+
+					<ButtonInput
+						btnVariant={isPro ? 'secondary' : 'primary'}
+						size="md"
+						link={! isPro ? { to: burst_get_website_url( 'pricing', baseParams ) } : undefined}
+						className="w-full text-center justify-center flex"
+						onClick={! isPro ? undefined : () => {
+							window.open(
+								burst_get_website_url( 'pricing', baseParams ),
+								'_blank'
+							);
+						}}
+					>
+						{isPro ? __( 'Upgrade Plan', 'burst-mainwp' ) : __( 'Upgrade to Pro', 'burst-mainwp' )}
+					</ButtonInput>
+				</div>
+			</div>
+		);
+	}
 
 	// if this is premium, but user has not activated the license, or has a not sufficient tier
 	if ( isPro ) {
@@ -256,7 +341,7 @@ const UpsellCopy: React.FC<UpsellCopyProps> = ({
 						upsellConfig.upgradePlan.licenseInsufficient}
 				</p>
 
-				<div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+				<div className="flex flex-col @sm:flex-row gap-4 justify-center items-center">
 					{! licenseActivated && (
 						<ButtonInput
 							btnVariant="primary"
@@ -290,7 +375,7 @@ const UpsellCopy: React.FC<UpsellCopyProps> = ({
 			className={`mx-auto flex justify-center max-w-3xl gap-8 flex-wrap${className}`}
 		>
 			<div className="text-center">
-				<h2 className="mb-4 text-2xl font-bold leading-tight text-text-black md:text-3xl">
+				<h2 className="mb-4 text-2xl font-bold leading-tight text-text-black @md:text-3xl">
 					{content.title}
 				</h2>
 
