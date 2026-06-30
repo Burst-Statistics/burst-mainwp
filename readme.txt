@@ -60,11 +60,8 @@ No. No external account is needed for this extension itself. A Burst Pro license
 == Changelog ==
 
 = 1.0.1 =
-* Release date: June 2026
-* Improvement: addressed WordPress.org plugin review compliance issues.
-* Improvement: enhanced nonce generation and security in the API class.
+* Release date: June 31st 2026
 * Improvement: better error handling and user feedback for child site connections.
-* Fix: corrected the languages/translations path.
 * Updated the bundled Burst dashboard app and assets.
 
 = 1.0.0 =
