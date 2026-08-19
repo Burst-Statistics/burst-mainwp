@@ -3,7 +3,7 @@ Contributors: hesseldejong, RogierLankhorst, sh4lin, parthnvaswani
 Donate link: paypal.me/Burststatistics
 Tags: analytics, statistics, mainwp, burst, dashboard
 Requires at least: 6.6
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 8.0
 Stable tag: 1.0.2
 License: GPLv2 or later
@@ -64,7 +64,7 @@ No. No external account is needed for this extension itself. A Burst Pro license
 * Updated the bundled Burst dashboard app to the latest Burst release.
 
 = 1.0.1 =
-* Release date: June 31st 2026
+* Release date: June 30th 2026
 * Improvement: better error handling and user feedback for child site connections.
 * Updated the bundled Burst dashboard app and assets.
 
