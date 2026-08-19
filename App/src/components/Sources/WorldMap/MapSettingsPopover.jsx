@@ -138,9 +138,18 @@ const UnifiedMapPopover = () => {
 				</div>
 			</ReactPopover.Trigger>
 
-			<ReactPopover.Portal container={document.querySelector( '.burst' )}>
+			<ReactPopover.Portal
+				container={
+					document.getElementById( 'modal-root' ) ||
+					document.getElementById( 'burst-mainwp' ) ||
+					document.getElementById( 'burst-mainwp' ) ||
+					document.querySelector( '.burst' ) ||
+					undefined
+				}
+			>
 				<ReactPopover.Content
-					className="z-50 min-w-[320px] max-w-[400px] rounded-lg border border-gray-200 bg-white p-0 shadow-xl"
+					id="burst-mainwp"
+					className="burst z-50 min-w-[320px] max-w-[400px] rounded-lg border border-gray-200 bg-white p-0 shadow-xl"
 					align="end"
 					sideOffset={10}
 					arrowPadding={10}

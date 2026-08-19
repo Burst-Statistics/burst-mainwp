@@ -13,8 +13,10 @@ const Popover = ({
 }) => {
 	const portalContainer =
 		document.getElementById( 'modal-root' ) ||
+		document.getElementById( 'burst-mainwp' ) ||
+		document.getElementById( 'burst-mainwp' ) ||
 		document.querySelector( '.burst' ) ||
-		document.body;
+		undefined;
 
 	return (
 		<ReactPopover.Root open={isOpen} onOpenChange={setIsOpen}>
@@ -33,7 +35,8 @@ const Popover = ({
 
 			<ReactPopover.Portal container={portalContainer}>
 				<ReactPopover.Content
-					className="z-modal min-w-[280px] max-w-[400px] rounded-lg border border-gray-200 bg-white p-0 shadow-xl"
+					id="burst-mainwp"
+					className="burst z-modal min-w-[280px] max-w-[400px] rounded-lg border border-gray-200 bg-white p-0 shadow-xl"
 					align="end"
 					sideOffset={10}
 					arrowPadding={10}

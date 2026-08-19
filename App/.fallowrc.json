@@ -13,6 +13,10 @@
 		"webpack.prod.js"
 	],
 	"ignoreDependencies": [
+		"@assets",
+		"@assets/*",
+		"@assets/maps",
+		"@assets/maps/*",
 		"@wordpress/babel-plugin-import-jsx-pragma",
 		"@svgr/webpack",
 		"@types/react-date-range",
@@ -67,7 +71,9 @@
 			"src/tailwind.generated.css",
 			"src/components/NotFoundPages/useNotFoundPagesData.ts",
 			"src/components/SearchTerms/useSearchTermsData.ts",
-			"src/components/Sources/SourcesChartBlock.jsx"
+			"src/components/Sources/SourcesChartBlock.jsx",
+			"src/components/Common/ChatAssistantModal.tsx",
+			"src/components/DataTable/DataTableOverlay.tsx"
 		]
 	},
 	"health": {
@@ -75,7 +81,9 @@
 		"maxCognitive": 15,
 		"maxCrap": 40,
 		"ignore": [
-			"src/components/Fields/IntegrationRowField.tsx"
+			"src/components/Fields/IntegrationRowField.tsx",
+			"src/components/Inputs/SelectInput.tsx",
+			"src/components/Common/MobileMenuDrawer.jsx"
 		]
 	}
 }

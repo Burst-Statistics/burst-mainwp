@@ -177,11 +177,11 @@ const DateRange = () => {
 						arrowPadding={10}
 						collisionPadding={16}
 						avoidCollisions={true}
-						id="burst-mainwp"
+						className="burst z-[100001]"
 						style={{ zIndex: 100001 }}
 					>
 						<div
-							className="rounded-lg border border-gray-200 bg-white shadow-md max-h-[75vh] lg:max-h-none overflow-y-auto w-full max-w-[calc(100vw-20px)] sm:max-w-none"
+							className="rounded-lg border border-gray-200 bg-white shadow-md max-h-[75vh] lg:max-h-none overflow-y-auto w-auto max-w-[calc(100vw-20px)] sm:max-w-none"
 							style={{ WebkitOverflowScrolling: 'touch' }}
 						>
 							<DateRangePicker

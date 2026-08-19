@@ -2,6 +2,12 @@ const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
 const { TanStackRouterWebpack } = require( '@tanstack/router-plugin/webpack' );
 const path = require( 'path' );
 
+const fs = require( 'fs' );
+
+const assetsPath = fs.existsSync( path.resolve( __dirname, '../../../assets' ) )
+  ? path.resolve( __dirname, '../../../assets' )
+  : path.resolve( __dirname, '../assets' );
+
 module.exports = {
   ...defaultConfig,
   target: 'web',
@@ -20,6 +26,7 @@ module.exports = {
     extensions: [ '.ts', '.tsx', '.js', '.jsx' ], // Add .ts and .tsx extensions
     alias: {
       '@': path.resolve( __dirname, 'src' ), // Add alias for src directory
+      '@assets': assetsPath,
       'styled-components': path.resolve( __dirname, 'node_modules/styled-components' ) //fix style components error in console.
     }
   },

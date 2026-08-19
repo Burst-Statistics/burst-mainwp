@@ -57,7 +57,13 @@ const SelectInput = React.forwardRef<HTMLButtonElement, SelectInputProps>(
 		const rootDisabled = true === disabled;
 
 		const portalContainer = 'undefined' !== typeof document ?
-			( document.getElementById( 'modal-root' ) || document.querySelector( '.burst' ) || undefined ) :
+			(
+				document.getElementById( 'modal-root' ) ||
+				document.getElementById( 'burst-mainwp' ) ||
+				document.getElementById( 'burst-mainwp' ) ||
+				document.querySelector( '.burst' ) ||
+				undefined
+			) :
 			undefined;
 
 		return (
@@ -91,7 +97,8 @@ const SelectInput = React.forwardRef<HTMLButtonElement, SelectInputProps>(
 
 				<Select.Portal container={portalContainer}>
 					<Select.Content
-						className="bg-gray-100 text-text-black border border-gray-400 rounded-md shadow-lg ring-1 ring-black/5 z-dropdown shadow-gray-400/50"
+						id="burst-mainwp"
+						className="burst bg-gray-100 text-text-black border border-gray-400 rounded-md shadow-lg ring-1 ring-black/5 z-dropdown shadow-gray-400/50"
 						position="item-aligned"
 					>
 						<Select.ScrollUpButton className="">

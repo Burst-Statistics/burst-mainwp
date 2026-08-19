@@ -244,6 +244,7 @@ export const DateRangePicker = ({
 							sideOffset={10}
 							arrowPadding={10}
 							id="burst-mainwp"
+							className="burst"
 						>
 							<span className="absolute right-4 mt-1 h-4 w-4 -translate-y-2 rotate-45 transform bg-green-50" />
 

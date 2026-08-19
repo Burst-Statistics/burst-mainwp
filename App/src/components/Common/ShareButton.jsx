@@ -923,11 +923,6 @@ export const ShareButton = () => {
 		return null;
 	}
 
-	const portalContainer =
-		document.getElementById( 'modal-root' ) ||
-		document.querySelector( '.burst' ) ||
-		document.body;
-
 	return (
 		<>
 			{isModalOpen && (
@@ -955,9 +950,10 @@ export const ShareButton = () => {
 					</div>
 				</ReactPopover.Anchor>
 
-				<ReactPopover.Portal container={portalContainer}>
+				<ReactPopover.Portal>
 					<ReactPopover.Content
-						className="z-[10001] w-[520px] max-w-[calc(100vw-40px)] max-h-[80vh] rounded-lg border border-gray-200 bg-white shadow-xl flex flex-col"
+						id="burst-mainwp"
+						className="burst z-[100001] w-[520px] max-w-[calc(100vw-40px)] max-h-[80vh] rounded-lg border border-gray-200 bg-white shadow-xl flex flex-col"
 						align="end"
 						sideOffset={10}
 						arrowPadding={10}

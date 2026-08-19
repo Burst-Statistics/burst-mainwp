@@ -214,9 +214,18 @@ export const DataTableOverlay: React.FC = () => {
 													</Select.Icon>
 												</Select.Trigger>
 
-												<Select.Portal>
+												<Select.Portal
+													container={
+														document.getElementById( 'modal-root' ) ||
+														document.getElementById( 'burst-mainwp' ) ||
+														document.getElementById( 'burst-mainwp' ) ||
+														document.querySelector( '.burst' ) ||
+														undefined
+													}
+												>
 													<Select.Content
-														className="z-dropdown min-w-[200px] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl animate-in fade-in-0 zoom-in-95"
+														id="burst-mainwp"
+														className="burst z-dropdown min-w-[200px] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl animate-in fade-in-0 zoom-in-95"
 														position="popper"
 														sideOffset={ 6 }
 														align="start"
