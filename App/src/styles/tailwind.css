@@ -27,10 +27,10 @@
 	--z-index-sticky: 100;
 	--z-index-dropdown: 1000;
 	--z-index-popover: 2000;
-	--z-index-overlay: 10000;
-	--z-index-drawer: 10010;
-	--z-index-modal: 11000;
-	--z-index-toast: 12000;
+	--z-index-overlay: 100000;
+	--z-index-drawer: 100010;
+	--z-index-modal: 100020;
+	--z-index-toast: 100050;
 	--z-index-max: 150000;
 }
 
