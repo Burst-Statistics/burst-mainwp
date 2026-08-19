@@ -148,19 +148,19 @@ const UnifiedMapPopover = () => {
 				}
 			>
 				<ReactPopover.Content
-					id="burst-mainwp"
-					className="burst z-50 min-w-[320px] max-w-[400px] rounded-lg border border-gray-200 bg-white p-0 shadow-xl"
+					className="burst z-50"
 					align="end"
 					sideOffset={10}
 					arrowPadding={10}
 				>
-					<ReactPopover.Arrow className="fill-white drop-shadow-sm" />
+					<div className="min-w-[320px] max-w-[400px] rounded-lg border border-gray-200 bg-white p-0 shadow-xl">
+						<ReactPopover.Arrow className="fill-white drop-shadow-sm" />
 
-					<div className="border-b border-gray-100 px-4 py-3">
-						<h5 className="m-0 text-base font-semibold text-text-black">
-							{__( 'Metrics & options', 'burst-mainwp' )}
-						</h5>
-					</div>
+						<div className="border-b border-gray-100 px-4 py-3">
+							<h5 className="m-0 text-base font-semibold text-text-black">
+								{__( 'Metrics & options', 'burst-mainwp' )}
+							</h5>
+						</div>
 
 					<div className="max-h-[80vh] overflow-y-auto px-4 py-4">
 						{/* Metric Selection Section */}
@@ -315,7 +315,8 @@ const UnifiedMapPopover = () => {
 							</div>
 						</div>
 					</div>
-				</ReactPopover.Content>
+				</div>
+			</ReactPopover.Content>
 			</ReactPopover.Portal>
 		</ReactPopover.Root>
 	);

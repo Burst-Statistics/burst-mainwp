@@ -338,8 +338,9 @@ const ChatAssistantModal = () => {
 	}, [ availableModels ]);
 
 	const [ selectedModel, setSelectedModel ] = useState<string>(
-		() => asString( getLocalStorage( MODEL_STORAGE_KEY, '' ) )
+		() => getLocalStorage( MODEL_STORAGE_KEY, '' ) || ''
 	);
+	const [ isModelSelectOpen, setIsModelSelectOpen ] = useState( false );
 
 	const suggestions = useMemo( () => [
 		{
@@ -1188,7 +1189,10 @@ const ChatAssistantModal = () => {
 												const finalVal = '__default__' === val ? '' : val;
 												setSelectedModel( finalVal );
 												setLocalStorage( MODEL_STORAGE_KEY, finalVal );
+												setIsModelSelectOpen( false );
 											}}
+											open={isModelSelectOpen}
+											onOpenChange={setIsModelSelectOpen}
 										>
 											<Select.Trigger
 												id="burst-chat-model-select"
@@ -1213,21 +1217,17 @@ const ChatAssistantModal = () => {
 												</Select.Icon>
 											</Select.Trigger>
 
-											<Select.Portal
-												container={
-													document.getElementById( 'modal-root' ) ||
-													document.getElementById( 'burst-mainwp' ) ||
-													document.getElementById( 'burst-mainwp' ) ||
-													document.querySelector( '.burst' ) ||
-													undefined
-												}
+											<Select.Content
+												className="burst z-max"
+												style={{ zIndex: 'var(--z-max)' }}
+												position="popper"
+												sideOffset={5}
+												onPointerDownOutside={( e ) => {
+													e.preventDefault();
+													setIsModelSelectOpen( false );
+												}}
 											>
-												<Select.Content
-													id="burst-mainwp"
-													className="burst bg-white text-text-black border border-gray-200 rounded-lg shadow-lg z-99999 max-h-[300px] overflow-y-auto min-w-[200px]"
-													position="popper"
-													sideOffset={5}
-												>
+												<div className="bg-white text-text-black border border-gray-200 rounded-lg shadow-lg max-h-[300px] overflow-y-auto min-w-[200px]">
 													<Select.Viewport className="p-1">
 														<Select.Item
 															value="__default__"
@@ -1267,8 +1267,8 @@ const ChatAssistantModal = () => {
 															</Select.Group>
 														) )}
 													</Select.Viewport>
-												</Select.Content>
-											</Select.Portal>
+												</div>
+											</Select.Content>
 										</Select.Root>
 									</div>
 								)}

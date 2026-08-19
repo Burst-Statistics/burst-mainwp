@@ -214,22 +214,13 @@ export const DataTableOverlay: React.FC = () => {
 													</Select.Icon>
 												</Select.Trigger>
 
-												<Select.Portal
-													container={
-														document.getElementById( 'modal-root' ) ||
-														document.getElementById( 'burst-mainwp' ) ||
-														document.getElementById( 'burst-mainwp' ) ||
-														document.querySelector( '.burst' ) ||
-														undefined
-													}
+												<Select.Content
+													className="burst z-dropdown min-w-[200px] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl animate-in fade-in-0 zoom-in-95"
+													position="popper"
+													sideOffset={ 6 }
+													align="start"
 												>
-													<Select.Content
-														id="burst-mainwp"
-														className="burst z-dropdown min-w-[200px] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl animate-in fade-in-0 zoom-in-95"
-														position="popper"
-														sideOffset={ 6 }
-														align="start"
-													>
+													<div className="bg-white text-text-black rounded-xl">
 														<Select.Viewport className="p-1.5">
 															{ variantOptions.map( ( option ) => (
 																<Select.Item
@@ -246,8 +237,8 @@ export const DataTableOverlay: React.FC = () => {
 																</Select.Item>
 															) ) }
 														</Select.Viewport>
-													</Select.Content>
-												</Select.Portal>
+													</div>
+												</Select.Content>
 											</Select.Root>
 										) : (
 											<div className="flex items-center gap-2 font-semibold text-lg text-text-black px-4 py-2 bg-gray-100 rounded-xl">
