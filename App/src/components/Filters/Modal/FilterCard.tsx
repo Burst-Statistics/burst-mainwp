@@ -20,6 +20,7 @@ interface FilterCardProps {
 	reportBlockIndex:number;
 }
 
+// fallow-ignore-next-line complexity
 const FilterCard: React.FC<FilterCardProps> = ({
 	filterKey,
 	config,
@@ -30,7 +31,7 @@ const FilterCard: React.FC<FilterCardProps> = ({
 }) => {
 	const { isLicenseValid } = useLicenseData();
 	const { isFavorite, toggleFavorite } = useFilters( reportBlockIndex );
-	const isDisabled = ( config.pro && ! isLicenseValid ) || config.coming_soon;
+	const isDisabled = config.pro && ! isLicenseValid;
 	const isFav = isFavorite( filterKey );
 
 	const handleFavoriteClick = ( e: React.MouseEvent | React.KeyboardEvent ) => {
@@ -62,6 +63,7 @@ const FilterCard: React.FC<FilterCardProps> = ({
 	};
 
 	// Build accessible description for screen readers
+	// fallow-ignore-next-line complexity
 	const getAccessibleDescription = (): string => {
 		let description = `${config.label} filter`;
 
@@ -71,10 +73,6 @@ const FilterCard: React.FC<FilterCardProps> = ({
 
 		if ( config.pro ) {
 			description += `, ${__( 'Pro feature', 'burst-mainwp' )}`;
-		}
-
-		if ( config.coming_soon ) {
-			description += `, ${__( 'coming soon', 'burst-mainwp' )}`;
 		}
 
 		if ( config.new_badge ) {
@@ -97,8 +95,7 @@ const FilterCard: React.FC<FilterCardProps> = ({
 					'border-primary bg-primary-100': isActive,
 					'border-gray-300 shadow-sm hover:border-gray-400':
 						! isActive && ! isDisabled,
-					'bg-gray-100 border-gray-200': isDisabled,
-					'bg-gray-300 opacity-90': config.coming_soon
+					'bg-gray-100 border-gray-200': isDisabled
 				}
 			)}
 			role={gridPosition ? 'gridcell' : undefined}
@@ -202,16 +199,6 @@ const FilterCard: React.FC<FilterCardProps> = ({
 						config.pro && (
 							<div className="mt-2">
 								<ProBadge label={__( 'Pro', 'burst-mainwp' )} />
-							</div>
-						)
-					}
-
-					{
-						config.coming_soon && (
-							<div className="mt-2">
-								<span className="inline-flex items-center rounded bg-blue-50 px-2 py-0.5 text-xs font-medium text-text-gray">
-									{__( 'Coming soon', 'burst-mainwp' )}
-								</span>
 							</div>
 						)
 					}

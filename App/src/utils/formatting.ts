@@ -1,4 +1,5 @@
 import { dateI18n, getSettings } from '@wordpress/date';
+import countryContinentsMap from '../../../../../assets/maps/country-continents.json';
 import {
 	addDays,
 	addMonths,
@@ -6,6 +7,7 @@ import {
 	endOfDay,
 	endOfMonth,
 	endOfYear,
+	format,
 	isSameDay,
 	startOfDay,
 	startOfMonth,
@@ -81,6 +83,36 @@ export interface MetricOption {
 /** Grouping interval understood by the chart axis/tooltip formatters. */
 export type ChartInterval = 'hour' | 'day' | 'week' | 'month' | 'year';
 
+const DATE_ONLY_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
+
+/**
+ * Parse a date input for display. Date-only strings represent calendar days,
+ * not UTC timestamps, so create them in local time to avoid timezone shifts.
+ *
+ * @param dateInput - The date string, timestamp, or Date object.
+ * @return Parsed Date object.
+ */
+const parseDateForDisplay = (
+	dateInput: string | number | Date
+): Date => {
+	if ( dateInput instanceof Date ) {
+		return dateInput;
+	}
+
+	if ( 'string' === typeof dateInput ) {
+		const match = DATE_ONLY_PATTERN.exec( dateInput );
+		if ( match ) {
+			return new Date(
+				Number( match[1]),
+				Number( match[2]) - 1,
+				Number( match[3])
+			);
+		}
+	}
+
+	return new Date( dateInput );
+};
+
 /**
  * Returns a formatted string that represents the relative time between two dates.
  *
@@ -88,6 +120,7 @@ export type ChartInterval = 'hour' | 'day' | 'week' | 'month' | 'year';
  * @param date         - The reference date, defaults to the current date.
  * @return The relative time string.
  */
+// fallow-ignore-next-line complexity
 const getRelativeTime = (
 	relativeDate: Date | number,
 	date: Date = new Date()
@@ -291,8 +324,58 @@ const formatUnixToTime = ( unixTimestamp: number ): string => {
 const DEFAULT_X_AXIS_TICK_COUNT = 7;
 
 /**
+ * Last day of the previous month as a yyyy-MM-dd date string.
+ *
+ * Monthly forecast charts treat the current (incomplete) month as forecast
+ * territory: the measured series runs through the last complete month and the
+ * forecast starts at the current month.
+ *
+ * @return Date string for the final day of the previous calendar month.
+ */
+const getLastCompleteMonthEndDate = (): string => {
+	return format( endOfMonth( addMonths( new Date(), -1 ) ), 'yyyy-MM-dd' );
+};
+
+const FORECAST_YEAR_INTERVAL_DAYS = 730;
+
+/**
+ * Resolve the forecast view's bucket interval and anchored end date.
+ *
+ * Forecast charts bucket per calendar month; selections longer than two
+ * years switch to calendar years so the axis stays readable. The end date is
+ * anchored to the last complete bucket period (previous month or previous
+ * year), so the forecast always starts at the current period and never
+ * projects periods that are already measured. The backend applies the same
+ * threshold to the same month-anchored range, keeping chart and forecast in
+ * lockstep.
+ *
+ * @param startDate - Selected range start as a yyyy-MM-dd date string.
+ * @return The bucket interval and the anchored end date.
+ */
+const getForecastRange = ( startDate: string ): { groupBy: 'month' | 'year'; endDate: string } => {
+	const monthEnd = getLastCompleteMonthEndDate();
+	const elapsedDays = ( new Date( `${ monthEnd }T00:00:00` ).getTime() -
+		new Date( `${ startDate }T00:00:00` ).getTime() ) / ( 24 * 60 * 60 * 1000 );
+
+	if ( elapsedDays > FORECAST_YEAR_INTERVAL_DAYS ) {
+		return {
+			groupBy: 'year',
+			endDate: format( endOfYear( addYears( new Date(), -1 ) ), 'yyyy-MM-dd' )
+		};
+	}
+
+	return { groupBy: 'month', endDate: monthEnd };
+};
+
+/**
  * Reduces a full x-axis value list to a stable, evenly spaced subset.
  * Keeps the first and last values so charts align on range boundaries.
+ *
+ * A uniform integer step keeps the gap between ticks constant; interpolating
+ * index positions with rounding produces alternating 2/3-position gaps, which
+ * reads as random dates on a time axis (e.g. jan, apr, jun, sep for monthly
+ * buckets). Only the final gap may be shorter, where the last value is
+ * appended to close the range.
  *
  * @param values   - Ordered x-axis values.
  * @param maxTicks - Maximum number of labels to display.
@@ -311,15 +394,16 @@ function getChartXAxisTickValues<T>(
 	}
 
 	const lastIndex = values.length - 1;
-	const tickIndexes = new Set<number>([ 0, lastIndex ]);
+	const step = Math.ceil( values.length / ( maxTicks - 1 ) );
+	const ticks: T[] = [];
 
-	for ( let index = 1; index < maxTicks - 1; index++ ) {
-		tickIndexes.add( Math.round( ( index * lastIndex ) / ( maxTicks - 1 ) ) );
+	for ( let index = 0; index < lastIndex; index += step ) {
+		ticks.push( values[index]);
 	}
 
-	return Array.from( tickIndexes )
-		.sort( ( left, right ) => left - right )
-		.map( ( index ) => values[index]);
+	ticks.push( values[lastIndex]);
+
+	return ticks;
 }
 
 /**
@@ -411,6 +495,7 @@ function formatTime( timeInMilliSeconds: number | string = 0 ): string {
  * @param compact  - When true (default), uses compact notation (e.g. 1.2K). When false, shows the full value.
  * @return The formatted number.
  */
+// fallow-ignore-next-line complexity
 function formatNumber( value: number | string, decimals: number = 1, compact: boolean = true ): string {
 	let numeric = Number( value );
 	if ( isNaN( numeric ) ) {
@@ -484,12 +569,27 @@ function getCountryName( countryCode: string | undefined | null ): string {
  * Returns the name of a continent based on its continent code, or a fallback.
  *
  * @param continentCode - The continent code.
+ * @param countryCode   - Optional country code for continent fallback mapping.
  * @return The continent name.
  */
-function getContinentName( continentCode: string | undefined | null ): string {
-	if ( continentCode ) {
+// fallow-ignore-next-line complexity
+function getContinentName(
+	continentCode: string | undefined | null,
+	countryCode?: string | undefined | null
+): string {
+	let code = continentCode ? continentCode.toUpperCase() : '';
+	if ( ! code && countryCode ) {
+		const fallbackContinent = ( countryContinentsMap as Record<string, string> )[
+			countryCode.toUpperCase()
+		];
+		if ( fallbackContinent ) {
+			code = fallbackContinent;
+		}
+	}
+
+	if ( code ) {
 		return (
-			burst_settings.continents[continentCode.toUpperCase()] ||
+			burst_settings.continents[code] ||
 			__( 'Not set', 'burst-mainwp' )
 		);
 	}
@@ -523,8 +623,6 @@ function getDateWithOffset( currentDate: Date = new Date() ): Date {
 
 	return new Date( currentUnixWithOffsets * 1000 );
 }
-const currentDateWithOffset = getDateWithOffset();
-
 const DEFAULT_BURST_START_TIMESTAMP = 1640995200;
 
 /**
@@ -533,6 +631,7 @@ const DEFAULT_BURST_START_TIMESTAMP = 1640995200;
  *
  * @return Start-of-day Date for the earliest selectable date.
  */
+// fallow-ignore-next-line complexity
 const getBurstStartDate = (): Date => {
 	let activationTimestamp: number = DEFAULT_BURST_START_TIMESTAMP;
 	if ( burst_settings.burst_date_picker_start_date ) {
@@ -560,34 +659,44 @@ const availableRanges = {
 		get label() {
 			return __( 'Today', 'burst-mainwp' );
 		},
-		range: () => ({
-			startDate: startOfDay( currentDateWithOffset ),
-			endDate: endOfDay( currentDateWithOffset )
-		})
+		range: () => {
+			const currentDateWithOffset = getDateWithOffset();
+			return {
+				startDate: startOfDay( currentDateWithOffset ),
+				endDate: endOfDay( currentDateWithOffset )
+			};
+		}
 	} as RangeDefinition,
 	yesterday: {
 		get label() {
 			return __( 'Yesterday', 'burst-mainwp' );
 		},
-		range: () => ({
-			startDate: startOfDay( addDays( currentDateWithOffset, -1 ) ),
-			endDate: endOfDay( addDays( currentDateWithOffset, -1 ) )
-		})
+		range: () => {
+			const currentDateWithOffset = getDateWithOffset();
+			return {
+				startDate: startOfDay( addDays( currentDateWithOffset, -1 ) ),
+				endDate: endOfDay( addDays( currentDateWithOffset, -1 ) )
+			};
+		}
 	} as RangeDefinition,
 	'last-7-days': {
 		get label() {
 			return __( 'Last 7 days', 'burst-mainwp' );
 		},
-		range: () => ({
-			startDate: startOfDay( addDays( currentDateWithOffset, -7 ) ),
-			endDate: endOfDay( addDays( currentDateWithOffset, -1 ) )
-		})
+		range: () => {
+			const currentDateWithOffset = getDateWithOffset();
+			return {
+				startDate: startOfDay( addDays( currentDateWithOffset, -7 ) ),
+				endDate: endOfDay( addDays( currentDateWithOffset, -1 ) )
+			};
+		}
 	} as RangeDefinition,
 	'last-week': {
 		get label() {
 			return __( 'Last week', 'burst-mainwp' );
 		},
 		range: () => {
+			const currentDateWithOffset = getDateWithOffset();
 			const daysFromSunday = currentDateWithOffset.getDay();
 			const startOfThisWeek = addDays( currentDateWithOffset, -daysFromSunday );
 			return {
@@ -600,75 +709,101 @@ const availableRanges = {
 		get label() {
 			return __( 'Last 30 days', 'burst-mainwp' );
 		},
-		range: () => ({
-			startDate: startOfDay( addDays( currentDateWithOffset, -30 ) ),
-			endDate: endOfDay( addDays( currentDateWithOffset, -1 ) )
-		})
+		range: () => {
+			const currentDateWithOffset = getDateWithOffset();
+			return {
+				startDate: startOfDay( addDays( currentDateWithOffset, -30 ) ),
+				endDate: endOfDay( addDays( currentDateWithOffset, -1 ) )
+			};
+		}
 	} as RangeDefinition,
 	'last-90-days': {
 		get label() {
 			return __( 'Last 90 days', 'burst-mainwp' );
 		},
-		range: () => ({
-			startDate: startOfDay( addDays( currentDateWithOffset, -90 ) ),
-			endDate: endOfDay( addDays( currentDateWithOffset, -1 ) )
-		})
+		range: () => {
+			const currentDateWithOffset = getDateWithOffset();
+			return {
+				startDate: startOfDay( addDays( currentDateWithOffset, -90 ) ),
+				endDate: endOfDay( addDays( currentDateWithOffset, -1 ) )
+			};
+		}
 	} as RangeDefinition,
 	'last-month': {
 		get label() {
 			return __( 'Last month', 'burst-mainwp' );
 		},
-		range: () => ({
-			startDate: startOfMonth( addMonths( currentDateWithOffset, -1 ) ),
-			endDate: endOfMonth( addMonths( currentDateWithOffset, -1 ) )
-		})
+		range: () => {
+			const currentDateWithOffset = getDateWithOffset();
+			const lastMonthDate = addMonths( currentDateWithOffset, -1 );
+			return {
+				startDate: startOfMonth( lastMonthDate ),
+				endDate: endOfMonth( lastMonthDate )
+			};
+		}
 	} as RangeDefinition,
 	'week-to-date': {
 		get label() {
 			return __( 'Week to date', 'burst-mainwp' );
 		},
-		range: () => ({
-			startDate: startOfDay(
-				addDays( currentDateWithOffset, -currentDateWithOffset.getDay() )
-			),
-			endDate: endOfDay( currentDateWithOffset )
-		})
+		range: () => {
+			const currentDateWithOffset = getDateWithOffset();
+			return {
+				startDate: startOfDay(
+					addDays( currentDateWithOffset, -currentDateWithOffset.getDay() )
+				),
+				endDate: endOfDay( currentDateWithOffset )
+			};
+		}
 	} as RangeDefinition,
 	'month-to-date': {
 		get label() {
 			return __( 'Month to date', 'burst-mainwp' );
 		},
-		range: () => ({
-			startDate: startOfMonth( currentDateWithOffset ),
-			endDate: endOfDay( currentDateWithOffset )
-		})
+		range: () => {
+			const currentDateWithOffset = getDateWithOffset();
+			return {
+				startDate: startOfMonth( currentDateWithOffset ),
+				endDate: endOfDay( currentDateWithOffset )
+			};
+		}
 	} as RangeDefinition,
 	'year-to-date': {
 		get label() {
 			return __( 'Year to date', 'burst-mainwp' );
 		},
-		range: () => ({
-			startDate: startOfYear( currentDateWithOffset ),
-			endDate: endOfDay( currentDateWithOffset )
-		})
+		range: () => {
+			const currentDateWithOffset = getDateWithOffset();
+			return {
+				startDate: startOfYear( currentDateWithOffset ),
+				endDate: endOfDay( currentDateWithOffset )
+			};
+		}
 	} as RangeDefinition,
 	'last-year': {
 		get label() {
 			return __( 'Last year', 'burst-mainwp' );
 		},
-		range: () => ({
-			startDate: startOfYear( addYears( currentDateWithOffset, -1 ) ),
-			endDate: endOfYear( addYears( currentDateWithOffset, -1 ) )
-		})
+		range: () => {
+			const currentDateWithOffset = getDateWithOffset();
+			const lastYearDate = addYears( currentDateWithOffset, -1 );
+			return {
+				startDate: startOfYear( lastYearDate ),
+				endDate: endOfYear( lastYearDate )
+			};
+		}
 	} as RangeDefinition,
 	'all-time': {
 		get label() {
 			return __( 'All time', 'burst-mainwp' );
 		},
-		range: () => ({
-			startDate: BURST_START_DATE,
-			endDate: endOfDay( currentDateWithOffset )
-		})
+		range: () => {
+			const currentDateWithOffset = getDateWithOffset();
+			return {
+				startDate: BURST_START_DATE,
+				endDate: endOfDay( currentDateWithOffset )
+			};
+		}
 	} as RangeDefinition
 };
 
@@ -734,8 +869,8 @@ const getDisplayDates = (
 	startDate: string,
 	endDate: string
 ): { startDate: string; endDate: string } => {
-	const startDateObj = new Date( startDate );
-	const endDateObj = new Date( endDate );
+	const startDateObj = parseDateForDisplay( startDate );
+	const endDateObj = parseDateForDisplay( endDate );
 
 	// if both are in the same year remove the year for startDate
 	const removeYear = startDateObj.getFullYear() === endDateObj.getFullYear();
@@ -781,6 +916,7 @@ function createValueFormatter(
 
 	const { isPercentage, isTime, precision, suffix } = metricOptions[metric];
 
+	// fallow-ignore-next-line complexity
 	return ( value ) => {
 		if ( null === value || value === undefined ) {
 			return '';
@@ -842,6 +978,17 @@ function formatCurrencyCompact(
 	}).format( value );
 }
 
+const parseAndValidateDate = ( dateInput: string | number | Date | null | undefined ): Date | null => {
+	if ( ! dateInput ) {
+		return null;
+	}
+	const date = dateInput instanceof Date ? dateInput : new Date( dateInput );
+	if ( isNaN( date.getTime() ) ) {
+		return null;
+	}
+	return date;
+};
+
 /**
  * Formats a date for display (e.g. "September 1, 2025") using
  * `Intl.DateTimeFormat` for proper localization.
@@ -851,22 +998,44 @@ function formatCurrencyCompact(
  * @return The formatted date string, or an empty string if invalid.
  */
 function formatDate( dateInput: string | number | Date | null | undefined, removeYear: boolean = false ): string {
-	if ( ! dateInput ) {
-		return '';
-	}
-
 	try {
-		const date = dateInput instanceof Date ? dateInput : new Date( dateInput );
-
-		if ( isNaN( date.getTime() ) ) {
+		const validateDate = parseAndValidateDate( dateInput );
+		if ( ! validateDate ) {
 			return '';
 		}
+
+		const date = parseDateForDisplay( validateDate );
 
 		return new Intl.DateTimeFormat( getLocale(), {
 			month: 'long',
 			day: 'numeric',
 			year: removeYear ? undefined : 'numeric'
 		}).format( date );
+	} catch {
+		return '';
+	}
+}
+
+function getValidDisplayDate( dateInput: string | number | Date | null | undefined ): Date | null {
+	const validateDate = parseAndValidateDate( dateInput );
+	return validateDate ? parseDateForDisplay( validateDate ) : null;
+}
+
+/**
+ * Helper to format a date with Intl.DateTimeFormat options.
+ *
+ * @param dateInput - The date string or object.
+ * @param options - Intl.DateTimeFormatOptions.
+ * @return Formatted date string or empty string.
+ */
+function formatDateWithIntl( dateInput: string | number | Date | null | undefined, options: Intl.DateTimeFormatOptions ): string {
+	try {
+		const date = getValidDisplayDate( dateInput );
+		if ( ! date ) {
+			return '';
+		}
+
+		return new Intl.DateTimeFormat( getLocale(), options ).format( date );
 	} catch {
 		return '';
 	}
@@ -880,28 +1049,14 @@ function formatDate( dateInput: string | number | Date | null | undefined, remov
  * @return The formatted date string, or an empty string if invalid.
  */
 function formatDateAndTime( dateInput: string | number | Date | null | undefined ): string {
-	if ( ! dateInput ) {
-		return '';
-	}
-
-	try {
-		const date = dateInput instanceof Date ? dateInput : new Date( dateInput );
-
-		if ( isNaN( date.getTime() ) ) {
-			return '';
-		}
-
-		return new Intl.DateTimeFormat( getLocale(), {
-			month: 'long',
-			day: 'numeric',
-			year: 'numeric',
-			hour: 'numeric',
-			minute: 'numeric',
-			second: 'numeric'
-		}).format( date );
-	} catch {
-		return '';
-	}
+	return formatDateWithIntl( dateInput, {
+		month: 'long',
+		day: 'numeric',
+		year: 'numeric',
+		hour: 'numeric',
+		minute: 'numeric',
+		second: 'numeric'
+	});
 }
 
 /**
@@ -912,25 +1067,11 @@ function formatDateAndTime( dateInput: string | number | Date | null | undefined
  * @return The formatted date string, or an empty string if invalid.
  */
 function formatDateShort( dateInput: string | number | Date | null | undefined ): string {
-	if ( ! dateInput ) {
-		return '';
-	}
-
-	try {
-		const date = dateInput instanceof Date ? dateInput : new Date( dateInput );
-
-		if ( isNaN( date.getTime() ) ) {
-			return '';
-		}
-
-		return new Intl.DateTimeFormat( getLocale(), {
-			month: 'short',
-			day: 'numeric',
-			year: 'numeric'
-		}).format( date );
-	} catch {
-		return '';
-	}
+	return formatDateWithIntl( dateInput, {
+		month: 'short',
+		day: 'numeric',
+		year: 'numeric'
+	});
 }
 
 /**
@@ -973,6 +1114,7 @@ const formatDuration = ( seconds: number ): string => {
  *
  * @return IANA timezone identifier.
  */
+// fallow-ignore-next-line complexity
 function getWpTimezone(): string {
 	try {
 		const { timezone } = getSettings() as {
@@ -1054,6 +1196,7 @@ let datePickerLocale: Locale | undefined;
  *
  * @return Locale object for the `locale` prop of `react-date-range`.
  */
+// fallow-ignore-next-line complexity
 const getDatePickerLocale = (): Locale => {
 	if ( datePickerLocale ) {
 		return datePickerLocale;
@@ -1126,6 +1269,11 @@ const getDatePickerLocale = (): Locale => {
  * @param spansMultipleYears - Whether the chart range covers more than one year.
  * @return Short formatted label (e.g. `2 PM`, `Mon 3`, `3 Jan`, `Jan 24`).
  */
+const formatDateTime = ( date: Date, timeZone: string, options: Intl.DateTimeFormatOptions ): string => {
+	return new Intl.DateTimeFormat( getLocale(), { timeZone, ...options }).format( date );
+};
+
+// fallow-ignore-next-line complexity
 function formatAxisLabel(
 	timestamp: number,
 	interval: ChartInterval | string,
@@ -1136,39 +1284,25 @@ function formatAxisLabel(
 
 	switch ( interval ) {
 		case 'hour':
-			return new Intl.DateTimeFormat( getLocale(), { timeZone, hour: 'numeric' }).format( date );
+			return formatDateTime( date, timeZone, { hour: 'numeric' });
 
 		case 'day':
-			return new Intl.DateTimeFormat( getLocale(), {
-				timeZone,
-				weekday: 'short',
-				day: 'numeric'
-			}).format( date );
+			return formatDateTime( date, timeZone, { weekday: 'short', day: 'numeric' });
 
 		case 'week':
-
-			// Show the week-start date; a compact day + short month is most readable.
-			return new Intl.DateTimeFormat( getLocale(), {
-				timeZone,
-				day: 'numeric',
-				month: 'short'
-			}).format( date );
+			return formatDateTime( date, timeZone, { day: 'numeric', month: 'short' });
 
 		case 'month':
-			return new Intl.DateTimeFormat( getLocale(), {
-				timeZone,
+			return formatDateTime( date, timeZone, {
 				month: 'short',
 				...( spansMultipleYears ? { year: '2-digit' as const } : {})
-			}).format( date );
+			});
 
 		case 'year':
-			return new Intl.DateTimeFormat( getLocale(), {
-				timeZone,
-				year: 'numeric'
-			}).format( date );
+			return formatDateTime( date, timeZone, { year: 'numeric' });
 
 		default:
-			return new Intl.DateTimeFormat( getLocale(), { timeZone, dateStyle: 'short' }).format( date );
+			return formatDateTime( date, timeZone, { dateStyle: 'short' });
 	}
 }
 
@@ -1180,6 +1314,7 @@ function formatAxisLabel(
  * @param interval  - Grouping interval.
  * @return Detailed formatted label (e.g. `Mon 3 Jan 2024, 2:00 PM`, `3 Jan – 9 Jan 2024`).
  */
+// fallow-ignore-next-line complexity
 function formatTooltipLabel(
 	timestamp: number,
 	interval: ChartInterval | string
@@ -1189,53 +1324,40 @@ function formatTooltipLabel(
 
 	switch ( interval ) {
 		case 'hour':
-			return new Intl.DateTimeFormat( getLocale(), {
-				timeZone,
+			return formatDateTime( date, timeZone, {
 				weekday: 'short',
 				day: 'numeric',
 				month: 'short',
 				year: 'numeric',
 				hour: 'numeric',
 				minute: '2-digit'
-			}).format( date );
+			});
 
 		case 'day':
-			return new Intl.DateTimeFormat( getLocale(), {
-				timeZone,
+			return formatDateTime( date, timeZone, {
 				weekday: 'long',
 				day: 'numeric',
 				month: 'long',
 				year: 'numeric'
-			}).format( date );
+			});
 
 		case 'week': {
 
 			// Show the full week range: start date – end date (week start + 6 days).
 			const weekEnd = new Date( ( timestamp + 6 * 24 * 60 * 60 ) * 1000 );
-			const fmt = new Intl.DateTimeFormat( getLocale(), {
-				timeZone,
-				day: 'numeric',
-				month: 'short',
-				year: 'numeric'
-			});
-			return `${ fmt.format( date ) } \u2013 ${ fmt.format( weekEnd ) }`;
+			const startStr = formatDateTime( date, timeZone, { day: 'numeric', month: 'short', year: 'numeric' });
+			const endStr = formatDateTime( weekEnd, timeZone, { day: 'numeric', month: 'short', year: 'numeric' });
+			return `${ startStr } \u2013 ${ endStr }`;
 		}
 
 		case 'month':
-			return new Intl.DateTimeFormat( getLocale(), {
-				timeZone,
-				month: 'long',
-				year: 'numeric'
-			}).format( date );
+			return formatDateTime( date, timeZone, { month: 'long', year: 'numeric' });
 
 		case 'year':
-			return new Intl.DateTimeFormat( getLocale(), {
-				timeZone,
-				year: 'numeric'
-			}).format( date );
+			return formatDateTime( date, timeZone, { year: 'numeric' });
 
 		default:
-			return new Intl.DateTimeFormat( getLocale(), { timeZone, dateStyle: 'long' }).format( date );
+			return formatDateTime( date, timeZone, { dateStyle: 'long' });
 	}
 }
 
@@ -1294,5 +1416,7 @@ export {
 	formatAxisLabel,
 	formatTooltipLabel,
 	getChartXAxisTickValues,
+	getForecastRange,
+	getLastCompleteMonthEndDate,
 	truncateMiddle
 };

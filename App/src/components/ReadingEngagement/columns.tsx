@@ -41,13 +41,17 @@ export function getReadingEngagementColumns({
 			}
 		},
 		{
-			key: 'avg_time_on_page',
-			label: __( 'Avg. time on page', 'burst-mainwp' ),
+			key: 'reading_engagement_score',
+			label: __( 'Score', 'burst-mainwp' ),
 			align: 'right',
 			minWidth: 100,
 			cell: ( row ) => (
-				<span className="font-medium text-text-black">
-					{ formatTime( row.avg_time_on_page ) }
+				<span
+					className="font-semibold text-text-black"
+					title={ `${ __( 'Avg. time on page', 'burst-mainwp' ) }: ${ formatTime( row.avg_time_on_page ) }${ row.word_count ? ` (${ row.word_count } ${ __( 'words', 'burst-mainwp' ) })` : '' }` }
+				>
+					{ row.reading_engagement_score }
+					<span className="text-xs font-normal text-text-gray ml-0.5">/ 100</span>
 				</span>
 			)
 		}

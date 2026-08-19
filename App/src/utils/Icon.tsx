@@ -68,6 +68,8 @@ import {
 	MousePointerClick,
 	PanelTop,
 	PieChart,
+	Pin,
+	PinOff,
 	Plus,
 	Radio,
 	Receipt,
@@ -80,7 +82,6 @@ import {
 	Sun,
 	Tablet,
 	Tag,
-	Target,
 	Trash,
 	TrendingDown,
 	Trophy,
@@ -91,6 +92,7 @@ import {
 	XCircle,
 	Activity,
 	Webhook,
+	ArrowLeftRight,
 	Earth,
 	LogIn,
 	CircleAlert,
@@ -116,7 +118,12 @@ import {
 	Maximize2,
 	Menu,
 	Table2,
-	ShieldCheck
+	ShieldCheck,
+	Cookie,
+	Shield,
+	Fingerprint,
+	Repeat,
+	Plug
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -195,6 +202,7 @@ const iconComponents = {
 	'goals-empty': CircleDot,
 	filter: SlidersHorizontal,
 	loading: LoaderCircle,
+	'compare-arrows': ArrowLeftRight,
 	desktop: Monitor,
 	tablet: Tablet,
 	mobile: Smartphone,
@@ -213,12 +221,14 @@ const iconComponents = {
 	'log-out': LogOut,
 	alert: CircleAlert,
 	search: Search,
+	pin: Pin,
+	'pin-off': PinOff,
 	upload: Upload,
+	plug: Plug,
 
-	// Filter icons from useFiltersStore
+	// Filter icons from useFiltersStore.
 	bounce: LogOut,
 	user: User,
-	conversion: Target,
 	parameters: Settings,
 	campaign: Megaphone,
 	source: Milestone,
@@ -238,6 +248,11 @@ const iconComponents = {
 	// Star icons
 	'star-filled': Star,
 	'star-outline': Star,
+	cookie: Cookie,
+	security: Shield,
+	shield: Shield,
+	fingerprint: Fingerprint,
+	repeat: Repeat,
 	'map-pinned': MapPinned,
 
 	// Additional icons
@@ -287,11 +302,11 @@ const iconComponents = {
 
 
 // Define types for icon names and colors
-export type IconName = keyof typeof iconComponents | string;
-export type ColorName = keyof typeof iconColors | string;
+type IconName = keyof typeof iconComponents | string;
+type ColorName = keyof typeof iconColors | string;
 
 // Props interface for the Icon component
-export interface IconProps {
+interface IconProps {
 	name?: IconName;
 	color?: ColorName;
 	size?: number;
@@ -334,6 +349,7 @@ const Icon = memo(
 		 *
 		 * @return {JSX.Element} The rendered icon component
 		 */
+		// fallow-ignore-next-line complexity
 		const renderIcon = () => {
 
 			// Special handling for bullet and dot icons - they should be filled

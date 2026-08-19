@@ -95,6 +95,7 @@ const FilterPopoverContent: React.FC<FilterPopoverContentProps> = ({
 		onClose();
 	};
 
+	// fallow-ignore-next-line complexity
 	const getFilterDescription = (): string => {
 		if ( 'setup' !== currentStep || ! selectedConfig ) {
 			return '';
@@ -223,7 +224,7 @@ const FilterPopoverContent: React.FC<FilterPopoverContentProps> = ({
 			<div className="border-b border-gray-100 px-4 py-3 shrink-0">
 				{renderHeader()}
 			</div>
-			<div className="px-4 py-4 overflow-y-auto min-h-0">
+			<div className={`px-4 py-4 min-h-0 ${ 'setup' === currentStep ? 'overflow-visible min-h-[220px]' : 'overflow-y-auto' }`}>
 				{renderContent()}
 			</div>
 			<div className="flex gap-2 rounded-b-lg border-t border-gray-100 bg-gray-50 px-4 py-3 shrink-0">

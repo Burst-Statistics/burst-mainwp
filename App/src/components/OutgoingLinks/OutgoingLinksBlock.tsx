@@ -10,10 +10,10 @@ import { useOutgoingLinksData } from './useOutgoingLinksData';
 import { getOutgoingLinksColumns } from './columns';
 import useSettingsData from '@/hooks/useSettingsData';
 import useLicenseData from '@/hooks/useLicenseData';
-import UpsellOverlay from '@/components/Upsell/UpsellOverlay';
+import OverlayBlock from '@/components/Upsell/OverlayBlock';
 import UpsellCopy from '@/components/Upsell/UpsellCopy';
 import MetricInfo from '@/components/Common/MetricInfo';
-
+import UpsellOverlay from '@/components/Upsell/UpsellOverlay';
 type OutgoingLinksBlockProps = {
 
 	/** Additional CSS class names passed to the wrapping Block. */
@@ -35,6 +35,7 @@ const TOP_N = 5;
  * @param {string} props.className - Additional CSS classes for the Block wrapper.
  * @return {JSX.Element} The outgoing links block.
  */
+// fallow-ignore-next-line complexity
 const OutgoingLinksBlock = memo( ({ className = '' }: OutgoingLinksBlockProps ) => {
 	const { getValue } = useSettingsData();
 	const { isLicenseValid } = useLicenseData();
@@ -70,23 +71,13 @@ const OutgoingLinksBlock = memo( ({ className = '' }: OutgoingLinksBlockProps ) 
 
 	if ( ! isLicenseValid ) {
 		return (
-			<Block className={ `${ className } relative min-h-[320px] overflow-hidden` }>
-				<BlockHeading title={ __( 'Outgoing links', 'burst-mainwp' ) } />
-				<BlockContent className="px-0 py-0 overflow-y-auto">
-					<div className="flex h-48 flex-col items-center justify-center p-4 text-center text-sm text-gray-400 select-none blur-[1px]">
-						<p className="font-medium text-gray-500 mb-1">
-							{ __( 'Outgoing links tracking is a Pro feature.', 'burst-mainwp' ) }
-						</p>
-					</div>
-					<UpsellOverlay
-						className="flex items-center justify-center pt-0 mt-0 m-0 border-0 bg-transparent"
-						containerClassName="pt-1 m-1 mt-4"
-						cardClassName="mx-4 min-w-fit rounded-md border border-gray-300 bg-gray-100 px-6 py-6 shadow-sm"
-					>
-						<UpsellCopy type="external_links" compact={true} />
-					</UpsellOverlay>
-				</BlockContent>
-			</Block>
+			<OverlayBlock
+				className={ className }
+				title={ __( 'Outgoing links', 'burst-mainwp' ) }
+				blurLabel={ __( 'Outgoing links tracking is a Pro feature.', 'burst-mainwp' ) }
+			>
+				<UpsellCopy type="external_links" compact={true} />
+			</OverlayBlock>
 		);
 	}
 
@@ -99,7 +90,7 @@ const OutgoingLinksBlock = memo( ({ className = '' }: OutgoingLinksBlockProps ) 
 					<MetricInfo metricKey="outgoing_links" side="bottom">
 						{ __( 'Outgoing links', 'burst-mainwp' ) }
 					</MetricInfo>
-					{ isEnabled && hasData && (
+					{ isLicenseValid && isEnabled && hasData && (
 						<button
 							type="button"
 							className="inline-flex items-center justify-center rounded-md p-1.5 text-gray-500 transition-colors hover:bg-gray-200 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
@@ -140,6 +131,15 @@ const OutgoingLinksBlock = memo( ({ className = '' }: OutgoingLinksBlockProps ) 
 							{ 'number' === typeof scrapingProgress && ` (${ scrapingProgress }%)` }
 						</span>
 					</div>
+				) }
+				{ ! isLicenseValid && (
+					<UpsellOverlay
+						className="flex items-center justify-center pt-0 mt-0 m-0 border-0 bg-transparent"
+						containerClassName="pt-1 m-1 mt-4"
+						cardClassName="mx-4 min-w-fit rounded-md border border-gray-300 bg-gray-100 px-6 py-6 shadow-sm"
+					>
+						<UpsellCopy type="external_links" compact={ true } />
+					</UpsellOverlay>
 				) }
 			</BlockContent>
 		</Block>

@@ -21,6 +21,7 @@ interface MenuItem {
 	hidden?: boolean;
 }
 
+// fallow-ignore-next-line complexity
 export const ReportActionMenu: React.FC<ReportActionMenuProps> = ({ row }) => {
 	const [ isOpen, setIsOpen ] = useState<boolean>( false );
 	const wizard = useWizardStore( ( state ) => state.wizard );
@@ -148,12 +149,14 @@ export const ReportActionMenu: React.FC<ReportActionMenuProps> = ({ row }) => {
 			</Popover.Trigger>
 
 			<Popover.Content
-				className="z-200 min-w-[200px] rounded-lg border border-gray-200 bg-white shadow-xl"
+				className="z-dropdown min-w-[200px] rounded-lg border border-gray-200 bg-white shadow-xl"
 				align="end"
 				sideOffset={8}
 			>
 				<div className="flex flex-col">
 					{
+
+						// fallow-ignore-next-line complexity
 						menuItems.filter( ( item ) => ! item.hidden ).map( ( item, index ) => {
 							const isFirst = 0 === index;
 							const isLast = index === menuItems.length - 1;

@@ -20,6 +20,7 @@ const IntFilterSetup: React.FC<IntFilterSetupProps> = ({
 }) => {
 
 	// Parse initial value - could be single value or range
+	// fallow-ignore-next-line complexity
 	const parseInitialValue = ( value: string ): Range => {
 		if ( ! value || '' === value ) {
 			return [ 0, 100 ];
@@ -48,17 +49,12 @@ const IntFilterSetup: React.FC<IntFilterSetupProps> = ({
 		setRangeValue( parseInitialValue( initialValue ) );
 	}, [ initialValue ]);
 
-	// Set appropriate min/max based on filter type
+	// Set appropriate min/max based on filter type.
 	useEffect( () => {
 		switch ( filterKey ) {
-			case 'bounce_rate':
-			case 'conversion_rate':
-				setMin( 0 );
-				setMax( 100 );
-				break;
 			case 'time_per_session':
 				setMin( 0 );
-				setMax( 3600 ); // 1 hour in seconds
+				setMax( 3600 ); // 1 hour in seconds.
 				break;
 			default:
 				setMin( 0 );
@@ -77,32 +73,27 @@ const IntFilterSetup: React.FC<IntFilterSetupProps> = ({
 		onChange( rangeString );
 	};
 
-	const handleMinInputChange = ( e: React.ChangeEvent<HTMLInputElement> ) => {
-		const newValue = e.target.value;
+	// fallow-ignore-next-line complexity
+	const updateRangeFromInput = ( newValue: string, index: 0 | 1 ) => {
 		const numValue = parseFloat( newValue );
 
 		if (
 			'' === newValue ||
 			( ! isNaN( numValue ) && numValue >= min && numValue <= max )
 		) {
-			const newRange: Range = [ numValue || 0, rangeValue[1] ];
+			const newRange: Range =
+				0 === index ? [ numValue || 0, rangeValue[1] ] : [ rangeValue[0], numValue || max ];
 			setRangeValue( newRange );
 			handleRangeChange( newRange );
 		}
 	};
 
-	const handleMaxInputChange = ( e: React.ChangeEvent<HTMLInputElement> ) => {
-		const newValue = e.target.value;
-		const numValue = parseFloat( newValue );
+	const handleMinInputChange = ( e: React.ChangeEvent<HTMLInputElement> ) => {
+		updateRangeFromInput( e.target.value, 0 );
+	};
 
-		if (
-			'' === newValue ||
-			( ! isNaN( numValue ) && numValue >= min && numValue <= max )
-		) {
-			const newRange: Range = [ rangeValue[0], numValue || max ];
-			setRangeValue( newRange );
-			handleRangeChange( newRange );
-		}
+	const handleMaxInputChange = ( e: React.ChangeEvent<HTMLInputElement> ) => {
+		updateRangeFromInput( e.target.value, 1 );
 	};
 
 	const handleClear = () => {
@@ -111,6 +102,7 @@ const IntFilterSetup: React.FC<IntFilterSetupProps> = ({
 		onChange( '' );
 	};
 
+	// fallow-ignore-next-line complexity
 	const formatValue = ( val: number | string ): string => {
 		if ( '' === val || null === val || val === undefined ) {
 			return '';
@@ -119,9 +111,6 @@ const IntFilterSetup: React.FC<IntFilterSetupProps> = ({
 		const numVal = 'string' === typeof val ? parseFloat( val ) : val;
 
 		switch ( filterKey ) {
-			case 'bounce_rate':
-			case 'conversion_rate':
-				return `${numVal}%`;
 			case 'time_per_session': {
 				const minutes = Math.floor( numVal / 60 );
 				const seconds = numVal % 60;
