@@ -126,6 +126,8 @@ create_rc_zip() {
     "--exclude=/.idea/"
     "--exclude=**/.npm"
     "--exclude=**/.tanstack"
+    "--exclude=.fallow/"
+    "--exclude=.fallowrc.json"
     "--exclude=*.md" #never ship markdown files (CLAUDE.md, README.md, etc.)
   )
 
