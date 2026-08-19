@@ -3,9 +3,8 @@ import { Link, useLocation } from '@tanstack/react-router';
 import clsx from 'clsx';
 import { __ } from '@wordpress/i18n';
 import { useEffect, useState } from '@wordpress/element';
-import ProBadge from '@/components/Common/ProBadge';
 import Icon from '@/utils/Icon';
-import MenuItemLink from './HeaderMenuItemLink';
+import MenuItemLink, { MenuItemLabel } from './HeaderMenuItemLink';
 import ButtonInput from '../Inputs/ButtonInput';
 
 /** Top-level menu IDs that expand into a dropdown in the mobile drawer. */
@@ -164,21 +163,8 @@ const DrawerDropdownSection = ({ menuItem, isTrial, onNavigate }) => {
 					hasActiveChild && DRAWER_ACTIVE_CLASS
 				)}
 			>
-				<span className="inline-flex min-w-0 items-center gap-1.5 text-base tracking-wide">
-					{menuItem.icon && '' !== menuItem.icon && (
-						<span aria-hidden="true" className="inline-flex shrink-0">
-							<Icon name={menuItem.icon} size={14} color="gray" strokeWidth={2.5} />
-						</span>
-					)}
-					<span>{menuItem.title}</span>
-					{menuItem.pro && (
-						<ProBadge
-							type={isTrial ? 'icon' : 'badge'}
-							label={__( 'Pro', 'burst-mainwp' )}
-							id={menuItem.id}
-							hasLink={false}
-						/>
-					)}
+				<span className="min-w-0">
+					<MenuItemLabel menuItem={menuItem} isTrial={isTrial} />
 				</span>
 				<Icon
 					name="chevron-down"
@@ -280,11 +266,11 @@ const MobileMenuDrawer = ({ leftMenuItems, rightMenuItems, supportUrl, upgradeUr
 			 */}
 			<Dialog.Portal container={document.getElementById( 'modal-root' )}>
 				{/* Backdrop overlay — covers the app container. */}
-				<Dialog.Overlay className="absolute inset-0 z-40 bg-black/40 data-[state=open]:animate-fadeIn data-[state=closed]:animate-fadeOut" />
+				<Dialog.Overlay className="absolute inset-0 z-overlay bg-black/40 data-[state=open]:animate-fadeIn data-[state=closed]:animate-fadeOut" />
 
 				{/* Drawer panel — slides in from the right edge of the app container. */}
 			<Dialog.Content
-				className="absolute top-0 right-0 z-50 flex h-full max-h-dvh w-[85%] max-w-sm flex-col bg-white shadow-layered-high-b data-[state=open]:animate-drawerSlideIn data-[state=closed]:animate-drawerSlideOut focus:outline-hidden"
+				className="absolute top-0 right-0 z-drawer flex h-full max-h-dvh w-[85%] max-w-sm flex-col bg-white shadow-layered-high-b data-[state=open]:animate-drawerSlideIn data-[state=closed]:animate-drawerSlideOut focus:outline-hidden"
 					aria-label={__( 'Navigation menu', 'burst-mainwp' )}
 				>
 					{/* Drawer header: close button only. */}

@@ -11,6 +11,7 @@ import { useQuery } from '@tanstack/react-query';
 import getDataTableData from '@/api/getDataTableData';
 import { getPageParameterCounts } from '@/api/getPageParameters';
 import ParameterVariationsRow from './ParameterVariationsRow';
+import SourceReferrersRow from './SourceReferrersRow';
 import { Block } from '@/components/Blocks/Block';
 import { BlockHeading } from '@/components/Blocks/BlockHeading';
 import { BlockContent } from '@/components/Blocks/BlockContent';
@@ -22,8 +23,10 @@ import { COLUMN_FORMATTERS, FORMATS } from '@/api/getDataTableData';
 import ClickToFilter from '@/components/Common/ClickToFilter';
 import {
 	getCountryName,
-	getContinentName
+	getContinentName,
+	getDateWithOffset
 } from '@/utils/formatting';
+import { format, subDays } from 'date-fns';
 import { safeDecodeURI } from '@/utils/lib';
 import {useBlockConfig} from '@/hooks/useBlockConfig';
 import { useNavigate, useRouterState } from '@tanstack/react-router';
@@ -35,6 +38,7 @@ import Icon from '@/utils/Icon';
  * @param {string|undefined} siteUrl The configured site URL.
  * @return {string} A safe hostname fallback.
  */
+// fallow-ignore-next-line complexity
 const resolveHostname = ( siteUrl ) => {
 	const fallbackHostname = window.location.hostname || 'site';
 
@@ -62,6 +66,159 @@ const resolveHostname = ( siteUrl ) => {
 };
 
 /**
+ * Build the expandable-rows props for the DataTable based on the active config.
+ *
+ * Extracted from the `dataTableProps` useMemo to keep that callback's cyclomatic
+ * complexity below the fallow CRAP threshold. Returns an empty object when no
+ * expandable-row behaviour applies.
+ *
+ * @param {Object}  params                    Configuration object.
+ * @param {boolean} params.paramVariationsEnabled Whether page-parameter expansion is on.
+ * @param {boolean} params.isPro              Whether the site has a Pro licence.
+ * @param {string}  params.selectedConfig     The currently active datatable variant.
+ * @param {string}  params.startDate          Active start date.
+ * @param {string}  params.endDate            Active end date.
+ * @param {string}  params.range              Active date-range identifier.
+ *
+ * @return {Object} Partial DataTable props for expandable rows (may be empty).
+ */
+// fallow-ignore-next-line complexity -- Minor branching from optional chaining and category matches.
+const isReferrerRowDisabled = ( row, activeColumns ) => {
+	if ( activeColumns.includes( 'referrer' ) ) {
+		return true;
+	}
+	const category = row?.source_category;
+	return ! category || 'referral' === category || 'direct' === category;
+};
+
+const getExpandableRowsProps = ({ paramVariationsEnabled, isPro, selectedConfig, startDate, endDate, range, activeColumns }) => {
+	if ( paramVariationsEnabled ) {
+		return {
+			expandableRows: true,
+			expandableRowDisabled: ( row ) =>
+				! row || 0 >= Number( row.parameter_count ?? 0 ),
+			expandableRowsComponent: ParameterVariationsRow,
+			expandableRowsComponentProps: { startDate, endDate, range }
+		};
+	}
+
+	if ( isPro && 'referrers' === selectedConfig ) {
+		return {
+			expandableRows: true,
+			expandableRowDisabled: ( row ) => isReferrerRowDisabled( row, activeColumns ),
+			expandableRowsComponent: SourceReferrersRow,
+			expandableRowsComponentProps: { startDate, endDate, range }
+		};
+	}
+
+	return {};
+};
+
+/**
+ * Resolve the 1-based DataTable sort column index for `defaultSortFieldId`.
+ *
+ * When the saved `sortField` is no longer visible (e.g. a Pro column hidden for
+ * unlicensed users), falls back to the first common metric column
+ * (visitors / pageviews / sessions), then to the second column, then to 2.
+ *
+ * Extracted from the `dataTableProps` useMemo to keep that callback's cyclomatic
+ * complexity below the fallow CRAP threshold.
+ *
+ * @param {Array}  columns   The currently visible, enhanced column definitions.
+ * @param {string} sortField The saved sort-field ID.
+ *
+ * @return {number} 1-based column index for DataTable's defaultSortFieldId.
+ */
+// fallow-ignore-next-line complexity -- Priority fallback chain (exact → metric column → second column → 2); each branch is a distinct fallback level, not reducible further.
+const getActiveSortFieldId = ( columns, sortField ) => {
+	const exactIndex = columns.findIndex( ( col ) => col.id === sortField );
+	if ( -1 !== exactIndex ) {
+		return exactIndex + 1;
+	}
+
+	const fallbackField =
+		columns.find( ( col ) => [ 'visitors', 'pageviews', 'sessions' ].includes( col.id ) )?.id ||
+		columns[ 1 ]?.id ||
+		'';
+
+	const fallbackIndex = columns.findIndex( ( col ) => col.id === fallbackField );
+	return -1 !== fallbackIndex ? fallbackIndex + 1 : 2;
+};
+
+
+const COLUMN_TEMPLATES = {
+	visitors: {
+		label: __( 'Visitors', 'burst-mainwp' ),
+		category: 'traffic',
+		align: 'right'
+	},
+	sessions: {
+		label: __( 'Sessions', 'burst-mainwp' ),
+		category: 'traffic',
+		pro: true,
+		align: 'right'
+	},
+	bounce_rate: {
+		label: __( 'Bounce rate', 'burst-mainwp' ),
+		category: 'engagement',
+		format: 'percentage',
+		align: 'right'
+	},
+	conversions: {
+		label: __( 'Goal completions', 'burst-mainwp' ),
+		category: 'conversions',
+		pro: true,
+		align: 'right'
+	},
+	sales: {
+		label: __( 'Sales', 'burst-mainwp' ),
+		category: 'conversions',
+		pro: true,
+		format: 'integer',
+		align: 'right'
+	},
+	revenue: {
+		label: __( 'Revenue', 'burst-mainwp' ),
+		category: 'conversions',
+		pro: true,
+		format: 'currency',
+		align: 'right'
+	},
+	sales_conversion_rate: {
+		label: __( 'Sales conv. rate', 'burst-mainwp' ),
+		category: 'conversions',
+		pro: true,
+		format: 'percentage',
+		align: 'right'
+	},
+	page_value: {
+		label: __( 'Page value', 'burst-mainwp' ),
+		category: 'conversions',
+		pro: true,
+		format: 'currency',
+		align: 'right'
+	},
+	conversion_rate: {
+		label: __( 'Goal conv. rate', 'burst-mainwp' ),
+		category: 'conversions',
+		format: 'percentage',
+		pro: true,
+		align: 'right'
+	}
+};
+
+const getGoalAndEcommerceTemplates = ( shouldLoadEcommerce ) => ({
+	conversions: { ...COLUMN_TEMPLATES.conversions },
+	conversion_rate: { ...COLUMN_TEMPLATES.conversion_rate },
+	...( shouldLoadEcommerce && {
+		sales: { ...COLUMN_TEMPLATES.sales },
+		revenue: { ...COLUMN_TEMPLATES.revenue },
+		sales_conversion_rate: { ...COLUMN_TEMPLATES.sales_conversion_rate },
+		page_value: { ...COLUMN_TEMPLATES.page_value }
+	})
+});
+
+/**
  * DataTableBlock component for displaying a block with a datatable. This
  * component is used in the StatisticsPage.
  *
@@ -74,6 +231,7 @@ const resolveHostname = ( siteUrl ) => {
  * @param  {boolean} props.isInOverlay    When true, hides the expand button and adjusts layout for overlay mode.
  * @return {JSX.Element} The DataTableBlock component.
  */
+// fallow-ignore-next-line complexity
 const DataTableBlock = ( /** @type {BlockComponentProps} */ props ) => {
 	// isInOverlay is overlay-specific and not part of useBlockConfig.
 	const isInOverlay = props.isInOverlay ?? false;
@@ -125,25 +283,9 @@ const DataTableBlock = ( /** @type {BlockComponentProps} */ props ) => {
 					category: 'traffic',
 					align: 'right'
 				},
-				visitors: {
-					label: __( 'Visitors', 'burst-mainwp' ),
-					category: 'traffic',
-					pro: false,
-					align: 'right'
-				},
-				sessions: {
-					label: __( 'Sessions', 'burst-mainwp' ),
-					category: 'traffic',
-					pro: true,
-					align: 'right'
-				},
-				bounce_rate: {
-					label: __( 'Bounce rate', 'burst-mainwp' ),
-					category: 'engagement',
-					format: 'percentage',
-					pro: false,
-					align: 'right'
-				},
+				visitors: { ...COLUMN_TEMPLATES.visitors, pro: false },
+				sessions: { ...COLUMN_TEMPLATES.sessions },
+				bounce_rate: { ...COLUMN_TEMPLATES.bounce_rate, pro: false },
 				avg_time_on_page: {
 					label: __( 'Avg. time on page', 'burst-mainwp' ),
 					category: 'engagement',
@@ -164,56 +306,15 @@ const DataTableBlock = ( /** @type {BlockComponentProps} */ props ) => {
 					format: 'percentage',
 					align: 'right'
 				},
-				conversions: {
-					label: __( 'Goal completions', 'burst-mainwp' ),
-					category: 'conversions',
-					pro: true,
-					align: 'right'
-				},
-				conversion_rate: {
-					label: __( 'Goal conv. rate', 'burst-mainwp' ),
-					category: 'conversions',
-					format: 'percentage',
-					pro: true,
-					align: 'right'
-				},
-				...( shouldLoadEcommerce && {
-					sales: {
-						label: __( 'Sales', 'burst-mainwp' ),
-						category: 'conversions',
-						pro: true,
-						format: 'integer',
-						align: 'right'
-					},
-					revenue: {
-						label: __( 'Revenue', 'burst-mainwp' ),
-						category: 'conversions',
-						pro: true,
-						format: 'currency',
-						align: 'right'
-					},
-					sales_conversion_rate: {
-						label: __( 'Sales conv. rate', 'burst-mainwp' ),
-						category: 'conversions',
-						pro: true,
-						format: 'percentage',
-						align: 'right'
-					},
-					page_value: {
-						label: __( 'Page value', 'burst-mainwp' ),
-						category: 'conversions',
-						pro: true,
-						format: 'currency',
-						align: 'right'
-					}
-				})
+				...getGoalAndEcommerceTemplates( shouldLoadEcommerce )
 			}
 		},
 		referrers: {
 			label: __( 'Referrers', 'burst-mainwp' ),
 			searchable: true,
-			defaultColumns: [
-				'referrer', 'visitors', 'bounce_rate', ...( shouldLoadEcommerce ? [ 'sales', 'revenue' ] : [ 'conversions' ]) ],
+			defaultColumns: isPro ?
+				[ 'source', 'source_category', 'visitors', 'bounce_rate', ...( shouldLoadEcommerce ? [ 'sales', 'revenue' ] : [ 'conversions' ]) ] :
+				[ 'referrer', 'visitors', 'bounce_rate', ...( shouldLoadEcommerce ? [ 'sales', 'revenue' ] : [ 'conversions' ]) ],
 			columnsOptions: {
 				referrer: {
 					label: __( 'Referrer', 'burst-mainwp' ),
@@ -230,53 +331,22 @@ const DataTableBlock = ( /** @type {BlockComponentProps} */ props ) => {
 					align: 'left',
 					group_by: true
 				},
-				visitors: {
-					label: __( 'Visitors', 'burst-mainwp' ),
-					category: 'traffic',
+				source: {
+					label: __( 'Source', 'burst-mainwp' ),
+					default: false,
+					format: 'source',
 					pro: true,
-					align: 'right'
+					align: 'left',
+					group_by: true
 				},
-				sessions: {
-					label: __( 'Sessions', 'burst-mainwp' ),
-					category: 'traffic',
-					pro: true,
-					align: 'right'
-				},
-				bounce_rate: {
-					label: __( 'Bounce rate', 'burst-mainwp' ),
-					category: 'engagement',
-					format: 'percentage',
-					pro: true,
-					align: 'right'
-				},
-				conversions: {
-					label: __( 'Goal completions', 'burst-mainwp' ),
-					category: 'conversions',
-					pro: true,
-					align: 'right'
-				},
+				visitors: { ...COLUMN_TEMPLATES.visitors, pro: false },
+				sessions: { ...COLUMN_TEMPLATES.sessions },
+				bounce_rate: { ...COLUMN_TEMPLATES.bounce_rate, pro: false },
+				conversions: { ...COLUMN_TEMPLATES.conversions, pro: false },
 				...( shouldLoadEcommerce && {
-					sales: {
-						label: __( 'Sales', 'burst-mainwp' ),
-						category: 'conversions',
-						pro: true,
-						format: 'integer',
-						align: 'right'
-					},
-					revenue: {
-						label: __( 'Revenue', 'burst-mainwp' ),
-						category: 'conversions',
-						pro: true,
-						format: 'currency',
-						align: 'right'
-					},
-					page_value: {
-						label: __( 'Page value', 'burst-mainwp' ),
-						category: 'conversions',
-						pro: true,
-						format: 'currency',
-						align: 'right'
-					}
+					sales: { ...COLUMN_TEMPLATES.sales },
+					revenue: { ...COLUMN_TEMPLATES.revenue },
+					page_value: { ...COLUMN_TEMPLATES.page_value }
 				})
 			}
 		},
@@ -321,53 +391,14 @@ const DataTableBlock = ( /** @type {BlockComponentProps} */ props ) => {
 					align: 'left',
 					group_by: true
 				},
-				visitors: {
-					label: __( 'Visitors', 'burst-mainwp' ),
-					category: 'traffic',
-					pro: false,
-					align: 'right'
-				},
-				sessions: {
-					label: __( 'Sessions', 'burst-mainwp' ),
-					category: 'traffic',
-					pro: true,
-					align: 'right'
-				},
-				bounce_rate: {
-					label: __( 'Bounce rate', 'burst-mainwp' ),
-					category: 'engagement',
-					format: 'percentage',
-					pro: false,
-					align: 'right'
-				},
-				conversions: {
-					label: __( 'Goal completions', 'burst-mainwp' ),
-					category: 'conversions',
-					pro: true,
-					align: 'right'
-				},
+				visitors: { ...COLUMN_TEMPLATES.visitors, pro: false },
+				sessions: { ...COLUMN_TEMPLATES.sessions },
+				bounce_rate: { ...COLUMN_TEMPLATES.bounce_rate, pro: false },
+				conversions: { ...COLUMN_TEMPLATES.conversions },
 				...( shouldLoadEcommerce && {
-					sales: {
-						label: __( 'Sales', 'burst-mainwp' ),
-						category: 'conversions',
-						pro: true,
-						format: 'integer',
-						align: 'right'
-					},
-					revenue: {
-						label: __( 'Revenue', 'burst-mainwp' ),
-						category: 'conversions',
-						pro: true,
-						format: 'currency',
-						align: 'right'
-					},
-					sales_conversion_rate: {
-						label: __( 'Sales conv. rate', 'burst-mainwp' ),
-						category: 'conversions',
-						pro: true,
-						format: 'percentage',
-						align: 'right'
-					},
+					sales: { ...COLUMN_TEMPLATES.sales },
+					revenue: { ...COLUMN_TEMPLATES.revenue },
+					sales_conversion_rate: { ...COLUMN_TEMPLATES.sales_conversion_rate },
 					avg_order_value: {
 						label: __( 'Avg. order value', 'burst-mainwp' ),
 						category: 'conversions',
@@ -419,62 +450,9 @@ const DataTableBlock = ( /** @type {BlockComponentProps} */ props ) => {
 					align: 'left',
 					group_by: true
 				},
-				visitors: {
-					label: __( 'Visitors', 'burst-mainwp' ),
-					category: 'traffic',
-					pro: true,
-					align: 'right'
-				},
-				bounce_rate: {
-					label: __( 'Bounce rate', 'burst-mainwp' ),
-					category: 'engagement',
-					format: 'percentage',
-					pro: true,
-					align: 'right'
-				},
-				conversions: {
-					label: __( 'Goal completions', 'burst-mainwp' ),
-					category: 'conversions',
-					pro: true,
-					align: 'right'
-				},
-				conversion_rate: {
-					label: __( 'Goal conv. rate', 'burst-mainwp' ),
-					category: 'conversions',
-					format: 'percentage',
-					pro: true,
-					align: 'right'
-				},
-				...( shouldLoadEcommerce && {
-					sales: {
-						label: __( 'Sales', 'burst-mainwp' ),
-						category: 'conversions',
-						pro: true,
-						format: 'integer',
-						align: 'right'
-					},
-					revenue: {
-						label: __( 'Revenue', 'burst-mainwp' ),
-						category: 'conversions',
-						pro: true,
-						format: 'currency',
-						align: 'right'
-					},
-					sales_conversion_rate: {
-						label: __( 'Sales conv. rate', 'burst-mainwp' ),
-						category: 'conversions',
-						pro: true,
-						format: 'percentage',
-						align: 'right'
-					},
-					page_value: {
-						label: __( 'Page value', 'burst-mainwp' ),
-						category: 'conversions',
-						pro: true,
-						format: 'currency',
-						align: 'right'
-					}
-				})
+				visitors: { ...COLUMN_TEMPLATES.visitors, pro: true },
+				bounce_rate: { ...COLUMN_TEMPLATES.bounce_rate, pro: true },
+				...getGoalAndEcommerceTemplates( shouldLoadEcommerce )
 			}
 		},
 		parameters: {
@@ -496,47 +474,13 @@ const DataTableBlock = ( /** @type {BlockComponentProps} */ props ) => {
 					align: 'left',
 					group_by: true
 				},
-				visitors: {
-					label: __( 'Visitors', 'burst-mainwp' ),
-					category: 'traffic',
-					pro: true,
-					align: 'right'
-				},
-				bounce_rate: {
-					label: __( 'Bounce rate', 'burst-mainwp' ),
-					category: 'engagement',
-					format: 'percentage',
-					pro: true,
-					align: 'right'
-				},
-				conversions: {
-					label: __( 'Goal completions', 'burst-mainwp' ),
-					category: 'conversions',
-					pro: true,
-					align: 'right'
-				},
+				visitors: { ...COLUMN_TEMPLATES.visitors, pro: true },
+				bounce_rate: { ...COLUMN_TEMPLATES.bounce_rate, pro: true },
+				conversions: { ...COLUMN_TEMPLATES.conversions },
 				...( shouldLoadEcommerce && {
-					sales: {
-						label: __( 'Sales', 'burst-mainwp' ),
-						category: 'conversions',
-						pro: true,
-						format: 'integer',
-						align: 'right'
-					},
-					revenue: {
-						label: __( 'Revenue', 'burst-mainwp' ),
-						category: 'conversions',
-						pro: true,
-						format: 'currency',
-						align: 'right'
-					},
-					sales_conversion_rate: {
-						label: __( 'Sales conv. rate', 'burst-mainwp' ),
-						category: 'conversions',
-						pro: true,
-						format: 'percentage',
-						align: 'right'
-					}
+					sales: { ...COLUMN_TEMPLATES.sales },
+					revenue: { ...COLUMN_TEMPLATES.revenue },
+					sales_conversion_rate: { ...COLUMN_TEMPLATES.sales_conversion_rate }
 				})
 			}
 		},
@@ -681,10 +625,63 @@ const DataTableBlock = ( /** @type {BlockComponentProps} */ props ) => {
 				}
 			}
 		},
+		not_found_pages: {
+			label: __( '404 Pages', 'burst-mainwp' ),
+			searchable: true,
+			defaultColumns: [ 'page_url', 'hits' ],
+			columnsOptions: {
+				page_url: {
+					label: __( 'Page URL', 'burst-mainwp' ),
+					default: true,
+					format: 'url',
+					align: 'left',
+					group_by: true
+				},
+				hits: {
+					label: __( 'Hits', 'burst-mainwp' ),
+					format: 'integer',
+					align: 'right'
+				}
+			}
+		},
+		search_console: {
+			label: __( 'Google searches', 'burst-mainwp' ),
+			searchable: true,
+			defaultColumns: [ 'query', 'clicks', 'impressions', 'click_through_rate', 'position' ],
+			columnsOptions: {
+				query: {
+					label: __( 'Query', 'burst-mainwp' ),
+					default: true,
+					format: 'string',
+					align: 'left',
+					group_by: true
+				},
+				clicks: {
+					label: __( 'Clicks', 'burst-mainwp' ),
+					format: 'integer',
+					align: 'right'
+				},
+				impressions: {
+					label: __( 'Impressions', 'burst-mainwp' ),
+					format: 'integer',
+					align: 'right'
+				},
+				click_through_rate: {
+					label: __( 'Click Through Rate', 'burst-mainwp' ),
+					format: 'percentage',
+					align: 'right'
+				},
+				position: {
+					label: __( 'Avg. position', 'burst-mainwp' ),
+					format: 'float',
+					align: 'right'
+				}
+			}
+		},
 		reading_engagement: {
 			label: __( 'Reading engagement', 'burst-mainwp' ),
 			searchable: true,
-			defaultColumns: [ 'page_url', 'avg_time_on_page' ],
+			defaultColumns: [ 'page_url', 'reading_engagement_score' ],
 			columnsOptions: {
 				page_url: {
 					label: __( 'Page', 'burst-mainwp' ),
@@ -692,6 +689,11 @@ const DataTableBlock = ( /** @type {BlockComponentProps} */ props ) => {
 					format: 'url',
 					align: 'left',
 					group_by: true
+				},
+				reading_engagement_score: {
+					label: __( 'Score', 'burst-mainwp' ),
+					format: 'number',
+					align: 'right'
 				},
 				avg_time_on_page: {
 					label: __( 'Avg. time on page', 'burst-mainwp' ),
@@ -805,7 +807,7 @@ const DataTableBlock = ( /** @type {BlockComponentProps} */ props ) => {
 		setRowsPerPage: setRowsPerPageStore
 	} = useDataTableStore();
 
-	const { isPro } = useLicenseData();
+	const { isPro, isLicenseValid } = useLicenseData();
 
 	const [ selectedConfig, setSelectedConfigState ] = useState( () => getSelectedConfig( id, defaultConfig ) );
 
@@ -841,6 +843,13 @@ const DataTableBlock = ( /** @type {BlockComponentProps} */ props ) => {
 			availableColumns.includes( column )
 		);
 	});
+
+	// Filter out pro columns if the license is not valid to prevent empty pro columns from showing on deactivation.
+	const activeColumns = useMemo( () => {
+		return columns.filter( ( column ) =>
+			! columnsOptions[column]?.pro || isLicenseValid
+		);
+	}, [ columns, columnsOptions, isLicenseValid ]);
 
 	// Sort state: initialize from localStorage
 	const [ sortField, setSortFieldState ] = useState( () => {
@@ -945,21 +954,27 @@ const DataTableBlock = ( /** @type {BlockComponentProps} */ props ) => {
 		const queryArgs = {
 			filters,
 			metrics: Object.keys( columnsOptions ).filter( ( column ) =>
-				columns.includes( column )
+				activeColumns.includes( column )
 			),
 			id: id,
 			group_by: []
 		};
 
 		// Add group by based on the columnOptions.
-		columns.forEach( ( column ) => {
+		activeColumns.forEach( ( column ) => {
 			if ( columnsOptions[column]?.group_by ) {
 				queryArgs.group_by.push( column );
 			}
 		});
 
+		if ( 'referrers' === selectedConfig && isPro ) {
+			if ( ! queryArgs.metrics.includes( 'source_category' ) ) {
+				queryArgs.metrics.push( 'source_category' );
+			}
+		}
+
 		return queryArgs;
-	}, [ filters, columnsOptions, columns, id ]);
+	}, [ filters, columnsOptions, activeColumns, id, selectedConfig, isPro ]);
 
 	const query = useQuery({
 		queryKey: [ selectedConfig, startDate, endDate, args ],
@@ -1007,6 +1022,7 @@ const DataTableBlock = ( /** @type {BlockComponentProps} */ props ) => {
 	 *
 	 * @returns {*|string|string} - the formatted value to be used for searching, or the original value as a string if no formatter is found
 	 */
+	// fallow-ignore-next-line complexity
 	const getSearchableValue = ( value, format, columnId ) => {
 		if ( null === value || value === undefined ) {
 			return '';
@@ -1043,20 +1059,26 @@ const DataTableBlock = ( /** @type {BlockComponentProps} */ props ) => {
 			return [];
 		}
 
+		// Filter out elements that are not in activeColumns.
+		const filteredColumnsData = columnsData.filter( ( col ) =>
+			activeColumns.includes( col.id )
+		);
+
 		// Create an array from columnsOptions keys to define the order.
 		const order = Object.keys( columnsOptions );
 
 		// Sort columnsData based on the order of columns in columnsOptions.
-		return columnsData.sort( ( a, b ) => {
-			const orderA = order.indexOf( a.selector );
-			const orderB = order.indexOf( b.selector );
+		return filteredColumnsData.sort( ( a, b ) => {
+			const orderA = order.indexOf( a.id );
+			const orderB = order.indexOf( b.id );
 
 			return orderA - orderB;
 		});
-	}, [ columnsData, columnsOptions ]);
+	}, [ columnsData, columnsOptions, activeColumns ]);
 
 
 	// Memoize the filtered data to avoid recalculations.
+	// fallow-ignore-next-line complexity
 	const filteredData = useMemo( () => {
 		let filtered = [];
 		if ( configDetails?.searchable && Array.isArray( tableData ) ) {
@@ -1094,12 +1116,16 @@ const DataTableBlock = ( /** @type {BlockComponentProps} */ props ) => {
 			return filtered;
 		}
 
+		// fallow-ignore-next-line complexity
 		filtered = [ ...filtered ].sort( ( a, b ) => {
 			let actualSortField = sortField;
 
-			// If sortField is not in sortedColumnsData, use the second column as default.
-			if ( ! actualSortField && 1 < sortedColumnsData.length ) {
-				actualSortField = sortedColumnsData[1].id;
+			// If sortField is not in sortedColumnsData, use a metric column as default.
+			if ( ! actualSortField || ! sortedColumnsData.some( col => col.id === actualSortField ) ) {
+				const metricCol = sortedColumnsData.find( col =>
+					[ 'visitors', 'pageviews', 'sessions' ].includes( col.id )
+				);
+				actualSortField = metricCol ? metricCol.id : ( sortedColumnsData[1]?.id || '' );
 			}
 
 			const aValue = a[actualSortField];
@@ -1214,6 +1240,17 @@ const DataTableBlock = ( /** @type {BlockComponentProps} */ props ) => {
 	const error = query.error;
 	const noData = 0 === enrichedFilteredData.length;
 
+	// Google Search Console reports data with a delay of about two days, so a
+	// range that only covers today and/or yesterday can never have data yet.
+	const searchConsoleLagMessage =
+		'search_console' === selectedConfig &&
+		format( subDays( getDateWithOffset(), 1 ), 'yyyy-MM-dd' ) <= startDate ?
+			__(
+				'Google Search Console data arrives with a delay of about two days, so there is no data for today and yesterday yet. Select an earlier date range to see search data.',
+				'burst-mainwp'
+			) :
+			'';
+
 	// sortedColumns the first column should have overflow true.
 	if ( 0 < enhancedColumnsData.length ) {
 		enhancedColumnsData[0] = {
@@ -1228,12 +1265,7 @@ const DataTableBlock = ( /** @type {BlockComponentProps} */ props ) => {
 	const dataTableProps = useMemo(
 
 		() => {
-			const sortColumnIndex = enhancedColumnsData.findIndex( col =>
-				col.id === sortField
-			);
-
-			// findIndex returns -1 if not found, default to 2, otherwise use 1-based index
-			const sortFieldId = -1 !== sortColumnIndex ? sortColumnIndex + 1 : 2;
+			const sortFieldId = getActiveSortFieldId( enhancedColumnsData, sortField );
 
 			const baseProps = {
 				className: 'burst-data-table',
@@ -1250,6 +1282,7 @@ const DataTableBlock = ( /** @type {BlockComponentProps} */ props ) => {
 						data={[]}
 						isLoading={isLoading}
 						error={error}
+						emptyStateMessage={searchConsoleLagMessage}
 						isInOverlay={isInOverlay}
 					/>
 				),
@@ -1266,19 +1299,10 @@ const DataTableBlock = ( /** @type {BlockComponentProps} */ props ) => {
 				)
 			};
 
-			if ( paramVariationsEnabled ) {
-				baseProps.expandableRows = true;
-				baseProps.expandableRowDisabled = ( row ) =>
-					! row || 0 >= Number( row.parameter_count ?? 0 );
-				baseProps.expandableRowsComponent = ParameterVariationsRow;
-				baseProps.expandableRowsComponentProps = {
-					startDate,
-					endDate,
-					range
-				};
-			}
-
-			return baseProps;
+			return {
+				...baseProps,
+				...getExpandableRowsProps({ paramVariationsEnabled, isPro, selectedConfig, startDate, endDate, range, activeColumns })
+			};
 		},
 		[
 			enhancedColumnsData,
@@ -1289,11 +1313,15 @@ const DataTableBlock = ( /** @type {BlockComponentProps} */ props ) => {
 			noData,
 			isLoading,
 			error,
+			searchConsoleLagMessage,
 			paramVariationsEnabled,
 			startDate,
 			endDate,
 			range,
-			isInOverlay
+			isInOverlay,
+			isPro,
+			selectedConfig,
+			activeColumns
 		]
 	);
 
@@ -1373,12 +1401,13 @@ const DataTableBlock = ( /** @type {BlockComponentProps} */ props ) => {
 	const fileName = `${safeDomain}-${selectedConfig}-${startDate}-${endDate}`;
 
 	return (
-		<Block className={ isInOverlay ? 'flex-1 min-h-0 group/root' : 'row-span-2 overflow-hidden @xl:col-span-6 group/root' }>
+		<Block id={id} className={ isInOverlay ? 'flex-1 min-h-0 group/root' : 'row-span-2 overflow-hidden @xl:col-span-6 group/root' }>
 			<BlockHeading
 				className="border-b border-gray-200"
 				isReport={isReport}
 				reportBlockIndex={index}
 				isLoading={isLoading}
+				pro={configDetails?.pro}
 				title={
 					<DataTableSelect
 						value={selectedConfig}

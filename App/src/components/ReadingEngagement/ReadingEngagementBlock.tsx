@@ -10,6 +10,7 @@ import { BarDataTable } from '@/components/DataTable/BarDataTable';
 import { useReadingEngagementData } from './useReadingEngagementData';
 import { getReadingEngagementColumns } from './columns';
 import MetricInfo from '@/components/Common/MetricInfo';
+import useColumnsBySiteUrl from '@/hooks/useColumnsBySiteUrl';
 
 type ReadingEngagementBlockProps = {
 
@@ -37,15 +38,7 @@ const ReadingEngagementBlock = memo( ({ className = '' }: ReadingEngagementBlock
 
 	const navigate = useNavigate();
 	const location = useRouterState({ select: ( s ) => s.location });
-
-	const siteUrl =
-		( window as unknown as { burst_settings?: { site_url?: string } })
-			?.burst_settings?.site_url ?? window.location.origin;
-
-	const columns = useMemo(
-		() => getReadingEngagementColumns({ siteUrl }),
-		[ siteUrl ]
-	);
+	const columns = useColumnsBySiteUrl( getReadingEngagementColumns );
 
 	const slicedData = useMemo( () => {
 		return data.slice( 0, TOP_N );
@@ -111,7 +104,7 @@ const ReadingEngagementBlock = memo( ({ className = '' }: ReadingEngagementBlock
 					columns={columns}
 					data={slicedData}
 					rowKey={( row ) => row.page_url as string}
-					barColumnKey="avg_time_on_page"
+					barColumnKey="reading_engagement_score"
 					isLoading={isLoading}
 					emptyState={
 						__( 'No reading engagement data recorded yet.', 'burst-mainwp' )

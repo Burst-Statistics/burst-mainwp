@@ -66,6 +66,20 @@ export const METRIC_DEFINITIONS = {
 		definition: __( 'Devices that could not be classified as desktop, tablet, or mobile. Including smart TVs, game consoles, and bots that passed bot filtering.', 'burst-mainwp' )
 	},
 
+	// Ecommerce charts.
+	sales_forecast_chart: {
+		label: __( 'Revenue over time', 'burst-mainwp' ),
+		definition: __( 'Your store\'s total revenue per period: tracked orders plus subscription renewals. With the forecast enabled, the dashed line projects upcoming periods from the same period last year, scaled by your store\'s year-over-year growth; the current period blends what is already earned with the modeled remainder.', 'burst-mainwp' ),
+		whyItMatters: __( 'Seeing measured revenue and its projection in one line helps you spot seasonality and plan ahead.', 'burst-mainwp' ),
+		url: 'https://burst-statistics.com/guides/how-sales-forecasts-are-calculated/'
+	},
+	subscription_forecast_chart: {
+		label: __( 'Subscription renewals over time', 'burst-mainwp' ),
+		definition: __( 'Subscription renewal payments per period. The dashed forecast projects upcoming renewals from the same period last year, scaled by the net year-over-year renewal growth — which already accounts for churn and new subscribers.', 'burst-mainwp' ),
+		whyItMatters: __( 'Renewals are your recurring baseline: projecting them shows the revenue you can count on before any new sales.', 'burst-mainwp' ),
+		url: 'https://burst-statistics.com/guides/how-sales-forecasts-are-calculated/'
+	},
+
 	// Engagement metrics.
 	outgoing_links: {
 		label: __( 'Outgoing links', 'burst-mainwp' ),
@@ -83,6 +97,16 @@ export const METRIC_DEFINITIONS = {
 		definition: __( 'Words and phrases visitors typed into your site\'s own search bar, captured from the search query parameter in the URL.', 'burst-mainwp' ),
 		whyItMatters: __( 'Zero-result searches reveal content gaps. Topics your visitors want but cannot find on your site.', 'burst-mainwp' ),
 		url: 'https://burst-statistics.com/guides/search-insights-see-what-visitors-are-looking-for-on-your-website/'
+	},
+	not_found_pages: {
+		label: __( '404 Pages', 'burst-mainwp' ),
+		definition: __( 'Pages that returned a 404 (Not Found) status code, showing which broken URLs visitors are hitting.', 'burst-mainwp' ),
+		whyItMatters: __( 'Frequently hit 404 URLs point to broken inbound links, missing redirects, or old pages that need fixing.', 'burst-mainwp' )
+	},
+	reading_engagement: {
+		label: __( 'Reading engagement', 'burst-mainwp' ),
+		definition: __( 'A score (0–100) calculated by comparing average time on page against estimated reading time based on page word count (200 words per minute).', 'burst-mainwp' ),
+		whyItMatters: __( 'Reading time alone can be misleading: spending 2 minutes on a 400-word page shows high engagement, but the same 2 minutes on a 2000-word article shows low engagement.', 'burst-mainwp' )
 	},
 
 	// Live count.
