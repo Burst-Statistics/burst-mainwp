@@ -62,6 +62,8 @@ No. No external account is needed for this extension itself. A Burst Pro license
 = 1.0.2 =
 * Release date: August 18th 2026
 * Improvement: updated the bundled Burst dashboard app to the latest Burst release.
+* Improvement: multi-select support for filters, matching the updated dashboard.
+* Fix: moved the world map, country maps, and flag assets to the plugin's assets directory, restoring the geo statistics visuals in the dashboard.
 
 = 1.0.1 =
 * Release date: June 30th 2026

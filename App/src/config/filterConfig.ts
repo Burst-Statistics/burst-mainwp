@@ -1,4 +1,4 @@
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Filter categories configuration.
@@ -41,9 +41,13 @@ export interface FilterConfig {
 	reloadOnSearch?: boolean;
 	coming_soon?: boolean;
 	exclusion_allowed?: boolean;
+	multi_select?: boolean;
 
 	/** When set, shows a time-limited "New" badge. Remove coming_soon and add this when launching a feature. */
 	new_badge?: { version: string; days: number; tooltip?: string };
+
+	/** Singular/plural noun used in the collapsed multi-value chip count badge, e.g. "page" / "pages". */
+	countNoun?: { singular: string; plural: string };
 }
 
 /**
@@ -60,7 +64,9 @@ export const FILTER_CONFIG: Record<string, FilterConfig> = {
 		pro: false,
 		category: 'content',
 		reloadOnSearch: true,
-		exclusion_allowed: true
+		exclusion_allowed: true,
+		multi_select: true,
+		countNoun: { singular: __( 'page', 'burst-mainwp' ), plural: __( 'pages', 'burst-mainwp' ) }
 	},
 	referrer: {
 		label: __( 'Referrer', 'burst-mainwp' ),
@@ -70,7 +76,9 @@ export const FILTER_CONFIG: Record<string, FilterConfig> = {
 		pro: false,
 		category: 'sources',
 		reloadOnSearch: true,
-		exclusion_allowed: true
+		exclusion_allowed: true,
+		multi_select: true,
+		countNoun: { singular: __( 'referrer', 'burst-mainwp' ), plural: __( 'referrers', 'burst-mainwp' ) }
 	},
 	goal_id: {
 		label: __( 'Goal', 'burst-mainwp' ),
@@ -79,7 +87,9 @@ export const FILTER_CONFIG: Record<string, FilterConfig> = {
 		options: 'goals',
 		pro: false,
 		category: 'content',
-		exclusion_allowed: true
+		exclusion_allowed: true,
+		multi_select: true,
+		countNoun: { singular: __( 'goal', 'burst-mainwp' ), plural: __( 'goals', 'burst-mainwp' ) }
 	},
 	bounces: {
 		label: __( 'Bounced Visitors', 'burst-mainwp' ),
@@ -96,7 +106,9 @@ export const FILTER_CONFIG: Record<string, FilterConfig> = {
 		options: 'devices',
 		pro: false,
 		category: 'content',
-		exclusion_allowed: false
+		exclusion_allowed: false,
+		multi_select: true,
+		countNoun: { singular: __( 'device', 'burst-mainwp' ), plural: __( 'devices', 'burst-mainwp' ) }
 	},
 
 	// Pro Filters.
@@ -106,7 +118,9 @@ export const FILTER_CONFIG: Record<string, FilterConfig> = {
 		type: 'string',
 		options: 'hosts',
 		pro: true,
-		category: 'sources'
+		category: 'sources',
+		multi_select: true,
+		countNoun: { singular: __( 'domain', 'burst-mainwp' ), plural: __( 'domains', 'burst-mainwp' ) }
 	},
 	new_visitor: {
 		label: __( 'New Visitors', 'burst-mainwp' ),
@@ -163,7 +177,9 @@ export const FILTER_CONFIG: Record<string, FilterConfig> = {
 		options: 'campaigns',
 		pro: true,
 		category: 'sources',
-		exclusion_allowed: true
+		exclusion_allowed: true,
+		multi_select: true,
+		countNoun: { singular: __( 'campaign', 'burst-mainwp' ), plural: __( 'campaigns', 'burst-mainwp' ) }
 	},
 	source: {
 		label: __( 'Source', 'burst-mainwp' ),
@@ -181,7 +197,9 @@ export const FILTER_CONFIG: Record<string, FilterConfig> = {
 		options: 'mediums',
 		pro: true,
 		category: 'sources',
-		exclusion_allowed: true
+		exclusion_allowed: true,
+		multi_select: true,
+		countNoun: { singular: __( 'medium', 'burst-mainwp' ), plural: __( 'mediums', 'burst-mainwp' ) }
 	},
 	term: {
 		label: __( 'Term', 'burst-mainwp' ),
@@ -208,7 +226,9 @@ export const FILTER_CONFIG: Record<string, FilterConfig> = {
 		options: 'countries',
 		pro: true,
 		category: 'location',
-		exclusion_allowed: true
+		exclusion_allowed: true,
+		multi_select: true,
+		countNoun: { singular: __( 'country', 'burst-mainwp' ), plural: __( 'countries', 'burst-mainwp' ) }
 	},
 	state: {
 		label: __( 'State', 'burst-mainwp' ),
@@ -217,7 +237,9 @@ export const FILTER_CONFIG: Record<string, FilterConfig> = {
 		options: 'states',
 		pro: true,
 		category: 'location',
-		exclusion_allowed: true
+		exclusion_allowed: true,
+		multi_select: true,
+		countNoun: { singular: __( 'state', 'burst-mainwp' ), plural: __( 'states', 'burst-mainwp' ) }
 	},
 	city: {
 		label: __( 'City', 'burst-mainwp' ),
@@ -226,7 +248,9 @@ export const FILTER_CONFIG: Record<string, FilterConfig> = {
 		options: 'cities',
 		pro: true,
 		category: 'location',
-		exclusion_allowed: true
+		exclusion_allowed: true,
+		multi_select: true,
+		countNoun: { singular: __( 'city', 'burst-mainwp' ), plural: __( 'cities', 'burst-mainwp' ) }
 	},
 	continent_code: {
 		label: __( 'Continent', 'burst-mainwp' ),
@@ -235,7 +259,9 @@ export const FILTER_CONFIG: Record<string, FilterConfig> = {
 		options: 'continents',
 		pro: true,
 		category: 'location',
-		exclusion_allowed: true
+		exclusion_allowed: true,
+		multi_select: true,
+		countNoun: { singular: __( 'continent', 'burst-mainwp' ), plural: __( 'continents', 'burst-mainwp' ) }
 	},
 	time_per_session: {
 		label: __( 'Time per Session', 'burst-mainwp' ),
@@ -252,7 +278,9 @@ export const FILTER_CONFIG: Record<string, FilterConfig> = {
 		options: 'platforms',
 		pro: true,
 		category: 'content',
-		exclusion_allowed: true
+		exclusion_allowed: true,
+		multi_select: true,
+		countNoun: { singular: __( 'operating system', 'burst-mainwp' ), plural: __( 'operating systems', 'burst-mainwp' ) }
 	},
 	browser_id: {
 		label: __( 'Browser', 'burst-mainwp' ),
@@ -261,7 +289,9 @@ export const FILTER_CONFIG: Record<string, FilterConfig> = {
 		options: 'browsers',
 		pro: true,
 		category: 'content',
-		exclusion_allowed: true
+		exclusion_allowed: true,
+		multi_select: true,
+		countNoun: { singular: __( 'browser', 'burst-mainwp' ), plural: __( 'browsers', 'burst-mainwp' ) }
 	}
 };
 export type BlockFilters = {
@@ -296,8 +326,8 @@ export type FilterSearchParams = {
  */
 export const validateFilterSearch = (
 	search: Record<string, unknown>
-): FilterSearchParams => {
-	const filters: FilterSearchParams = {};
+): FilterSearchParams & { burst_share_token?: string } => {
+	const filters: FilterSearchParams & { burst_share_token?: string } = {};
 
 	FILTER_KEYS.forEach( ( key ) => {
 		const value = search[key];
@@ -309,6 +339,12 @@ export const validateFilterSearch = (
 	// Preserve trailing param for URL parsing safety.
 	if ( TRAILING_PARAM_KEY in search ) {
 		filters[TRAILING_PARAM_KEY] = '';
+	}
+
+	// Preserve the share token across client-side navigations so the backend
+	// can identify shared viewers on every page-load and API request.
+	if ( 'string' === typeof search.burst_share_token && '' !== search.burst_share_token ) {
+		filters.burst_share_token = search.burst_share_token;
 	}
 
 	return filters;
@@ -323,6 +359,71 @@ export const validateFilterSearch = (
  */
 export const isExcluding = ( value: string | undefined ): boolean => {
 	return !! value && value.startsWith( '!' );
+};
+
+/**
+ * Splits a comma-separated filter value into a trimmed, non-empty array of raw values.
+ * Assumes any leading exclusion '!' has already been stripped by the caller.
+ *
+ * @param value - The (already unprefixed) filter value, e.g. '/a,/b'.
+ *
+ * @return Array of individual raw values.
+ */
+export const splitFilterValues = ( value: string | undefined ): string[] => {
+	if ( ! value ) {
+		return [];
+	}
+	return value.split( ',' ).map( ( v ) => v.trim() ).filter( Boolean );
+};
+
+/**
+ * The four explicit operators a filter chip can render.
+ */
+export type FilterOperator = 'is' | 'is-not' | 'is-any-of' | 'is-not-any-of';
+
+/**
+ * Human-readable, translatable labels for each filter operator.
+ */
+export const FILTER_OPERATOR_LABELS: Record<FilterOperator, string> = {
+	is: __( 'is', 'burst-mainwp' ),
+	'is-not': __( 'is not', 'burst-mainwp' ),
+	'is-any-of': __( 'is any of', 'burst-mainwp' ),
+	'is-not-any-of': __( 'is not one of', 'burst-mainwp' )
+};
+
+/**
+ * Derives the explicit operator for a filter based on whether it excludes and
+ * whether it currently has more than one selected value.
+ *
+ * @param options            - Operator inputs.
+ * @param options.isExcluded  - Whether the filter is in exclude mode.
+ * @param options.isMultiValue - Whether the filter currently has 2+ values.
+ *
+ * @return The matching filter operator.
+ */
+export const getFilterOperator = ({ isExcluded, isMultiValue }: { isExcluded: boolean; isMultiValue: boolean }): FilterOperator => {
+	if ( isExcluded ) {
+		return isMultiValue ? 'is-not-any-of' : 'is-not';
+	}
+	return isMultiValue ? 'is-any-of' : 'is';
+};
+
+/**
+ * Builds the translatable "( N noun )" count label shown on a collapsed
+ * multi-value filter chip, e.g. "( 13 pages )". Falls back to a generic
+ * "value" / "values" noun when the filter has no configured countNoun.
+ *
+ * @param config - The filter's configuration (for its countNoun), or null.
+ * @param count  - The number of selected values.
+ *
+ * @return The formatted count label.
+ */
+export const buildCountLabel = ( config: FilterConfig | null | undefined, count: number ): string => {
+	const singular = config?.countNoun?.singular || __( 'value', 'burst-mainwp' );
+	const plural = config?.countNoun?.plural || __( 'values', 'burst-mainwp' );
+	const noun = 1 === count ? singular : plural;
+
+	return sprintf( '%1$d %2$s', count, noun );
 };
 
 /**
