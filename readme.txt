@@ -61,7 +61,7 @@ No. No external account is needed for this extension itself. A Burst Pro license
 
 = 1.0.2 =
 * Release date: August 18th 2026
-* Updated the bundled Burst dashboard app to the latest Burst release.
+* Improvement: updated the bundled Burst dashboard app to the latest Burst release.
 
 = 1.0.1 =
 * Release date: June 30th 2026

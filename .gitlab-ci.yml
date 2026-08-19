@@ -36,7 +36,7 @@ test:code-quality:
   stage: code_quality
   interruptible: true
   image:
-    name: ource.updraftplus.com:5050/ci/playwright-e2e:php-8.5-wp-7.1-RC3
+    name: source.updraftplus.com:5050/ci/playwright-e2e:php-8.5-wp-7.1-RC3
     entrypoint: [""]
   needs: [php_compatibility]
   cache:
@@ -56,13 +56,37 @@ test:code-quality:
     - php composer.phar lint:report
     - php composer.phar phpstan:gitlab
 
+# ─── PHPUnit ──────────────────────────────────────────────────────────────────
+
+test:phpunit:
+  stage: code_quality
+  interruptible: true
+  image:
+    name: source.updraftplus.com:5050/ci/playwright-e2e:php-8.5-wp-7.1-RC3
+    entrypoint: [""]
+  needs: [php_compatibility]
+  cache:
+    - key:
+        files:
+          - composer.json
+          - composer.lock
+      paths:
+        - vendor/
+        - composer.phar
+  before_script:
+    - test -f composer.phar || curl -sS https://getcomposer.org/installer | php
+    - php composer.phar config -g github-oauth.github.com $GITHUB_TOKEN
+    - php composer.phar install --no-interaction --prefer-dist --optimize-autoloader
+  script:
+    - php composer.phar phpunit
+
 # ─── Plugin Check ─────────────────────────────────────────────────────────────
 
 test:plugin-check:
   stage: plugin_check
   interruptible: true
   image:
-    name: ource.updraftplus.com:5050/ci/playwright-e2e:php-8.5-wp-7.1-RC3
+    name: source.updraftplus.com:5050/ci/playwright-e2e:php-8.5-wp-7.1-RC3
     entrypoint: [""]
   needs: [test:code-quality]
   before_script:
