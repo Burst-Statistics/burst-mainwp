@@ -22,9 +22,18 @@ const ProPopover = ({
 			>
 				{children}
 			</Popover.Trigger>
-			<Popover.Portal>
+			<Popover.Portal
+				container={
+					document.getElementById( 'modal-root' ) ||
+					document.getElementById( 'burst-mainwp' ) ||
+					document.getElementById( 'burst-mainwp' ) ||
+					document.querySelector( '.burst' ) ||
+					undefined
+				}
+			>
 				<Popover.Content
-					className="z-modal min-w-[320px] max-w-[400px] rounded-lg border border-gray-200 bg-white p-0 shadow-xl"
+					id="burst-mainwp"
+					className="burst z-modal min-w-[320px] max-w-[400px] rounded-lg border border-gray-200 bg-white p-0 shadow-xl"
 					align={'end'}
 					sideOffset={10}
 					arrowPadding={10}

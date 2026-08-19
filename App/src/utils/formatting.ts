@@ -1,5 +1,5 @@
 import { dateI18n, getSettings } from '@wordpress/date';
-import countryContinentsMap from '../../../assets/maps/country-continents.json';
+import countryContinentsMap from './countryContinents';
 import {
 	addDays,
 	addMonths,

@@ -52,11 +52,6 @@ export const PageFilter = ( props ) => {
 		setEditingFilter( null );
 	};
 
-	const portalContainer =
-		document.getElementById( 'modal-root' ) ||
-		document.querySelector( '.burst' ) ||
-		document.body;
-
 	return (
 		<>
 			{isOpen && userCanFilter && ! isReport && (
@@ -119,9 +114,10 @@ export const PageFilter = ( props ) => {
 				</ReactPopover.Anchor>
 
 				{userCanFilter && ! isReport && (
-					<ReactPopover.Portal container={portalContainer}>
+					<ReactPopover.Portal>
 						<ReactPopover.Content
-							className="z-[10001] w-[700px] max-w-[calc(100vw-40px)] max-h-[80vh] rounded-lg border border-gray-200 bg-white shadow-xl flex flex-col"
+							id="burst-mainwp"
+							className="burst z-[100001] w-[700px] max-w-[calc(100vw-40px)] max-h-[80vh] rounded-lg border border-gray-200 bg-white shadow-xl flex flex-col"
 							align="start"
 							sideOffset={10}
 							arrowPadding={10}

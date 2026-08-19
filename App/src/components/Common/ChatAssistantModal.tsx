@@ -1213,9 +1213,18 @@ const ChatAssistantModal = () => {
 												</Select.Icon>
 											</Select.Trigger>
 
-											<Select.Portal container={document.getElementById( 'modal-root' )}>
+											<Select.Portal
+												container={
+													document.getElementById( 'modal-root' ) ||
+													document.getElementById( 'burst-mainwp' ) ||
+													document.getElementById( 'burst-mainwp' ) ||
+													document.querySelector( '.burst' ) ||
+													undefined
+												}
+											>
 												<Select.Content
-													className="bg-white text-text-black border border-gray-200 rounded-lg shadow-lg z-99999 max-h-[300px] overflow-y-auto min-w-[200px]"
+													id="burst-mainwp"
+													className="burst bg-white text-text-black border border-gray-200 rounded-lg shadow-lg z-99999 max-h-[300px] overflow-y-auto min-w-[200px]"
 													position="popper"
 													sideOffset={5}
 												>
