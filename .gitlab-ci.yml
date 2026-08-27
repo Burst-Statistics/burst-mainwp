@@ -36,7 +36,7 @@ test:code-quality:
   stage: code_quality
   interruptible: true
   image:
-    name: source.updraftplus.com:5050/ci/playwright-e2e:php-8.5-wp-7.1-RC3
+    name: source.updraftplus.com:5050/ci/playwright-e2e:auto-php-8.5-wp-7.1.0
     entrypoint: [""]
   needs: [php_compatibility]
   cache:
@@ -62,7 +62,7 @@ test:phpunit:
   stage: code_quality
   interruptible: true
   image:
-    name: source.updraftplus.com:5050/ci/playwright-e2e:php-8.5-wp-7.1-RC3
+    name: source.updraftplus.com:5050/ci/playwright-e2e:auto-php-8.5-wp-7.1.0
     entrypoint: [""]
   needs: [php_compatibility]
   cache:
@@ -85,8 +85,16 @@ test:phpunit:
 test:plugin-check:
   stage: plugin_check
   interruptible: true
+  # Installs mainwp/plugin-check from wordpress.org at runtime; retry to ride
+  # out transient network failures.
+  retry:
+    max: 2
+    when:
+      - script_failure
+      - runner_system_failure
+      - stuck_or_timeout_failure
   image:
-    name: source.updraftplus.com:5050/ci/playwright-e2e:php-8.5-wp-7.1-RC3
+    name: source.updraftplus.com:5050/ci/playwright-e2e:auto-php-8.5-wp-7.1.0
     entrypoint: [""]
   needs: [test:code-quality]
   before_script:
