@@ -57,7 +57,7 @@ export const FILTER_CONFIG: Record<string, FilterConfig> = {
 
 	// Free Filters.
 	page_url: {
-		label: __( 'Page URL', 'burst-mainwp' ),
+		label: __( 'Page', 'burst-mainwp' ),
 		icon: 'page',
 		type: 'string',
 		options: 'pages',
@@ -92,12 +92,20 @@ export const FILTER_CONFIG: Record<string, FilterConfig> = {
 		countNoun: { singular: __( 'goal', 'burst-mainwp' ), plural: __( 'goals', 'burst-mainwp' ) }
 	},
 	bounces: {
-		label: __( 'Bounced Visitors', 'burst-mainwp' ),
+		label: __( 'Bounce', 'burst-mainwp' ),
 		icon: 'bounce',
 		type: 'boolean',
 		pro: false,
 		category: 'behavior',
 		exclusion_allowed: false
+	},
+	status: {
+		label: __( 'Status', 'burst-mainwp' ),
+		icon: 'page',
+		type: 'boolean',
+		pro: false,
+		category: 'content',
+		exclusion_allowed: true
 	},
 	device_id: {
 		label: __( 'Device', 'burst-mainwp' ),
@@ -123,7 +131,7 @@ export const FILTER_CONFIG: Record<string, FilterConfig> = {
 		countNoun: { singular: __( 'domain', 'burst-mainwp' ), plural: __( 'domains', 'burst-mainwp' ) }
 	},
 	new_visitor: {
-		label: __( 'New Visitors', 'burst-mainwp' ),
+		label: __( 'Visitor type', 'burst-mainwp' ),
 		icon: 'user',
 		type: 'boolean',
 		pro: true,
@@ -139,7 +147,7 @@ export const FILTER_CONFIG: Record<string, FilterConfig> = {
 		coming_soon: true
 	},
 	entry_exit_pages: {
-		label: __( 'Entry or exit page', 'burst-mainwp' ),
+		label: __( 'Page type', 'burst-mainwp' ),
 		icon: 'bounce',
 		type: 'boolean',
 		pro: true,
@@ -155,23 +163,15 @@ export const FILTER_CONFIG: Record<string, FilterConfig> = {
 		coming_soon: true
 	},
 	parameter: {
-		label: __( 'URL Parameter', 'burst-mainwp' ),
+		label: __( 'URL parameter', 'burst-mainwp' ),
 		icon: 'parameters',
 		type: 'string',
 		pro: true,
 		category: 'sources',
 		exclusion_allowed: true
 	},
-	parameters: {
-		label: __( 'URL Parameters', 'burst-mainwp' ),
-		icon: 'parameters',
-		type: 'string',
-		pro: true,
-		category: 'sources',
-		exclusion_allowed: true
-	},
-	campaign: {
-		label: __( 'Campaign', 'burst-mainwp' ),
+	utm_campaign: {
+		label: __( 'UTM campaign', 'burst-mainwp' ),
 		icon: 'campaign',
 		type: 'string',
 		options: 'campaigns',
@@ -181,28 +181,26 @@ export const FILTER_CONFIG: Record<string, FilterConfig> = {
 		multi_select: true,
 		countNoun: { singular: __( 'campaign', 'burst-mainwp' ), plural: __( 'campaigns', 'burst-mainwp' ) }
 	},
-	source: {
-		label: __( 'Source', 'burst-mainwp' ),
+	utm_source: {
+		label: __( 'UTM source', 'burst-mainwp' ),
 		icon: 'source',
 		type: 'string',
-		options: 'contents',
+		options: 'sources',
 		pro: true,
 		category: 'sources',
 		exclusion_allowed: true
 	},
-	medium: {
-		label: __( 'Medium', 'burst-mainwp' ),
+	utm_medium: {
+		label: __( 'UTM medium', 'burst-mainwp' ),
 		icon: 'medium',
 		type: 'string',
 		options: 'mediums',
 		pro: true,
 		category: 'sources',
-		exclusion_allowed: true,
-		multi_select: true,
-		countNoun: { singular: __( 'medium', 'burst-mainwp' ), plural: __( 'mediums', 'burst-mainwp' ) }
+		exclusion_allowed: true
 	},
-	term: {
-		label: __( 'Term', 'burst-mainwp' ),
+	utm_term: {
+		label: __( 'UTM term', 'burst-mainwp' ),
 		icon: 'term',
 		type: 'string',
 		options: 'terms',
@@ -210,14 +208,44 @@ export const FILTER_CONFIG: Record<string, FilterConfig> = {
 		category: 'sources',
 		exclusion_allowed: true
 	},
-	content: {
-		label: __( 'Content', 'burst-mainwp' ),
+	utm_content: {
+		label: __( 'UTM content', 'burst-mainwp' ),
 		icon: 'content',
 		type: 'string',
 		options: 'contents',
 		pro: true,
 		category: 'sources',
 		exclusion_allowed: true
+	},
+	source: {
+		label: __( 'Source', 'burst-mainwp' ),
+		icon: 'source',
+		type: 'string',
+		options: 'traffic_sources',
+		pro: true,
+		category: 'sources',
+		exclusion_allowed: true
+	},
+	source_category: {
+		label: __( 'Source Category', 'burst-mainwp' ),
+		icon: 'source',
+		type: 'string',
+		options: 'source_categories',
+		pro: true,
+		category: 'sources',
+		exclusion_allowed: true,
+		multi_select: true,
+		countNoun: { singular: __( 'source', 'burst-mainwp' ), plural: __( 'sources', 'burst-mainwp' ) }
+	},
+	medium: {
+		label: __( 'Medium', 'burst-mainwp' ),
+		icon: 'medium',
+		type: 'string',
+		pro: true,
+		category: 'sources',
+		exclusion_allowed: true,
+		multi_select: true,
+		countNoun: { singular: __( 'content value', 'burst-mainwp' ), plural: __( 'content values', 'burst-mainwp' ) }
 	},
 	country_code: {
 		label: __( 'Country', 'burst-mainwp' ),
@@ -264,7 +292,7 @@ export const FILTER_CONFIG: Record<string, FilterConfig> = {
 		countNoun: { singular: __( 'continent', 'burst-mainwp' ), plural: __( 'continents', 'burst-mainwp' ) }
 	},
 	time_per_session: {
-		label: __( 'Time per Session', 'burst-mainwp' ),
+		label: __( 'Time per session', 'burst-mainwp' ),
 		icon: 'time',
 		type: 'int',
 		pro: true,
@@ -272,7 +300,7 @@ export const FILTER_CONFIG: Record<string, FilterConfig> = {
 		new_badge: { version: '3.2.3', days: 30, tooltip: __( 'New in 3.2.3 – filter visitors by how long they spent on your site.', 'burst-mainwp' ) }
 	},
 	platform_id: {
-		label: __( 'Operating System', 'burst-mainwp' ),
+		label: __( 'Operating system', 'burst-mainwp' ),
 		icon: 'operating-system',
 		type: 'string',
 		options: 'platforms',
@@ -294,9 +322,6 @@ export const FILTER_CONFIG: Record<string, FilterConfig> = {
 		countNoun: { singular: __( 'browser', 'burst-mainwp' ), plural: __( 'browsers', 'burst-mainwp' ) }
 	}
 };
-export type BlockFilters = {
-	[blockId: string]: FilterSearchParams;
-}
 
 // Get all filter keys from config.
 export const FILTER_KEYS = Object.keys( FILTER_CONFIG ) as FilterKey[];
@@ -418,6 +443,7 @@ export const getFilterOperator = ({ isExcluded, isMultiValue }: { isExcluded: bo
  *
  * @return The formatted count label.
  */
+// fallow-ignore-next-line complexity
 export const buildCountLabel = ( config: FilterConfig | null | undefined, count: number ): string => {
 	const singular = config?.countNoun?.singular || __( 'value', 'burst-mainwp' );
 	const plural = config?.countNoun?.plural || __( 'values', 'burst-mainwp' );

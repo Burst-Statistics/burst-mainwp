@@ -92,7 +92,7 @@ const SelectInput = React.forwardRef<HTMLButtonElement, SelectInputProps>(
 
 				<Select.Portal>
 					<Select.Content
-						className="burst z-max"
+						className="burst z-max max-h-[var(--radix-select-content-available-height)]"
 						style={{ zIndex: 'var(--z-max)' }}
 						position="popper"
 						sideOffset={5}
@@ -101,7 +101,7 @@ const SelectInput = React.forwardRef<HTMLButtonElement, SelectInputProps>(
 							setOpen( false );
 						}}
 					>
-						<div className="bg-gray-100 text-text-black border border-gray-400 rounded-md shadow-lg ring-1 ring-black/5 shadow-gray-400/50 min-w-[var(--radix-select-trigger-width)]">
+						<div className="bg-gray-100 text-text-black border border-gray-400 rounded-md shadow-lg ring-1 ring-black/5 shadow-gray-400/50 min-w-[var(--radix-select-trigger-width)] max-h-[var(--radix-select-content-available-height)] flex flex-col overflow-hidden">
 							<Select.ScrollUpButton className="flex items-center justify-center p-1">
 								<Icon
 									name="chevron-up"
@@ -111,7 +111,7 @@ const SelectInput = React.forwardRef<HTMLButtonElement, SelectInputProps>(
 									className=""
 								/>
 							</Select.ScrollUpButton>
-							<Select.Viewport className="p-1">
+							<Select.Viewport className="p-1 max-h-[260px] overflow-y-auto">
 								{normalizedOptions.map( ( option ) => (
 									<SelectItem
 										key={option.value}

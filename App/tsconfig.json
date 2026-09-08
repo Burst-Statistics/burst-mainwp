@@ -17,8 +17,7 @@
     "isolatedModules": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@assets/*": ["../../../assets/*", "../assets/*"]
+      "@/*": ["src/*"]
     }
   },
   "include": ["src", "src/global.d.ts", "src/types"]

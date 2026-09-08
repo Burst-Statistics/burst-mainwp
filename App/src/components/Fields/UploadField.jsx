@@ -15,7 +15,7 @@ const EXCLUDED_FIELDS = [
 	'burst_tour_shown_once',
 	'license',
 	'review_notice_shown',
-	'burst_update_to_city_geo_database_time',
+	'update_to_city_geo_database_time',
 	'filtering_by_domain',
 	'goals',
 	'import_settings',
@@ -41,6 +41,8 @@ const EXCLUDED_FIELDS = [
  * @return {JSX.Element}
  */
 	const UploadField = (
+
+	// fallow-ignore-next-line complexity
 	({ field, fieldState, label, help, context, className, ...props }) => {
 		const { settings, saveSettings, isSavingSettings } = useSettingsData();
 		const [ file, setFile ] = useState( false );
