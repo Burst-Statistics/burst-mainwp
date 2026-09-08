@@ -5,7 +5,8 @@ use PHPUnit\Framework\TestCase;
  * Guards that the newest WordPress version referenced by the CI Docker images in
  * .gitlab-ci.yml keeps tracking the latest WordPress release.
  *
- * The playwright-e2e images are tagged as `...:php-<php>-wp-<wp>`. Some jobs pin an
+ * The playwright-e2e images are tagged as `...:[auto-]php-<php>-wp-<wp>`; the optional
+ * `auto-` prefix marks daily-built images and is ignored here. Some jobs pin an
  * intentionally old WordPress (e.g. wp-6.6.0) to test the lowest supported version —
  * those are ignored here. Only the highest wp-<version> across all image tags is
  * checked, and it must stay current:
@@ -66,7 +67,7 @@ class BurstMainWPCiImageVersionTest extends TestCase {
 			return null;
 		}
 
-		$pattern = '/playwright-e2e:php-[0-9.]+-wp-([0-9]+\.[0-9]+(?:\.[0-9]+)?(?:-[a-zA-Z0-9.]+)?)/';
+		$pattern = '/playwright-e2e:(?:auto-)?php-[0-9.]+-wp-([0-9]+\.[0-9]+(?:\.[0-9]+)?(?:-[a-zA-Z0-9.]+)?)/';
 		if ( ! preg_match_all( $pattern, $content, $matches ) ) {
 			return null;
 		}
