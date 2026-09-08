@@ -1,4 +1,4 @@
-import { BurstMenuPage } from '@/index';
+import type { BurstMenuPage } from '@/types/burst-settings';
 
 export const shouldLoadRoute = (
 	route: string,

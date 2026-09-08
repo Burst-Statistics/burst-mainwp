@@ -3,7 +3,7 @@
  * Plugin Name:       Burst MainWP
  * Plugin URI:        https://wordpress.org/plugins/burst-mainwp
  * Description:       View Burst Statistics data from child sites in your MainWP Dashboard.
- * Version:           1.0.2
+ * Version:           1.1.0
  * Author:            Burst Statistics
  * Author URI:        https://burst-statistics.com
  * License:           GPLv2 or later
@@ -20,7 +20,7 @@ defined( 'ABSPATH' ) || die();
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
-define( 'BURST_MAINWP_VERSION', '1.0.2' );
+define( 'BURST_MAINWP_VERSION', '1.1.0' );
 define( 'BURST_MAINWP_FILE', __FILE__ );
 define( 'BURST_MAINWP_PATH', plugin_dir_path( __FILE__ ) );
 define( 'BURST_MAINWP_URL', plugins_url( '', __FILE__ ) );

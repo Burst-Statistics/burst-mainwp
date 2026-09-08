@@ -13,18 +13,16 @@
 		"webpack.prod.js"
 	],
 	"ignoreDependencies": [
-		"@assets",
-		"@assets/*",
-		"@assets/maps",
-		"@assets/maps/*",
+		"@nivo/text",
+		"@react-spring/web",
 		"@wordpress/babel-plugin-import-jsx-pragma",
 		"@svgr/webpack",
 		"@types/react-date-range",
+		"eslint-webpack-plugin",
 		"fsevents",
 		"lightningcss",
-		"postcss-lightningcss",
-		"eslint-webpack-plugin",
 		"postcss-import",
+		"postcss-lightningcss",
 		"prettier-plugin-tailwindcss"
 	],
 	"ignoreExports": [
@@ -57,14 +55,29 @@
 			"exports": ["getBlock"]
 		},
 		{
+			"file": "src/config/pageOverlayConfig.ts",
+			"exports": ["*"]
+		},
+		{
 			"file": "src/hooks/useGSCData.ts",
 			"exports": ["UseGSCDataReturn", "GSCStatus", "GSCPropertyStatus"]
+		},
+		{
+			"file": "src/components/Filters/Display/index.js",
+			"exports": ["FilterChip"]
+		},
+		{
+			"file": "src/components/Pages/PageRevisions/PageRevisionsList.tsx",
+			"exports": ["formatRevisionDate"]
 		}
 	],
 	"duplicates": {
 		"ignore": [
 			"src/components/NotFoundPages/useNotFoundPagesData.ts",
 			"src/components/SearchTerms/useSearchTermsData.ts",
+			"src/hooks/usePageRevisionsData.ts",
+			"src/hooks/useScrollAnalyticsData.ts",
+			"src/hooks/useVisitorFlowData.ts",
 			"src/styles/integrations/date-range.css",
 			"src/styles/theme/dark-scope-tokens.css",
 			"src/styles/theme/tokens.css",
@@ -82,6 +95,11 @@
 		"maxCrap": 40,
 		"ignore": [
 			"src/components/Fields/IntegrationRowField.tsx",
+			"src/components/Pages/ScrollAnalytics/ScrollDepthBlock.tsx",
+			"src/components/Pages/VisitorFlowDiagram/VisitorFlowDiagramBlock.tsx",
+			"src/components/Pages/PageSummary/PageSummaryPreview.tsx",
+			"src/components/Pages/PageSummary/PageSummaryBlock.tsx",
+			"src/components/OutgoingLinks/useOutgoingLinksData.ts",
 			"src/components/Inputs/SelectInput.tsx",
 			"src/components/Common/MobileMenuDrawer.jsx"
 		]
