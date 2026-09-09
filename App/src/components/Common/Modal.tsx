@@ -12,8 +12,12 @@ interface ModalProps {
 	children?: React.ReactNode;
 	isOpen: boolean;
 	onClose: () => void;
+	size?: 'default' | 'full';
+	onPointerDownOutside?: React.ComponentProps<typeof Dialog.Content>['onPointerDownOutside'];
+	onInteractOutside?: React.ComponentProps<typeof Dialog.Content>['onInteractOutside'];
 }
 
+// fallow-ignore-next-line complexity
 const Modal: React.FC<ModalProps> = ({
 	title,
 	subtitle = '',
@@ -23,8 +27,36 @@ const Modal: React.FC<ModalProps> = ({
 	triggerClassName,
 	children,
 	isOpen,
-	onClose
+	onClose,
+	size = 'default',
+	onPointerDownOutside,
+	onInteractOutside
 }) => {
+	const isDismissingPopperRef = React.useRef( false );
+
+	React.useEffect( () => {
+		if ( ! isOpen ) {
+			return;
+		}
+		const handlePointerDown = () => {
+			const hasOpenPopper = null !== document.getElementById( 'modal-root' )?.querySelector( '[data-radix-popper-content-wrapper]' );
+			if ( hasOpenPopper ) {
+				isDismissingPopperRef.current = true;
+			} else {
+				isDismissingPopperRef.current = false;
+			}
+		};
+		document.addEventListener( 'pointerdown', handlePointerDown, true );
+		return () => {
+			document.removeEventListener( 'pointerdown', handlePointerDown, true );
+		};
+	}, [ isOpen ]);
+
+	const contentSizeClasses =
+		'full' === size ?
+			'@md:w-[calc(100%-40px)] @md:max-w-(--breakpoint-2xl) @xl:w-[calc(100%-64px)]' :
+			'@md:w-full @md:max-w-[720px]';
+
 	return (
 		<Dialog.Root
 			open={isOpen}
@@ -39,9 +71,34 @@ const Modal: React.FC<ModalProps> = ({
 					{children}
 				</Dialog.Trigger>
 			)}
-			<Dialog.Portal container={document.getElementById( 'modal-root' )}>
-				<Dialog.Overlay className="bg-black/50 fixed inset-0 z-9999" />
-				<Dialog.Content className="fixed top-[calc(var(--wp-admin--admin-bar--height)+12px)] left-1/2 -translate-x-1/2 w-[calc(100%-20px)] max-h-[90vh] m-0 px-4 py-3 rounded-md z-9999 bg-gray-100 shadow-md focus:outline-hidden data-[state=open]:animate-contentShow flex flex-col overflow-x-visible md:w-full md:max-w-[720px]">
+			<Dialog.Portal
+				container={
+					document.getElementById( 'modal-root' ) ||
+					document.getElementById( 'burst-mainwp' ) ||
+					document.getElementById( 'burst-mainwp' ) ||
+					document.querySelector( '.burst' ) ||
+					undefined
+				}
+			>
+				<Dialog.Overlay className="bg-black/50 fixed inset-0 z-modal" />
+				<Dialog.Content
+					id="burst-mainwp"
+					onPointerDownOutside={( e ) => {
+						if ( isDismissingPopperRef.current ) {
+							e.preventDefault();
+							isDismissingPopperRef.current = false;
+						}
+						onPointerDownOutside?.( e );
+					}}
+					onInteractOutside={( e ) => {
+						if ( isDismissingPopperRef.current ) {
+							e.preventDefault();
+							isDismissingPopperRef.current = false;
+						}
+						onInteractOutside?.( e );
+					}}
+					className={`burst fixed top-[calc(var(--wp-admin--admin-bar--height,0px)+12px)] left-1/2 -translate-x-1/2 w-[calc(100%-20px)] max-h-[90vh] m-0 px-4 py-3 rounded-md z-modal bg-gray-100 shadow-md focus:outline-hidden data-[state=open]:animate-contentShow flex flex-col overflow-x-visible ${contentSizeClasses}`}
+				>
 					<div className="flex flex-row justify-between items-center shrink-0">
 						{customHeader ? (
 							<>

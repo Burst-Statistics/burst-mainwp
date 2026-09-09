@@ -66,6 +66,7 @@ function DistributionLegend({ data, colors, isEmptyState }) {
  *
  * @return {JSX.Element} The DistributionBlock component.
  */
+// fallow-ignore-next-line complexity
 export function DistributionBlock() {
 	const selectedView = useSubscriptionsStore( ( state ) => state.distributionView );
 	const onViewChange = useSubscriptionsStore( ( state ) => state.setDistributionView );
@@ -97,7 +98,7 @@ export function DistributionBlock() {
 	}
 
 	return (
-		<Block className="row-span-1 lg:col-span-6 xl:col-span-3">
+		<Block className="row-span-1 @lg:col-span-6 @xl:col-span-3">
 			<BlockHeading
 				title={ __( 'Distribution', 'burst-mainwp' ) }
 				className="border-b border-gray-200"

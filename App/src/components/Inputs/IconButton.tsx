@@ -1,6 +1,10 @@
 import { forwardRef } from 'react';
 import { clsx } from 'clsx';
 import Icon from '@/utils/Icon';
+import {
+	getDefinedAriaAttributes,
+	handleButtonActivationKey
+} from '@/components/Inputs/buttonUtils';
 
 interface IconButtonProps
 	extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'> {
@@ -42,6 +46,7 @@ interface IconButtonProps
  * @param {IconButtonProps} props - Props for configuring the button.
  * @return {JSX.Element} The rendered button component.
  */
+// fallow-ignore-next-line complexity
 const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>( (
 	{
 		onClick,
@@ -70,25 +75,27 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>( (
 				variant;
 
 	const handleKeyDown = ( e: React.KeyboardEvent<HTMLButtonElement> ) => {
-
-		// Handle keyboard activation for custom onClick handlers.
-		if ( ( 'Enter' === e.key || ' ' === e.key ) && onClick && ! disabled ) {
-			e.preventDefault();
-			onClick( e as any ); // eslint-disable-line @typescript-eslint/no-explicit-any
-		}
-
-		// Call any existing onKeyDown handler.
-		if ( props.onKeyDown ) {
-			props.onKeyDown( e );
-		}
+		handleButtonActivationKey({
+			e,
+			onClick,
+			disabled,
+			onKeyDown: props.onKeyDown
+		});
 	};
 
 	const classes = clsx(
 
 		// Base styles for all button variants.
-		'inline-flex items-center gap-2 rounded transition-all duration-200 min-w-fit cursor-pointer',
+		'inline-flex items-center gap-2 transition-all duration-200 min-w-fit cursor-pointer',
 		'focus:outline-hidden focus:ring-2 focus:ring-offset-2',
 		{ 'justify-center': ! hasLabel },
+
+		// Border radius. "dashed" uses the larger radius shared with the DateRange
+		// and filter chip triggers so it sits visually consistent in the filter row.
+		{
+			'rounded-md': 'dashed' === normalizedVariant,
+			rounded: 'dashed' !== normalizedVariant
+		},
 
 		// Variant-specific styles.
 		{
@@ -103,7 +110,8 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>( (
 			'bg-red text-text-white hover:bg-red hover:shadow-ringDanger focus:ring-red':
 			'danger' === normalizedVariant,
 
-			// Keep custom dashed styling used by AddFilterButton.
+			// Keep custom dashed styling used by AddFilterButton, aligned with the
+			// DateRange trigger's neutral surface (border-gray-300/bg-white/shadow-sm).
 			'bg-white border border-gray-300 border-dashed shadow-sm hover:bg-gray-50 hover:shadow-ringSubtle':
 			'dashed' === normalizedVariant
 		},
@@ -127,14 +135,12 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>( (
 	);
 
 	// Build ARIA attributes, filtering out undefined values.
-	const ariaAttributes = Object.fromEntries(
-		Object.entries({
+	const ariaAttributes = getDefinedAriaAttributes({
 			'aria-label': ariaLabel || label,
 			'aria-pressed': ariaPressed,
 			'aria-expanded': ariaExpanded,
 			'aria-disabled': disabled ? true : undefined
-		}).filter( ([ _, value ]) => value !== undefined ) // eslint-disable-line @typescript-eslint/no-unused-vars
-	);
+		});
 
 	return (
 		<button
@@ -147,9 +153,9 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>( (
 			{...ariaAttributes}
 			{...props}
 		>
-			{icon && ! shouldRenderIconOnRight && <Icon name={icon} size={iconSize} />}
+			{icon && ! shouldRenderIconOnRight && <Icon name={icon} size={iconSize} className='text-text-gray-light'/>}
 			{label && <span>{label}</span>}
-			{icon && shouldRenderIconOnRight && <Icon name={icon} size={iconSize} />}
+			{icon && shouldRenderIconOnRight && <Icon name={icon} size={iconSize} className='text-text-gray-light'/>}
 		</button>
 	);
 });

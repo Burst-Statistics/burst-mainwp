@@ -2,6 +2,7 @@ import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { StepStatistics } from './types';
 import Icon from '@/utils/Icon';
+import { formatNumber, formatPercentage } from '@/utils/formatting';
 
 /**
  * Component to render step statistics below the funnel chart.
@@ -22,6 +23,7 @@ export const FunnelStepStatistics: React.FC<{
 			className="grid gap-px z-2 items-start"
 			style={{ gridTemplateColumns: `repeat(${steps.length}, 1fr)` }}
 		>
+			{/* fallow-ignore-next-line complexity */}
 			{displaySteps.map( ( step, index ) => (
 				<div key={index} className="flex flex-col gap-2 px-2 py-3">
 					{null !== step.dropOffPercentage &&
@@ -41,13 +43,13 @@ export const FunnelStepStatistics: React.FC<{
 												'text-text-gray'
 										}`}
 									>
-										{step.dropOffPercentage.toFixed(
+										{formatPercentage(
+											step.dropOffPercentage,
 											0 < step.dropOffPercentage &&
 												10 > step.dropOffPercentage ?
 												1 :
 												0
 										)}
-										%
 									</span>
 									<span className="text-xxs uppercase tracking-wide text-text-gray-light">
 										drop-off
@@ -59,10 +61,14 @@ export const FunnelStepStatistics: React.FC<{
 									<span className="text-xs text-center text-text-gray mt-1">
 										{sprintf(
 											__(
-												'%d lost visitors',
+												'%s lost visitors',
 												'burst-mainwp'
 											),
-											step.dropOff
+											formatNumber(
+												step.dropOff,
+												0,
+												false
+											)
 										)}
 									</span>
 								)}
@@ -81,15 +87,21 @@ export const FunnelStepStatistics: React.FC<{
 
 						<p className="mt-2 text-xs text-center text-text-gray">
 							{sprintf(
-								__( '%d visitors purchased', 'burst-mainwp' ),
-								lastStep.value
+								__( '%s visitors purchased', 'burst-mainwp' ),
+								formatNumber( lastStep.value, 0, false )
 							)}
 						</p>
 
 						<p className="text-xs text-center text-text-gray">
 							{sprintf(
-								__( '%d%% conversion rate', 'burst-mainwp' ),
-								lastStep.percentage
+								__( '%s conversion rate', 'burst-mainwp' ),
+								formatPercentage(
+									lastStep.percentage,
+									0 < lastStep.percentage &&
+										10 > lastStep.percentage ?
+										1 :
+										0
+								)
 							)}
 						</p>
 					</div>

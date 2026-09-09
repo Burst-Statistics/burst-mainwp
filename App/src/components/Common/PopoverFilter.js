@@ -8,16 +8,22 @@ import ProBadge from './ProBadge';
 import Popover from './Popover';
 import useLicenseData from '@/hooks/useLicenseData';
 
+// fallow-ignore-next-line complexity
 const PopoverFilter = ({
 	onApply,
 	id,
 	options,
 	selectedOptions,
 	defaultOptions = [],
-	selectionMode = 'multiple'
+	selectionMode = 'multiple',
+	extraSection = null,
+	extraSectionValue = false,
+	onExtraSectionChange = null,
+	description = ''
 }) => {
 	const [ isOpen, setIsOpen ] = useState( false );
 	const [ pendingMetrics, setPendingMetrics ] = useState( selectedOptions );
+	const [ pendingExtraValue, setPendingExtraValue ] = useState( extraSectionValue );
 
 	// Memoize the categorization logic - only recalculates when options change
 	const { categories, uncategorized } = useMemo( () => {
@@ -46,6 +52,10 @@ const PopoverFilter = ({
 	useEffect( () => {
 		setPendingMetrics( selectedOptions );
 	}, [ selectedOptions ]);
+
+	useEffect( () => {
+		setPendingExtraValue( extraSectionValue );
+	}, [ extraSectionValue ]);
 
 	const { isLicenseValid } = useLicenseData();
 	const onCheckboxChange = ( value ) => {
@@ -91,11 +101,20 @@ const PopoverFilter = ({
 			setPendingMetrics( defaultMetrics );
 			setMetrics( defaultMetrics );
 		}
+
+		if ( onExtraSectionChange ) {
+			setPendingExtraValue( false );
+			onExtraSectionChange( false );
+		}
 		setIsOpen( false );
 	};
 
 	const applyMetrics = ( metrics ) => {
 		setMetrics( metrics );
+
+		if ( onExtraSectionChange ) {
+			onExtraSectionChange( pendingExtraValue );
+		}
 		setIsOpen( false );
 	};
 
@@ -120,6 +139,7 @@ const PopoverFilter = ({
 		} else {
 			setIsOpen( false );
 			setPendingMetrics( selectedOptions );
+			setPendingExtraValue( extraSectionValue );
 		}
 	};
 
@@ -153,11 +173,20 @@ const PopoverFilter = ({
 					__( 'Select metrics', 'burst-mainwp' )
 			}
 			footer={footer}
+			description={description}
 		>
+			{extraSection && (
+				<div className="-mx-4 mb-2 border-b border-gray-100 px-4 pb-2">
+					{'function' === typeof extraSection ?
+						extraSection( pendingExtraValue, setPendingExtraValue ) :
+						extraSection}
+				</div>
+			)}
 			{'single' === selectionMode ? (
 
 				// Radio button mode for single selection
 				<div className="flex flex-col gap-2">
+					{/* fallow-ignore-next-line complexity */}
 					{Object.keys( options ).map( ( value, index ) => {
 						return (
 							<RadioInput
@@ -166,7 +195,10 @@ const PopoverFilter = ({
 								name={id + '_radio_group'}
 								value={value}
 								label={options[value].label}
-								checked={pendingMetrics[0] === value}
+								checked={
+									pendingMetrics[0] === value &&
+									( isLicenseValid || ! options[value].pro )
+								}
 								disabled={
 									true === options[value].disabled ||
 									( options[value].pro && ! isLicenseValid )
@@ -196,6 +228,7 @@ const PopoverFilter = ({
 					};
 
 					// Render function for a single option.
+					// fallow-ignore-next-line complexity
 					const renderOption = ( value ) => (
 						<div
 							key={'checkbox-popover' + value}
@@ -204,7 +237,10 @@ const PopoverFilter = ({
 							<Checkbox.Root
 								className="focus:ring-blue-500 flex h-4 w-4 items-center justify-center rounded border-2 border-gray-300 bg-white transition-colors hover:border-gray-400 focus:outline-hidden focus:ring-2 focus:ring-offset-2"
 								id={id + '_' + value}
-								checked={pendingMetrics.includes( value )}
+								checked={
+									pendingMetrics.includes( value ) &&
+									( isLicenseValid || ! options[value].pro )
+								}
 								aria-label={__(
 									'Change metrics',
 									'burst-mainwp'

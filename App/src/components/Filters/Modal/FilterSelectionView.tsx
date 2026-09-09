@@ -5,17 +5,21 @@ import FilterCard from './FilterCard';
 import { useFilters } from '@/hooks/useFilters';
 import Icon from '@/utils/Icon';
 import useSettingsData from '@/hooks/useSettingsData';
+import { useLocation } from '@tanstack/react-router';
 import { type FilterConfig } from '@/config/filterConfig';
+import { isPerPageRoute } from '@/utils/routeUtils';
 
 interface FilterSelectionViewProps {
 	onSelectFilter: ( filterKey: string, config: FilterConfig ) => void;
 	reportBlockIndex:number;
 }
 
+// fallow-ignore-next-line complexity
 const FilterSelectionView: React.FC<FilterSelectionViewProps> = ({
 	onSelectFilter,
 	reportBlockIndex
 }) => {
+	const location = useLocation();
 	const {
 		filtersConf: filtersConfInitial,
 		filterCategories,
@@ -30,23 +34,37 @@ const FilterSelectionView: React.FC<FilterSelectionViewProps> = ({
 	const [ filtersConf, setFiltersConf ] = useState<object>({});
 	const searchInputRef = useRef<HTMLInputElement>( null );
 
+	const isPerPageContext = isPerPageRoute( location.pathname );
 	const activeFilters = getActiveFilters();
-	const categorizedFilters = getFiltersByCategory();
-	const favoriteFilters = getFavoriteFilters();
 	const filterByDomain = getValue( 'filtering_by_domain' );
 
 	useEffect( () => {
-		if ( filterByDomain ) {
-			setFiltersConf( filtersConfInitial );
-		} else {
-			const filtered = Object.fromEntries(
-				Object.entries( filtersConfInitial ).filter(
-					([ key ]) => 'host' !== key
-				)
+		let filtered: Record<string, unknown> = { ...filtersConfInitial };
+
+		if ( ! filterByDomain ) {
+			filtered = Object.fromEntries(
+				Object.entries( filtered ).filter( ([ key ]) => 'host' !== key )
 			);
-			setFiltersConf( filtered );
 		}
-	}, [ filtersConfInitial, filterByDomain ]);
+
+		if ( isPerPageContext ) {
+			filtered = Object.fromEntries(
+				Object.entries( filtered ).filter( ([ key ]) => 'page_url' !== key )
+			);
+		}
+
+		setFiltersConf( filtered );
+	}, [ filtersConfInitial, filterByDomain, isPerPageContext ]);
+
+	const availableKeys = new Set( Object.keys( filtersConf ) );
+	const favoriteFilters = ( getFavoriteFilters() as Array<{ key: string } & FilterConfig> ).filter( ( f ) => availableKeys.has( f.key ) );
+	const rawCategorized = getFiltersByCategory();
+	const categorizedFilters = Object.fromEntries(
+		Object.entries( rawCategorized ).map( ([ catKey, catFilters ]) => [
+			catKey,
+			( catFilters as Array<{ key: string } & FilterConfig> ).filter( ( f ) => availableKeys.has( f.key ) )
+		])
+	);
 
 	// Auto-focus search input on render
 	useEffect( () => {
@@ -73,6 +91,7 @@ const FilterSelectionView: React.FC<FilterSelectionViewProps> = ({
 	];
 
 	// Search functionality
+	// fallow-ignore-next-line complexity
 	const searchFilters = ( query: string ) => {
 		if ( ! query.trim() ) {
 			return null;
@@ -120,6 +139,7 @@ const FilterSelectionView: React.FC<FilterSelectionViewProps> = ({
 
 	const searchResults = searchFilters( searchQuery );
 
+	// fallow-ignore-next-line complexity
 	const renderFilters = (
 		filters: Array<{ key: string } & FilterConfig>,
 		searchInfo?: { source: string; isFromCurrentTab: boolean }
@@ -171,7 +191,7 @@ const FilterSelectionView: React.FC<FilterSelectionViewProps> = ({
 				)}
 
 				<div
-					className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center"
+					className="grid grid-cols-2 @xxs:grid-cols-3 @sm:grid-cols-4 gap-4 justify-items-center"
 					role="grid"
 					aria-label={__( 'Available filters', 'burst-mainwp' )}
 				>

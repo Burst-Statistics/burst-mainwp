@@ -14,12 +14,12 @@ export const Route = createFileRoute( '/story' )({
     component: Story,
     errorComponent: ({ error }) => (
         <div className="text-red-500 p-4">
-            {error.message ||
-                'An error occurred loading sources'}
+            {error.message || __( 'An error occurred loading the report', 'burst-mainwp' )}
         </div>
     )
 });
 
+// fallow-ignore-next-line complexity
 function Story() {
     const [ isWizardLoaded, setIsWizardLoaded ] = React.useState( false );
     const isPdfMode = useShareableLinkStore( ( state ) => state.isPdfMode );
@@ -38,63 +38,82 @@ function Story() {
 
     const getReportData = async() => {
         const token = getShareTokenFromUrl();
-        return getAction( 'report-data', { token });
+        return getAction( 'story-report-data', { token });
     };
 
     const { data: reportData, isFetching, isError } = useQuery({
-        queryKey: [ 'report-data' ],
+        queryKey: [ 'story-report-data' ],
         queryFn: () => getReportData()
     });
 
     // Load report into store and wizard when report data is fetched
+    // fallow-ignore-next-line complexity
     useEffect( () => {
-        if ( reportData?.report ) {
 
-            // if there's no id, there is a permissions issue, or it is not enabled.
-            if ( reportData?.report?.id ) {
-
-                // Pre-populate the query cache with logo data resolved server-side.
-                // On the story/frontend page, settings fields are empty for the burst_viewer
-                // user (capability check in PHP), so getValue('logo_attachment_id') returns
-                // undefined. We use a fixed sentinel ID as the linking key between
-                // settings_fields and the attachment cache, so no real attachment ID is needed.
-                if ( reportData.logo_url ) {
-                    const STORY_LOGO_SENTINEL = 'story-logo';
-
-                    // Make logo_attachment_id available to useSettingsData / getValue().
-                    queryClient.setQueryData(
-                        [ 'settings_fields' ],
-                        ( oldData ) => {
-                            const currentFields = Array.isArray( oldData ) ? oldData : [];
-                            const alreadyPresent = currentFields.some( ( f ) => 'logo_attachment_id' === f.id );
-                            if ( alreadyPresent ) {
-                                return currentFields;
-                            }
-                            return [ ...currentFields, {id: 'logo_attachment_id', value: STORY_LOGO_SENTINEL} ];
-                        }
-                    );
-
-                    // Pre-populate the resolved attachment URL so useAttachmentUrl skips wp.media.
-                    queryClient.setQueryData(
-                        [ 'attachment', STORY_LOGO_SENTINEL ],
-                        {
-                            attachmentUrl: reportData.logo_url,
-                            attachment: null
-                        }
-                    );
-                }
-
-                // Store the report in the reports array
-                setReports([ reportData.report ]);
-
-                // Load it into the wizard
-                loadReportIntoWizard( reportData.report.id, false );
-            } else {
-                setErrorMessage( 'The report could not load. Check if the report is enabled.' );
-            }
-            setIsWizardLoaded( true );
+        // Early returning here.
+        if ( ! reportData?.report ) {
+            return;
         }
-    }, [ reportData?.report, setReports, loadReportIntoWizard, queryClient, reportData?.logo_url ]);
+
+        // if there's no id, there is a permissions issue, or it is not enabled. so we set error message here and then at the end setIsWizardLoaded( true ) will be set.
+        if ( ! reportData?.report?.id ) {
+            setErrorMessage( __( 'The report could not load. Check if the report is enabled.', 'burst-mainwp' ) );
+        }
+
+        if ( reportData.report.id ) {
+
+            // Seed settings fields with image URLs resolved server-side.
+            // On the story/frontend page, settings fields are empty for the burst_viewer
+            // user (capability check in PHP), so getValue('logo_attachment_id') returns
+            // undefined. useAttachmentUrl uses a URL value directly instead of fetching
+            // the attachment via wp.media, which is unavailable here.
+            const seedSettingValue = ( settingId, value ) => {
+                queryClient.setQueryData(
+                    [ 'settings_fields' ],
+                    ( oldData ) => {
+                        const currentFields = Array.isArray( oldData ) ? oldData : [];
+                        if ( currentFields.some( ( f ) => f.id === settingId ) ) {
+                            return currentFields;
+                        }
+                        return [ ...currentFields, { id: settingId, value } ];
+                    }
+                );
+            };
+
+            if ( reportData.logo_url ) {
+                seedSettingValue( 'logo_attachment_id', reportData.logo_url );
+            }
+
+            if ( reportData.logo_url_dark ) {
+                seedSettingValue( 'logo_attachment_id_dark', reportData.logo_url_dark );
+            }
+
+            if ( reportData.hero_background_image_url ) {
+                seedSettingValue( 'hero_background_image_attachment_id', reportData.hero_background_image_url );
+            }
+
+            if ( reportData.hero_background_image_url_dark ) {
+                seedSettingValue( 'hero_background_image_attachment_id_dark', reportData.hero_background_image_url_dark );
+            }
+
+            if ( reportData.brand_color ) {
+                seedSettingValue( 'brand_color', reportData.brand_color );
+            }
+
+            if ( undefined !== reportData.hero_color_overlay_enabled ) {
+                seedSettingValue( 'hero_color_overlay_enabled', reportData.hero_color_overlay_enabled );
+            }
+
+            // Store the report in the reports array. Hero block shortcodes are already
+            // resolved server-side (see Reports::story_report_data), so no JS resolution is needed.
+            setReports([ reportData.report ]);
+
+            // Load it into the wizard
+            loadReportIntoWizard( reportData.report.id, false );
+        }
+
+        setIsWizardLoaded( true );
+    }, [ reportData?.report, setReports, loadReportIntoWizard, queryClient, reportData?.logo_url, reportData?.logo_url_dark, reportData?.hero_background_image_url, reportData?.hero_background_image_url_dark, reportData?.brand_color, reportData?.hero_color_overlay_enabled ]);
 
 
     useEffect( () => {
@@ -134,20 +153,37 @@ function Story() {
         return null;
     }
 
+    const brandColor = reportData?.brand_color;
+    const customCss = reportData?.custom_css;
+
     return (
-        <div className="col-span-12 flex flex-col">
-            {isPdfMode && <div className="flex justify-end">
-                <button onClick={handlePrintPdf} className=" print:hidden flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 hover:border-gray-400 text-text-gray font-medium rounded-lg shadow-sm hover:shadow transition-all duration-200">
-                    <Icon name="download" size={18} />
-                    <span>{__( 'Download PDF', 'burst-mainwp' )}</span>
-                </button>
-            </div>}
+        <div className="burst-story-page relative flex w-full flex-col">
+
+            { customCss && <style>{customCss}</style> }
+
             {
+                brandColor && (
+                    <div style={{ backgroundColor: brandColor, height: '13px' }} className="w-full" />
+                )
+            }
+
+            {
+                isPdfMode &&
+                <div className="z-1 absolute inset-x-0 mx-auto max-w-[1200px] px-4 @md:px-8 flex justify-end pt-8 @max-md:hidden">
+                    <button onClick={handlePrintPdf} className="print:hidden cursor-pointer flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 hover:border-gray-400 hover:bg-gray-50 text-text-gray font-medium rounded-lg shadow-sm hover:shadow transition-all duration-200">
+                        <Icon name="download" size={18} />
+                        <span>{__( 'Download PDF', 'burst-mainwp' )}</span>
+                    </button>
+                </div>
+            }
+
+            {
+
+                // fallow-ignore-next-line complexity
                 reportBlocks.map( ( block, index ) => {
                     const blockId = block.id;
                     const blockConfig = availableContent.find( item => item.id === blockId );
 
-                    // Skip if block config or component not found
                     if ( ! blockConfig || ! blockConfig.component ) {
                         console.warn( `Block config not found for blockId: ${blockId}` );
                         return null;
@@ -163,15 +199,19 @@ function Story() {
                         allowBlockFilters: false,
                         isReport: true
                     };
-                        return (
-                            <StoryBlockWrapper
-                                reportBlockIndex={index}
-                                key={`${blockId}-${index}`}
-                            >
-                                <BlockComponent {...componentProps} />
-                            </StoryBlockWrapper>
+
+                    return (
+                        <StoryBlockWrapper reportBlockIndex={index} blockId={blockId} key={`${blockId}-${index}`}>
+                            <BlockComponent {...componentProps} />
+                        </StoryBlockWrapper>
                     );
                 })
+            }
+
+            {
+                brandColor && (
+                    <div style={{ backgroundColor: brandColor, height: '68px' }} className="w-full" />
+                )
             }
         </div>
     );

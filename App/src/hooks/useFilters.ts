@@ -1,7 +1,8 @@
 // hooks/useFilters.ts - Blijft de main entry point
 import { useLocation, useNavigate, useSearch } from '@tanstack/react-router';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useFiltersStore } from '@/store/useFiltersStore';
+import { doAction } from '@/utils/api';
 
 import {
 	FILTER_CONFIG,
@@ -9,29 +10,58 @@ import {
 	FILTER_KEYS,
 	INITIAL_FILTERS,
 	TRAILING_PARAM_KEY,
+	normalizeFilterValue,
 	type FilterKey,
 	type FilterSearchParams,
 	type FilterConfig as FilterConfigType
 
 } from '@/config/filterConfig';
 import { useWizardStore } from '@/store/reports/useWizardStore';
+import { isFilterEnabledRoute, isPerPageRoute } from '@/utils/routeUtils';
 
-export const FILTER_ENABLED_ROUTES = [ '/statistics', '/sources', '/sales' ];
+interface BurstGlobalSettings {
+	pinned_filters?: Record<string, string>;
+	[key: string]: unknown;
+}
 
-export const isFilterEnabledRoute = ( pathname: string ): boolean => {
-	return FILTER_ENABLED_ROUTES.some( ( route ) => pathname.startsWith( route ) );
+const getBurstSettings = (): BurstGlobalSettings | undefined => {
+	return ( window as unknown as { burst_settings?: BurstGlobalSettings }).burst_settings;
+};
+
+const getPinnedFilters = (): Record<string, string> => {
+	const raw = getBurstSettings()?.pinned_filters;
+	if ( ! raw || 'object' !== typeof raw ) {
+		return {};
+	}
+	const result: Record<string, string> = {};
+	FILTER_KEYS.forEach( ( key ) => {
+		if ( raw[key] && '' !== raw[key]) {
+			result[key] = String( raw[key]);
+		}
+	});
+	return result;
 };
 
 const buildSearchParams = (
-	params: Record<string, string | undefined>
+	params: Record<string, string | number | undefined>
 ): Record<string, string> => {
 	const result: Record<string, string> = {};
 
+	// Every value is written as a string: a number would be parsed back as a
+	// number by the router and break the string-based filter consumers (see
+	// normalizeFilterValue).
 	Object.keys( params ).forEach( ( key ) => {
 		if ( key !== TRAILING_PARAM_KEY && params[key] !== undefined ) {
-			result[key] = params[key] as string;
+			result[key] = normalizeFilterValue( params[key]);
 		}
 	});
+
+	// Preserve the share token if it exists in the current URL so
+	// filter changes don't break shared viewer authentication.
+	const currentToken = new URLSearchParams( window.location.search ).get( 'burst_share_token' );
+	if ( currentToken ) {
+		result.burst_share_token = currentToken;
+	}
 
 	result[TRAILING_PARAM_KEY] = '';
 	return result;
@@ -49,6 +79,7 @@ const hasUrlFilters = ( searchParams: FilterSearchParams ): boolean => {
  * - Without reportBlockIndex: uses URL params (for /statistics, /sources, /sales)
  * - With reportBlockIndex: uses wizard store (for report blocks)
  */
+// fallow-ignore-next-line complexity
 export const useFilters = ( reportBlockIndex?: number ) => {
 	const updateReportFilters = useWizardStore( ( state ) => state.updateFilters );
 	const getReportFilters = useWizardStore( ( state ) => state.getFilters );
@@ -84,9 +115,13 @@ export const useFilters = ( reportBlockIndex?: number ) => {
 		}
 
 		// URL mode: get from URL params (only on filter routes)
+		const perPage = isPerPageRoute( location.pathname );
 		const result: FilterSearchParams = { ...INITIAL_FILTERS };
 		if ( isFilterRoute ) {
 			FILTER_KEYS.forEach( ( key ) => {
+				if ( perPage && 'page_url' === key ) {
+					return;
+				}
 				if ( searchParams[key]) {
 					result[key] = searchParams[key];
 				}
@@ -94,9 +129,12 @@ export const useFilters = ( reportBlockIndex?: number ) => {
 		}
 		return result;
 		// eslint-disable-next-line
-	}, [ searchParams, isFilterRoute, isBlockMode, reportBlockIndex, getReportFilters, wizardContent ]);
+	}, [ searchParams, isFilterRoute, isBlockMode, reportBlockIndex, getReportFilters, wizardContent, location.pathname ] );
+
+	const [ pinnedFilters, setPinnedFiltersState ] = useState<Record<string, string>>( getPinnedFilters );
 
 	// Initialize URL filters (only in URL mode)
+	// fallow-ignore-next-line complexity
 	useEffect( () => {
 		if ( isBlockMode || ! isFilterRoute || hasInitialized.current ) {
 			return;
@@ -109,11 +147,13 @@ export const useFilters = ( reportBlockIndex?: number ) => {
 			return;
 		}
 
-		const storedFilters = getSavedFilters();
-		const hasStoredFilters = 0 < Object.keys( storedFilters ).length;
+		const pinned = getPinnedFilters();
+		const hasPinned = 0 < Object.keys( pinned ).length;
+		const defaultFiltersToApply = hasPinned ? pinned : getSavedFilters();
+		const hasDefaultFilters = 0 < Object.keys( defaultFiltersToApply ).length;
 
-		if ( hasStoredFilters ) {
-			const newSearch = buildSearchParams( storedFilters );
+		if ( hasDefaultFilters ) {
+			const newSearch = buildSearchParams( defaultFiltersToApply );
 			navigate({
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 				search: newSearch as any,
@@ -121,6 +161,51 @@ export const useFilters = ( reportBlockIndex?: number ) => {
 			});
 		}
 	}, [ isFilterRoute, isBlockMode ]); // eslint-disable-line react-hooks/exhaustive-deps
+
+	const isPinned = useMemo( () => {
+		const pinnedKeys = Object.keys( pinnedFilters );
+		const activeKeys = FILTER_KEYS.filter( ( k ) => filters[k] && '' !== filters[k]);
+		if ( 0 === pinnedKeys.length && 0 === activeKeys.length ) {
+			return false;
+		}
+		if ( pinnedKeys.length !== activeKeys.length ) {
+			return false;
+		}
+		return pinnedKeys.every( ( k ) => pinnedFilters[k] === filters[k]);
+	}, [ filters, pinnedFilters ]);
+
+	const savePinnedFilters = useCallback(
+
+		// fallow-ignore-next-line complexity
+		async( customFilters?: Record<string, string> ) => {
+			const filtersToSave = customFilters ?? filters;
+			const cleanFilters: Record<string, string> = {};
+			FILTER_KEYS.forEach( ( key ) => {
+				if ( filtersToSave[key] && '' !== filtersToSave[key]) {
+					cleanFilters[key] = filtersToSave[key];
+				}
+			});
+			const hasClean = 0 < Object.keys( cleanFilters ).length;
+			const payload = hasClean ? cleanFilters : null;
+			const response = await doAction( 'save_pinned_filters', { filters: payload });
+			const newPinned = response?.pinned_filters && 'object' === typeof response.pinned_filters ? response.pinned_filters : ( hasClean ? cleanFilters : {});
+			const settings = getBurstSettings();
+			if ( settings ) {
+				settings.pinned_filters = newPinned; // eslint-disable-line react-compiler/react-compiler
+			}
+			setPinnedFiltersState( newPinned );
+		},
+		[ filters ]
+	);
+
+	const clearPinnedFilters = useCallback( async() => {
+		await doAction( 'save_pinned_filters', { filters: null });
+		const settings = getBurstSettings();
+		if ( settings ) {
+			settings.pinned_filters = {}; // eslint-disable-line react-compiler/react-compiler
+		}
+		setPinnedFiltersState({});
+	}, []);
 
 	// Sync filters to appropriate store (removed - happens in setFilters instead)
 	// Block mode filters are managed directly via setFilters/deleteFilter/clearAllFilters
@@ -138,17 +223,23 @@ export const useFilters = ( reportBlockIndex?: number ) => {
 	 * Set a filter value
 	 */
 	const setFilters = useCallback(
-		( filter: string, value: string ) => {
+
+		// fallow-ignore-next-line complexity
+		( filter: string, rawValue: string | number | null | undefined ) => {
 			if ( ! filter.length ) {
 				return;
 			}
+
+			// Callers pass ids straight from API responses (a numeric device_id
+			// from the devices block); the filter contract is string-only.
+			const value = normalizeFilterValue( rawValue );
 
 			// Block mode: update wizard store
 			if ( isBlockMode ) {
 				const currentFilters = getReportFilters( reportBlockIndex ) || {};
 				const newFilters = { ...currentFilters };
 
-				if ( '' === value || null === value || value === undefined ) {
+				if ( '' === value ) {
 					delete newFilters[filter];
 				} else {
 					newFilters[filter] = value;
@@ -168,7 +259,7 @@ export const useFilters = ( reportBlockIndex?: number ) => {
 				const newParams = { ...prev };
 				delete newParams[TRAILING_PARAM_KEY];
 
-				if ( '' === value || null === value || value === undefined ) {
+				if ( '' === value ) {
 					delete newParams[filter];
 				} else {
 					newParams[filter] = value;
@@ -237,9 +328,19 @@ export const useFilters = ( reportBlockIndex?: number ) => {
 		// URL mode: clear from both stores
 		clearSavedFilters();
 		if ( isFilterRoute ) {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const searchUpdater = ( prev: any ) => {
+				const newParams = { ...prev };
+				FILTER_KEYS.forEach( ( key ) => {
+					delete newParams[key];
+				});
+				delete newParams[TRAILING_PARAM_KEY];
+				return buildSearchParams( newParams );
+			};
+
 			navigate({
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				search: ( () => ({}) ) as any,
+				search: searchUpdater as any,
 				replace: false
 			});
 		}
@@ -328,21 +429,16 @@ export const useFilters = ( reportBlockIndex?: number ) => {
 		removeFromFavorites,
 		toggleFavorite,
 		isFavorite,
-		getFavoriteFilters
+		getFavoriteFilters,
+
+		// Pinned filters
+		pinnedFilters,
+		isPinned,
+		savePinnedFilters,
+		clearPinnedFilters
 	};
 };
 
 export default useFilters;
 
-export {
-	FILTER_CONFIG,
-	FILTER_CATEGORIES,
-	FILTER_KEYS,
-	INITIAL_FILTERS,
-	TRAILING_PARAM_KEY,
-	validateFilterSearch,
-	type FilterKey,
-	type FilterSearchParams,
-	type FilterCategory,
-	type FilterConfig
-} from '@/config/filterConfig';
+export { type FilterSearchParams } from '@/config/filterConfig';

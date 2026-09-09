@@ -16,7 +16,7 @@ interface ReportsStore {
 	isGenerating: boolean;
 	setIsGenerating: ( isGenerating: boolean ) => void;
 
-	saveReportFromWizard: () => Promise<Report | false>;
+	saveReportFromWizard: ( options?: { enabled?: boolean }) => Promise<Report | false>;
 	loadReportIntoWizard: ( id: number, openWizard: boolean ) => boolean;
 
 	createReport: ( data: Partial<Report> ) => Promise<Report | false>;
@@ -31,7 +31,6 @@ interface ReportsStore {
 	toggleReportActive: ( id: number ) => Promise<void>;
 	openPreview: ( reportId: number, startPdfDownload:boolean ) => Promise<void>;
 
-	sendTestEmail: ( id: number ) => Promise<boolean>;
 	sendEmailNow: ( id: number ) => Promise<boolean>;
 }
 
@@ -118,7 +117,9 @@ export const useReportsStore = create<ReportsStore>( ( set, get ) => ({
 
 		return shareUrl;
 	},
-	saveReportFromWizard: async() => {
+
+	// fallow-ignore-next-line complexity
+	saveReportFromWizard: async( options?: { enabled?: boolean }) => {
 		const w = useWizardStore.getState().wizard;
 
 		if ( w.id ) {
@@ -180,6 +181,13 @@ export const useReportsStore = create<ReportsStore>( ( set, get ) => ({
 				changes.recipients = [ ...w.recipients ];
 			}
 
+			const targetEnabled = undefined !== options?.enabled ? options.enabled : w.enabled;
+			if ( undefined !== targetEnabled && oldData.enabled !== targetEnabled ) {
+				changes.enabled = targetEnabled;
+			} else if ( ! w.scheduled && oldData.enabled ) {
+				changes.enabled = false;
+			}
+
 			if ( 0 === Object.keys( changes ).length ) {
 				return oldData;
 			}
@@ -190,7 +198,7 @@ export const useReportsStore = create<ReportsStore>( ( set, get ) => ({
 		return await get().createReport({
 			name: w.name,
 			format: w.format,
-			enabled: false,
+			enabled: options?.enabled ?? w.enabled ?? false,
 			content: [ ...w.content ],
 			recipients: [ ...w.recipients ],
 			scheduled: w.scheduled,
@@ -219,6 +227,7 @@ export const useReportsStore = create<ReportsStore>( ( set, get ) => ({
 				content: report.content,
 				recipients: [ ...report.recipients ],
 				scheduled: report.scheduled,
+				enabled: report.enabled,
 				frequency: report.frequency,
 				dayOfWeek: report.dayOfWeek,
 				weekOfMonth: report.weekOfMonth,
@@ -327,11 +336,6 @@ export const useReportsStore = create<ReportsStore>( ( set, get ) => ({
 		get().loadReportIntoWizard( reportId, true );
 
 		return response.report as Report;
-	},
-
-	sendTestEmail: async( id ) => {
-		const response = await doAction( 'report/send-test-report', { id });
-		return response.success;
 	},
 
 	sendEmailNow: async( id ) => {

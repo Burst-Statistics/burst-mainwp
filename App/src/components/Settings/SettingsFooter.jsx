@@ -3,6 +3,7 @@ import ButtonInput from '@/components/Inputs/ButtonInput';
 import { __ } from '@wordpress/i18n';
 import { useFormState } from 'react-hook-form';
 
+// fallow-ignore-next-line complexity
 function SettingsFooter({ onSubmit, control }) {
 	const { isDirty, isSubmitting, isValidating } = useFormState({
 		control
@@ -56,7 +57,11 @@ function SettingsFooter({ onSubmit, control }) {
 						</span>
 					</div>
 				)}
-				<ButtonInput className="burst-save" onClick={onSubmit}>
+				<ButtonInput
+					className="burst-save"
+					onClick={onSubmit}
+					disabled={isSubmitting}
+				>
 					{__( 'Save', 'burst-mainwp' )}
 				</ButtonInput>
 			</div>

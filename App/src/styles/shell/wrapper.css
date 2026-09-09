@@ -1,3 +1,7 @@
+#burst-statistics {
+	position: relative;
+}
+
 .burst-statistics-wrapper{
 	margin: 0;
 	/* Hide nags from other plugins */
@@ -9,4 +13,9 @@
 			margin: var(--rsp-grid-gap);
 		}
 	}
+}
+
+#screen-meta-links,
+#screen-meta {
+	display: none !important;
 }

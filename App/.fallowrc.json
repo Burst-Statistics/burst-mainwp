@@ -1,0 +1,107 @@
+{
+	"$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+	"entry": ["src/index.tsx"],
+	"ignorePatterns": [
+		"build/**",
+		"dist/**",
+		"coverage/**",
+		"node_modules/**",
+		"src/routeTree.gen.ts",
+		"postcss-remove-layers.mjs",
+		"tailwind.animations.mjs",
+		"webpack.dev.js",
+		"webpack.prod.js"
+	],
+	"ignoreDependencies": [
+		"@nivo/text",
+		"@react-spring/web",
+		"@wordpress/babel-plugin-import-jsx-pragma",
+		"@svgr/webpack",
+		"@types/react-date-range",
+		"eslint-webpack-plugin",
+		"fsevents",
+		"lightningcss",
+		"postcss-import",
+		"postcss-lightningcss",
+		"prettier-plugin-tailwindcss"
+	],
+	"ignoreExports": [
+		{
+			"file": "src/components/Inputs/DateRangePicker.tsx",
+			"exports": ["*"]
+		},
+		{
+			"file": "src/utils/formatting.ts",
+			"exports": ["*"]
+		},
+		{
+			"file": "src/components/Common/Tabs/index.ts",
+			"exports": ["TabsTrigger"]
+		},
+		{
+			"file": "src/components/Sources/WorldMap/dataClassification.js",
+			"exports": ["createQuantizeColorScale", "normalizeToRate"]
+		},
+		{
+			"file": "src/hooks/useABTest.ts",
+			"exports": ["useABTestControl", "useABTestSummary"]
+		},
+		{
+			"file": "src/store/useTabsStore.ts",
+			"exports": ["usePersistedTabsStore"]
+		},
+		{
+			"file": "src/utils/api.js",
+			"exports": ["getBlock"]
+		},
+		{
+			"file": "src/config/pageOverlayConfig.ts",
+			"exports": ["*"]
+		},
+		{
+			"file": "src/hooks/useGSCData.ts",
+			"exports": ["UseGSCDataReturn", "GSCStatus", "GSCPropertyStatus"]
+		},
+		{
+			"file": "src/components/Filters/Display/index.js",
+			"exports": ["FilterChip"]
+		},
+		{
+			"file": "src/components/Pages/PageRevisions/PageRevisionsList.tsx",
+			"exports": ["formatRevisionDate"]
+		}
+	],
+	"duplicates": {
+		"ignore": [
+			"src/components/NotFoundPages/useNotFoundPagesData.ts",
+			"src/components/SearchTerms/useSearchTermsData.ts",
+			"src/hooks/usePageRevisionsData.ts",
+			"src/hooks/useScrollAnalyticsData.ts",
+			"src/hooks/useVisitorFlowData.ts",
+			"src/styles/integrations/date-range.css",
+			"src/styles/theme/dark-scope-tokens.css",
+			"src/styles/theme/tokens.css",
+			"src/tailwind.generated.css",
+			"src/components/NotFoundPages/useNotFoundPagesData.ts",
+			"src/components/SearchTerms/useSearchTermsData.ts",
+			"src/components/Sources/SourcesChartBlock.jsx",
+			"src/components/Common/ChatAssistantModal.tsx",
+			"src/components/DataTable/DataTableOverlay.tsx"
+		]
+	},
+	"health": {
+		"maxCyclomatic": 20,
+		"maxCognitive": 15,
+		"maxCrap": 40,
+		"ignore": [
+			"src/components/Fields/IntegrationRowField.tsx",
+			"src/components/Pages/ScrollAnalytics/ScrollDepthBlock.tsx",
+			"src/components/Pages/VisitorFlowDiagram/VisitorFlowDiagramBlock.tsx",
+			"src/components/Pages/PageSummary/PageSummaryPreview.tsx",
+			"src/components/Pages/PageSummary/PageSummaryBlock.tsx",
+			"src/components/OutgoingLinks/useOutgoingLinksData.ts",
+			"src/components/Inputs/SelectInput.tsx",
+			"src/components/Common/MobileMenuDrawer.jsx"
+		]
+	}
+}

@@ -5,6 +5,7 @@
  * import { FilterChip, FilterChipList, AddFilterButton } from '@/components/Filters/Display';
  */
 
-export { default as FilterChip } from './FilterChip';
 export { default as FilterChipList } from './FilterChipList';
 export { default as AddFilterButton } from './AddFilterButton';
+
+export { default as FilterChip } from './FilterChip';

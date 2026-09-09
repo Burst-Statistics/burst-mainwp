@@ -17,6 +17,7 @@ export { QUERY_CONFIG };
  * @param {string} args.productId Selected product filter.
  * @return {Promise<Object>} Normalized retention response.
  */
+// fallow-ignore-next-line complexity
 export async function fetchRetentionData({ startDate, endDate, range, productId }) {
 	const queryArgs = {};
 
@@ -25,7 +26,7 @@ export async function fetchRetentionData({ startDate, endDate, range, productId 
 	}
 
 	const { data } = await getData(
-		'subscriptions-retention',
+		'ecommerce/subscriptions-retention',
 		startDate,
 		endDate,
 		range,

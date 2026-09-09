@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
+import { useNavigate, useLocation } from '@tanstack/react-router';
 import { useFilters } from '@/hooks/useFilters';
 import useGoalsData from '@/hooks/useGoalsData';
 import { useInsightsStore } from '@/store/useInsightsStore';
@@ -21,8 +22,10 @@ import useSettingsData from '@/hooks/useSettingsData';
  * @param {string}          endDate     - Optional end date to set when filtering.
  * @param {Object}          row         - Optional end date to set when filtering.
  * @param {boolean}         useContainerForFilter - Make wrapped content clickable for filtering.
+ * @param {React.ReactNode} afterChildren - Optional content shown in the hover overlay.
  * @return {React.ReactElement}
  */
+// fallow-ignore-next-line complexity
 const ClickToFilter = ({
 	filter,
 	filterValue,
@@ -31,7 +34,8 @@ const ClickToFilter = ({
 	startDate,
 	endDate,
 	row,
-	useContainerForFilter = false
+	useContainerForFilter = false,
+	afterChildren = null
 }) => {
 
 	// Filter actions from TanStack Router-based hook.
@@ -76,8 +80,32 @@ const ClickToFilter = ({
 		}
 	}, [ filter, filterValue ]);
 
+	const navigate = useNavigate();
+	const location = useLocation();
+
+	const handleVisitorFlowClick = useCallback(
+
+		// fallow-ignore-next-line complexity
+		( e ) => {
+			e.stopPropagation();
+			const targetId = row?.page_id || row?.id || ( 'url_' + Math.abs( ( filterValue || '' ).split( '' ).reduce( ( a, b ) => ( ( a << 5 ) - a ) + b.charCodeAt( 0 ), 0 ) ) );
+			navigate({
+				to: '/page/$id',
+				params: { id: String( targetId ) },
+				search: {
+					from: location.pathname,
+					pageUrl: filterValue,
+					...location.search
+				}
+			});
+		},
+		[ navigate, location, row, filterValue ]
+	);
+
 	// Handle external link clicks
 	const handleExternalLinkClick = useCallback(
+
+		// fallow-ignore-next-line complexity
 		( e ) => {
 			e.stopPropagation();
 
@@ -132,6 +160,7 @@ const ClickToFilter = ({
 	}, []);
 
 	// Handle date range updates
+	// fallow-ignore-next-line complexity
 	const handleDateRange = useCallback( () => {
 		if ( ! startDate ) {
 			return;
@@ -260,12 +289,12 @@ const ClickToFilter = ({
 	}
 
 	return (
-		<div className="group flex items-center gap-2">
-			{/* Main content */}
+		<div className="group relative @md:min-w-36 min-w-0 w-full">
+			{/* Main content. */}
 			{useContainerForFilter ? (
 				<HelpTooltip content={filterTooltip} asChild>
 					<div
-						className="flex-1 min-w-0 cursor-pointer"
+						className="min-w-0 cursor-pointer"
 						onClick={handleFilterClick}
 						onKeyDown={handleContainerKeyDown}
 						role="button"
@@ -275,13 +304,19 @@ const ClickToFilter = ({
 					</div>
 				</HelpTooltip>
 			) : (
-				<div className="flex-1">{children}</div>
+				<div className="w-full group-hover:bg-gray-50 p-2 rounded-md">{children}</div>
 			)}
 
-			{/* Icons that appear on hover to the right */}
-			{( ! useContainerForFilter || isExternalLinkable ) && (
-				<div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-					{/* Filter icon - show unless container click mode is enabled */}
+			{( afterChildren || ( ! useContainerForFilter || isExternalLinkable ) ) && (
+				<div
+					className="pointer-events-none absolute right-1 top-1/2 z-interactive flex -translate-y-1/2 p-1 items-center gap-1 pl-5 pr-1 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100"
+					style={{
+						background: 'linear-gradient(to right, transparent, var(--color-gray-50) 20px)'
+					}}
+				>
+					{afterChildren}
+
+					{/* Filter icon - show unless container click mode is enabled. */}
 					{! useContainerForFilter && (
 						<HelpTooltip content={filterTooltip}>
 							<div
@@ -293,7 +328,19 @@ const ClickToFilter = ({
 						</HelpTooltip>
 					)}
 
-					{/* External link icon - only show for URLs */}
+					{/* Visitor Flow icon - only show for page_url. */}
+					{'page_url' === filter && (
+						<HelpTooltip content={__( 'View per page analytics', 'burst-mainwp' )}>
+							<div
+								onClick={handleVisitorFlowClick}
+								className="flex items-center justify-center w-6 h-6 bg-gray-100 hover:bg-white border border-gray-200 rounded shadow-sm hover:shadow-md transition-all duration-150 cursor-pointer"
+							>
+								<Icon name="page" size={14} color="black" />
+							</div>
+						</HelpTooltip>
+					)}
+
+					{/* External link icon - only show for URLs. */}
 					{isExternalLinkable && (
 						<HelpTooltip content={externalLinkTooltip}>
 							<div

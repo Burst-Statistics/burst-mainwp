@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Icon from '@/utils/Icon';
 import { User } from 'lucide-react';
 import HelpTooltip from '@/components/Common/HelpTooltip';
-import { listSlideAnimation } from './OverviewBlock';
+import { listSlideAnimation } from './listAnimations';
 import { safeDecodeURI } from '@/utils/lib';
 import { OverflowTooltip } from '@/components/Common/OverflowTooltip';
 
@@ -19,14 +19,14 @@ import { OverflowTooltip } from '@/components/Common/OverflowTooltip';
  */
 const parseUTMSource = ( url ) => {
 	if ( ! url ) {
-		return __( 'Direct', 'burst-mainwp' );
+		return __( 'Direct / unknown', 'burst-mainwp' );
 	}
 
 	try {
 		const uri = safeDecodeURI( url );
 		return uri.replace( /^www\./, '' );
 	} catch ( e ) { // eslint-disable-line @typescript-eslint/no-unused-vars
-		return __( 'Direct', 'burst-mainwp' );
+		return __( 'Direct / unknown', 'burst-mainwp' );
 	}
 };
 
@@ -45,7 +45,7 @@ const TimeAgo = memo( ({ timestamp }) => {
 		const updateTime = () => {
 			const currentTime = Date.now() / 1000; // Convert to seconds
 			const timeDifference = currentTime - timestamp;
-			const diff = Math.floor( timeDifference );
+			const diff = Math.max( 0, Math.floor( timeDifference ) );
 
 			if ( 60 > diff ) {
 				setTimeText(

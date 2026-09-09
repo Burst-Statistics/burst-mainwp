@@ -1,10 +1,11 @@
 === Burst MainWP ===
 Contributors: hesseldejong, RogierLankhorst, sh4lin, parthnvaswani
+Donate link: paypal.me/Burststatistics
 Tags: analytics, statistics, mainwp, burst, dashboard
 Requires at least: 6.6
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,6 +19,7 @@ The Burst Statistics MainWP Extension brings your privacy-friendly analytics int
 
 * [MainWP Dashboard](https://wordpress.org/plugins/mainwp/) on your main site
 * [Burst Statistics](https://wordpress.org/plugins/burst-statistics/) (free or Pro) on each child site
+* [MainWP Child](https://wordpress.org/plugins/mainwp-child//) on each child site
 
 = Features =
 
@@ -57,12 +59,34 @@ No. No external account is needed for this extension itself. A Burst Pro license
 
 == Changelog ==
 
+= 1.1.0 =
+* Release date: September 8th 2026
+* Improvement: updated the bundled Burst dashboard app to the latest Burst release (Burst 3.7.0).
+* Fix: dialogs, popovers and the mobile menu now render inside the Burst container, fixing styling and display issues in the MainWP dashboard.
+
+= 1.0.2 =
+* Release date: August 18th 2026
+* Improvement: updated the bundled Burst dashboard app to the latest Burst release.
+* Improvement: multi-select support for filters, matching the updated dashboard.
+* Fix: moved the world map, country maps, and flag assets to the plugin's assets directory, restoring the geo statistics visuals in the dashboard.
+
+= 1.0.1 =
+* Release date: June 30th 2026
+* Improvement: better error handling and user feedback for child site connections.
+* Updated the bundled Burst dashboard app and assets.
+
 = 1.0.0 =
 * Release date: April 2026
 * Initial release.
 * View Burst Statistics data across all connected MainWP child sites.
 
 == Upgrade Notice ==
+
+= 1.0.2 =
+Maintenance release: updates the bundled dashboard app. Please back up your site before upgrading.
+
+= 1.0.1 =
+Maintenance release with compliance, security and connection improvements. Please back up your site before upgrading.
 
 = 1.0.0 =
 Initial release. Please back up your site before upgrading.

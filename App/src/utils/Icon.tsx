@@ -31,6 +31,8 @@ import {
 	ChevronLeft,
 	ChevronRight,
 	ChevronUp,
+	ChevronsLeft,
+	ChevronsRight,
 	Circle,
 	CircleDot,
 	CircleOff,
@@ -66,6 +68,8 @@ import {
 	MousePointerClick,
 	PanelTop,
 	PieChart,
+	Pin,
+	PinOff,
 	Plus,
 	Radio,
 	Receipt,
@@ -81,6 +85,7 @@ import {
 	Target,
 	Trash,
 	TrendingDown,
+	TrendingUp,
 	Trophy,
 	User,
 	UserCircle,
@@ -89,6 +94,7 @@ import {
 	XCircle,
 	Activity,
 	Webhook,
+	ArrowLeftRight,
 	Earth,
 	LogIn,
 	CircleAlert,
@@ -109,7 +115,17 @@ import {
 	Settings2,
 	Key,
 	SlidersVertical,
-	HardDrive
+	HardDrive,
+	MessageCircle,
+	Maximize2,
+	Menu,
+	Table2,
+	ShieldCheck,
+	Cookie,
+	Shield,
+	Fingerprint,
+	Repeat,
+	Plug
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -151,6 +167,8 @@ const iconComponents = {
 	'chevron-down': ChevronDown,
 	'chevron-right': ChevronRight,
 	'chevron-left': ChevronLeft,
+	'chevrons-left': ChevronsLeft,
+	'chevrons-right': ChevronsRight,
 	plus: Plus,
 	minus: Minus,
 	sync: RefreshCw,
@@ -186,6 +204,7 @@ const iconComponents = {
 	'goals-empty': CircleDot,
 	filter: SlidersHorizontal,
 	loading: LoaderCircle,
+	'compare-arrows': ArrowLeftRight,
 	desktop: Monitor,
 	tablet: Tablet,
 	mobile: Smartphone,
@@ -204,7 +223,10 @@ const iconComponents = {
 	'log-out': LogOut,
 	alert: CircleAlert,
 	search: Search,
+	pin: Pin,
+	'pin-off': PinOff,
 	upload: Upload,
+	plug: Plug,
 
 	// Filter icons from useFiltersStore
 	bounce: LogOut,
@@ -224,11 +246,17 @@ const iconComponents = {
 	// Filter category icons
 	traffic: Car,
 	behavior: Brain,
+	reading_engagement_score: Brain,
 	technology: Cpu,
 
 	// Star icons
 	'star-filled': Star,
 	'star-outline': Star,
+	cookie: Cookie,
+	security: Shield,
+	shield: Shield,
+	fingerprint: Fingerprint,
+	repeat: Repeat,
 	'map-pinned': MapPinned,
 
 	// Additional icons
@@ -255,10 +283,16 @@ const iconComponents = {
 	pencil: Pencil,
 	'grip-vertical': GripVertical,
 	'move-right': MoveRight,
-	'preferences': Settings2,
-	'key': Key,
+	preferences: Settings2,
+	key: Key,
 	'sliders-vertical': SlidersVertical,
 	'hard-drive': HardDrive,
+	chat: MessageCircle,
+	expand: Maximize2,
+	menu: Menu,
+	close: X,
+	'shield-check': ShieldCheck,
+	privacy: ShieldCheck,
 
 	// Sales & subscription metric icons
 	banknote: Banknote,
@@ -266,15 +300,18 @@ const iconComponents = {
 	gem: Gem,
 	'mouse-pointer-click': MousePointerClick,
 	receipt: Receipt,
-	'trending-down': TrendingDown
+	'trending-down': TrendingDown,
+	'trending-up': TrendingUp,
+	datatable: Table2
 };
 
+
 // Define types for icon names and colors
-export type IconName = keyof typeof iconComponents | string;
-export type ColorName = keyof typeof iconColors | string;
+type IconName = keyof typeof iconComponents | string;
+type ColorName = keyof typeof iconColors | string;
 
 // Props interface for the Icon component
-export interface IconProps {
+interface IconProps {
 	name?: IconName;
 	color?: ColorName;
 	size?: number;
@@ -317,6 +354,7 @@ const Icon = memo(
 		 *
 		 * @return {JSX.Element} The rendered icon component
 		 */
+		// fallow-ignore-next-line complexity
 		const renderIcon = () => {
 
 			// Special handling for bullet and dot icons - they should be filled

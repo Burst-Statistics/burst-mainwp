@@ -2,6 +2,7 @@ import { useMemo, useCallback } from '@wordpress/element';
 import { ResponsiveLine } from '@nivo/line';
 import { InsightsTooltip } from './InsightsTooltip';
 import { formatAxisLabel, getChartXAxisTickValues } from '@/utils/formatting';
+import { LINE_CHART_AXIS_BASE, LINE_CHART_BASE_PROPS, buildLineChartLayers } from '@/components/Common/nivoLineConfig';
 import { METRIC_COLORS } from './insightsConfig';
 
 /**
@@ -10,25 +11,96 @@ import { METRIC_COLORS } from './insightsConfig';
  * Colors are resolved from the design-system METRIC_COLORS map, with the
  * server-provided borderColor used only as a fallback.
  *
+ * For comparison datasets (is_comparison: true) the x value uses the current-period
+ * timestamp so the series aligns horizontally with the primary line. Each point also
+ * carries isComparison, compareDate (the real comparison-period Date), and metric_key
+ * so the tooltip can render the correct label and date.
+ *
  * @param {Object}   data                    - API response object.
- * @param {Array}    data.datasets            - Dataset definitions with label, data, and borderColor.
+ * @param {Array}    data.datasets            - Dataset definitions with label, data, borderColor, metric_key, is_comparison.
  * @param {number[]} timestamps              - Array of Unix timestamps (UTC seconds) per data point.
- * @param {string[]} metrics                 - Ordered array of active metric keys.
  * @return {Array} Nivo-compatible line series array.
  */
-function transformToNivoFormat( data, timestamps, metrics ) {
+function transformToNivoFormat( data, timestamps ) {
 	if ( ! data?.datasets || ! timestamps?.length ) {
 		return [];
 	}
 
-	return data.datasets.map( ( dataset, i ) => ({
-		id: metrics?.[ i ] ?? dataset.label,
-		color: METRIC_COLORS[ metrics?.[ i ] ] ?? dataset.borderColor,
-		data: timestamps.map( ( ts, j ) => ({
-			x: new Date( ts * 1000 ),
-			y: dataset.data[ j ] ?? 0
-		}) )
-	}) );
+	// Skip zero/invalid timestamps: they all map to the same epoch-0 Date,
+	// which Nivo keys ticks and slices by (Date.valueOf()) — a response with
+	// zeroed timestamps would render duplicate React keys and a bogus 1970
+	// axis. Computed once, outside the per-dataset point closure.
+	const validIndices = [];
+	timestamps.forEach( ( ts, j ) => {
+		if ( 0 < Number( ts ) ) {
+			validIndices.push( j );
+		}
+	});
+
+	// fallow-ignore-next-line complexity
+	return data.datasets.map( ( dataset, i ) => {
+		const isComparison = Boolean( dataset.is_comparison );
+		const metricKey = dataset.metric_key ?? dataset.label ?? String( i );
+		const color = isComparison ?
+			'var(--color-gray-400)' :
+			( METRIC_COLORS[ metricKey ] ?? dataset.borderColor );
+
+		// Always include the array index in the id to guarantee uniqueness across
+		// datasets, including placeholder entries that may share the same label.
+		const id = isComparison ? `${ i }_${ metricKey }_comparison` : `${ i }_${ metricKey }`;
+
+		return {
+			id,
+			color,
+
+			data: validIndices.map( ( j ) => {
+				const compareTs = dataset.comparison_timestamps?.[ j ];
+				return {
+					x: new Date( timestamps[ j ] * 1000 ),
+					y: dataset.data[ j ] ?? 0,
+					isComparison,
+					metric_key: metricKey,
+					compareDate: compareTs ? new Date( compareTs * 1000 ) : null,
+					compareMode: dataset.compare_mode ?? null
+				};
+			})
+		};
+	});
+}
+
+/**
+ * Custom Nivo layer that renders each series as an SVG path, applying a dashed
+ * stroke to comparison series so they are visually distinct from the primary lines.
+ * Uses a Fragment (not a wrapping <g>) so no extra SVG group is introduced into
+ * the Nivo layer stack, avoiding potential key collisions at the layer level.
+ *
+ * @param {Object}   props               - Nivo layer render props.
+ * @param {Array}    props.series        - All series computed by Nivo.
+ * @param {Function} props.lineGenerator - D3 line generator bound to chart scales.
+ * @param {Function} props.xScale        - Nivo x-scale function.
+ * @param {Function} props.yScale        - Nivo y-scale function.
+ * @return {JSX.Element} SVG paths, one per series.
+ */
+function CustomLines({ series, lineGenerator, xScale, yScale }) {
+	return (
+		<>
+			{ series.map( ( s ) => (
+				<path
+					key={ `line-${ s.id }` }
+					d={ lineGenerator(
+						s.data.map( ( d ) => ({
+							x: xScale( d.data.x ),
+							y: yScale( d.data.y )
+						}) )
+					) }
+					fill="none"
+					stroke={ s.color }
+					strokeWidth={ 3 }
+					strokeDasharray={ s.data[ 0 ]?.data?.isComparison ? '6 4' : undefined }
+				/>
+			) ) }
+		</>
+	);
 }
 
 /**
@@ -39,19 +111,20 @@ function transformToNivoFormat( data, timestamps, metrics ) {
  * @param {Object}   props                    - Component props.
  * @param {Object}   props.data               - API response with datasets.
  * @param {number[]} props.timestamps         - Unix timestamps (UTC seconds) per point.
- * @param {string}   props.interval           - Active grouping: 'hour'|'day'|'week'|'month'.
+ * @param {string}   props.interval           - Active grouping: 'hour'|'day'|'week'|'month'|'year'.
  * @param {boolean}  props.spansMultipleYears - Whether the range covers more than one year.
- * @param {string[]} props.metrics            - Ordered array of active metric keys (e.g. ['pageviews', 'visitors']).
  * @return {JSX.Element} The rendered line chart.
  */
-const InsightsGraph = ({ data, timestamps, interval, spansMultipleYears, metrics }) => {
+const InsightsGraph = ({ data, timestamps, interval, spansMultipleYears }) => {
 	const nivoData = useMemo(
-		() => transformToNivoFormat( data, timestamps, metrics ),
-		[ data, timestamps, metrics ]
+		() => transformToNivoFormat( data, timestamps ),
+		[ data, timestamps ]
 	);
 
 	const allDates = useMemo(
-		() => ( timestamps ?? []).map( ( ts ) => new Date( ts * 1000 ) ),
+		() => ( timestamps ?? [])
+			.filter( ( ts ) => 0 < Number( ts ) )
+			.map( ( ts ) => new Date( ts * 1000 ) ),
 		[ timestamps ]
 	);
 
@@ -73,45 +146,39 @@ const InsightsGraph = ({ data, timestamps, interval, spansMultipleYears, metrics
 
 	// Slice tooltip wrapper so we can pass interval down without prop-drilling through Nivo.
 	const sliceTooltip = useCallback(
-		({ slice }) => <InsightsTooltip slice={slice} interval={interval ?? 'day'} />,
+		({ slice }) => (
+			<InsightsTooltip
+				slice={ slice }
+				interval={ interval ?? 'day' }
+			/>
+		),
 		[ interval ]
+	);
+
+	// Replace the built-in lines layer with CustomLines so each series can carry
+	// its own strokeDasharray while all other Nivo layers (slices, points, etc.) remain.
+	// Memoised so Nivo receives a stable array reference and avoids unnecessary remounts.
+	const layers = useMemo(
+		() => buildLineChartLayers( CustomLines ),
+		[]
 	);
 
 	return (
 		<ResponsiveLine
 			data={ nivoData }
-			margin={{ top: 30, right: 48, bottom: 56, left: 72 }}
-			xScale={{ type: 'time', format: 'native' }}
-			xFormat="time:%Q"
-			yScale={{ type: 'linear', min: 0, max: 'auto', stacked: false }}
-			colors={{ datum: 'color' }}
+			{ ...LINE_CHART_BASE_PROPS }
 			axisBottom={{
-				tickSize: 0,
-				tickPadding: 12,
+				...LINE_CHART_AXIS_BASE,
 				tickValues: xTickValues,
 				format: formatTick
 			}}
 			axisLeft={{
-				tickSize: 0,
-				tickPadding: 12,
+				...LINE_CHART_AXIS_BASE,
 				tickValues: 6
 			}}
-			enableGridX={ false }
-			enableGridY={ true }
 			gridYValues={ 6 }
-			pointSize={ 8 }
-			lineWidth={ 3 }
-			enablePointLabel={ false }
-			enableSlices="x"
 			sliceTooltip={ sliceTooltip }
-			theme={{
-				grid: { line: { stroke: 'var(--color-gray-300)', strokeWidth: 1 } },
-				axis: {
-					ticks: { text: { fill: 'var(--color-gray-600)', fontSize: 12 } },
-					domain: { line: { stroke: 'var(--color-gray-400)', strokeWidth: 1 } }
-				}
-			}}
-			curve="catmullRom"
+			layers={ layers }
 		/>
 	);
 };

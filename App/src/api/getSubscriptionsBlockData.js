@@ -1,6 +1,6 @@
 import { getData } from '../utils/api';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import { formatCurrency, formatCurrencyCompact, formatPercentage } from '../utils/formatting';
+import { formatCurrency, formatCurrencyCompact, formatNumber, formatPercentage } from '../utils/formatting';
 
 const METRIC_KEYS = {
 	AVERAGE_LIFETIME_VALUE: 'average_lifetime_value',
@@ -180,6 +180,7 @@ const isInvertedMetric = ( key ) => {
  * @param {number} rateChange - Rate of change
  * @return {Object} Change data with change and changeStatus
  */
+// fallow-ignore-next-line complexity
 const calculateChange = ( key, current, previous, rateChange ) => {
 	const isInverted = isInvertedMetric( key );
 
@@ -425,6 +426,7 @@ const hasRevenueChurnBaseline = ( churnData ) => {
  * @param {?number} rateChange - Relative rate change value from API
  * @return {string} Subtitle text
  */
+// fallow-ignore-next-line complexity
 const getRevenueChurnSubtitle = ( current, previous, rateChange ) => {
 	if ( null !== rateChange && undefined !== rateChange ) {
 		if ( 0 === rateChange ) {
@@ -486,7 +488,7 @@ const getActiveSubscriptionsData = ( metric ) => {
 
 	return {
 		...data,
-		value: activeCount.toLocaleString(),
+		value: formatNumber( activeCount, 0, false ),
 		exactValue: activeCount,
 		subtitle: getActiveSubscriptionsSubtitle( activeCount, previous )
 	};
@@ -499,6 +501,7 @@ const getActiveSubscriptionsData = ( metric ) => {
  * @param {Object} previous    - Previous period data
  * @return {string} Subtitle text
  */
+// fallow-ignore-next-line complexity
 const getActiveSubscriptionsSubtitle = ( activeCount, previous ) => {
 
 	// Compare with previous period if available
@@ -554,7 +557,7 @@ const getCanceledSubscriptionsData = ( metric ) => {
 
 	return {
 		...data,
-		value: canceledCount.toLocaleString(),
+		value: formatNumber( canceledCount, 0, false ),
 		exactValue: canceledCount,
 		subtitle: getCanceledSubscriptionsSubtitle( canceledCount, previous )
 	};
@@ -567,6 +570,7 @@ const getCanceledSubscriptionsData = ( metric ) => {
  * @param {Object} previous      - Previous period data
  * @return {string} Subtitle text
  */
+// fallow-ignore-next-line complexity
 const getCanceledSubscriptionsSubtitle = ( canceledCount, previous ) => {
 
 	// Compare with previous period if available
@@ -637,6 +641,7 @@ const getMonthlyRecurringRevenueData = ( metric ) => {
  * @param {string} currency - Currency code
  * @return {string} Subtitle text
  */
+// fallow-ignore-next-line complexity
 const getMonthlyRecurringRevenueSubtitle = ( current, previous, currency ) => {
 	const mrr = current.mrr ?? 0;
 

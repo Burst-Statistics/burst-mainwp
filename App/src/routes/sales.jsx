@@ -7,6 +7,8 @@ import { PageHeader } from '@/components/Common/PageHeader';
 import ErrorBoundary from '@/components/Common/ErrorBoundary';
 import TopPerformers from '@/components/Sales/TopPerformers';
 import Sales from '@/components/Sales/Sales';
+import GrowthBlock from '@/components/Sales/GrowthBlock';
+import { SalesChartBlock } from '@/components/Sales/SalesChart';
 import DataTableBlock from '@/components/Statistics/DataTableBlock';
 import QuickWins from '@/components/Sales/QuickWins';
 import FunnelChartSection from '@/components/Sales/FunnelChartSection';
@@ -20,7 +22,10 @@ import UnauthorizedModal from '@/components/Common/UnauthorizedModal';
 import { shouldLoadRoute } from '@/utils/helper';
 import NotFoundModal from '@/components/Common/NotFoundModal';
 
+
 export const Route = createFileRoute( '/sales' )({
+
+	// fallow-ignore-next-line complexity
 	beforeLoad: ({ context }) => {
 
 		// If plugin is not a pro version then no need to check for Unauthorized error, showing upsell for free version.
@@ -123,13 +128,21 @@ function SalesComponent() {
 			</ErrorBoundary>
 
 			<ErrorBoundary>
+				<SalesChartBlock />
+			</ErrorBoundary>
+
+			<ErrorBoundary>
+				<GrowthBlock />
+			</ErrorBoundary>
+
+			<ErrorBoundary>
 				<QuickWins />
 			</ErrorBoundary>
 
 			<ErrorBoundary>
 				<DataTableBlock
 					allowedConfigs={[ 'products' ]}
-					id={'6'}
+					id="sales_products"
 					isEcommerce={true}
 				/>
 			</ErrorBoundary>

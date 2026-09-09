@@ -1,0 +1,254 @@
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { __ } from '@wordpress/i18n';
+import { Block } from '@/components/Blocks/Block';
+import { BlockContent } from '@/components/Blocks/BlockContent';
+import { BlockHeading } from '@/components/Blocks/BlockHeading';
+import MetricInfo from '@/components/Common/MetricInfo';
+import { ChartLegend } from '@/components/Common/ChartLegend';
+import { ChartModeFilter } from '@/components/Common/ChartModeFilter';
+import { ChartEmptyState } from '@/components/Common/ChartEmptyState';
+import { ChartErrorNotice } from '@/components/Common/ChartErrorNotice';
+import {
+	ForecastAnnotation,
+	ForecastToggle
+} from '@/components/Forecast';
+import { addForecastDataset } from '@/components/Forecast/forecastSeries';
+import { buildForecastLegendItems } from '@/components/Forecast/forecastLegend';
+import SalesChartGraph from '@/components/Sales/SalesChart/SalesChartGraph';
+import { useForecastData } from '@/hooks/useForecastData';
+import { useDate } from '@/store/useDateStore';
+import { COMPARE_MODES, useCompareStore } from '@/store/useCompareStore';
+import { useSubscriptionsStore } from '@/store/useSubscriptionsStore';
+import type { SalesChartData } from '@/types/api-endpoints';
+import { getForecastRange } from '@/utils/formatting';
+import { getRevenueChartData } from '@/api/getRevenueChartData';
+import {
+	buildSubscriptionHistoryChartData
+} from './subscriptionForecastData';
+
+/**
+ * Dedicated Subscription total history and renewal forecast line chart.
+ *
+ * Historical subscription totals come from the existing revenue-chart endpoint.
+ * The separate forecast endpoint is queried only while Forecast is enabled.
+ */
+const HISTORICAL_PLACEHOLDER = {
+	interval: 'day',
+	spans_multiple_years: false,
+	rows: [],
+	mode: 'revenue',
+	currency: null
+};
+
+// fallow-ignore-next-line complexity
+export function SubscriptionForecastChartBlock(): JSX.Element {
+
+	// Subscription daily rows are site-wide: visitor filters do not apply
+	// here, so none are sent and none participate in the query key.
+	const { startDate, endDate, range } = useDate( ( state ) => state );
+	const compareMode = useCompareStore( ( state ) => state.compareMode );
+	const chartMode = useSubscriptionsStore( ( state ) => state.chartMode );
+	const setChartMode = useSubscriptionsStore(
+		( state ) => state.setChartMode
+	);
+	const showForecast = useSubscriptionsStore(
+		( state ) => state.showForecast
+	);
+	const showComparison = useSubscriptionsStore(
+		( state ) => state.showComparison
+	);
+	const toggleForecast = useSubscriptionsStore(
+		( state ) => state.toggleForecast
+	);
+	const toggleComparison = useSubscriptionsStore(
+		( state ) => state.toggleComparison
+	);
+	const historicalLabel = 'revenue' === chartMode ?
+		__( 'Renewal Revenue', 'burst-mainwp' ) :
+		__( 'Renewals', 'burst-mainwp' );
+	const comparisonLabel = COMPARE_MODES.YEAR_OVER_YEAR === compareMode ?
+		__( 'Previous year', 'burst-mainwp' ) :
+		__( 'Previous period', 'burst-mainwp' );
+
+	// While the forecast is shown, the chart pins itself to the forecast
+	// view's fixed window — the last 12 complete months, bucketed per
+	// month — regardless of the picked range, so the projection is always
+	// exactly the next 12 months starting at the current month.
+	const forecastRange = getForecastRange();
+	const groupBy = showForecast ? forecastRange.groupBy : 'auto';
+	const historicalStartDate = showForecast ? forecastRange.startDate : startDate;
+	const historicalEndDate = showForecast ? forecastRange.endDate : endDate;
+
+	// Without comparison or forecast this key is identical to
+	// RevenueChartBlock's, so TanStack Query deduplicates the shared
+	// historical request; with either toggle on the payload differs and gets
+	// its own cache entry.
+	const historicalQuery = useQuery({
+		queryKey: [
+			'revenueChart',
+			chartMode,
+			historicalStartDate,
+			historicalEndDate,
+			range,
+			...( 'auto' !== groupBy ? [ groupBy ] : []),
+			...( showComparison ? [ compareMode ] : [])
+		],
+		queryFn: () => getRevenueChartData({
+			startDate: historicalStartDate,
+			endDate: historicalEndDate,
+			range,
+			chartMode,
+			compareMode: showComparison ? compareMode : '',
+			groupBy
+		}),
+
+		// Keep the previous payload during refetches so the chart and its
+		// controls do not collapse to the empty placeholder mid-fetch.
+		placeholderData: ( previousData: unknown ) => previousData ?? HISTORICAL_PLACEHOLDER,
+		gcTime: 10000
+	});
+
+	const historicalChartData = useMemo<SalesChartData>(
+		() => buildSubscriptionHistoryChartData(
+			historicalQuery.data,
+			historicalLabel,
+			comparisonLabel,
+			chartMode
+		),
+		[ historicalQuery.data, historicalLabel, comparisonLabel, chartMode ]
+	);
+	const hasHistoricalData = Boolean(
+		historicalChartData.datasets[0]?.data.some(
+			( value ) => null !== value && 0 < value
+		)
+	);
+
+	// Gate the forecast on historical data as well: a persisted toggle must
+	// not keep fetching a forecast the block neither renders nor lets the
+	// user switch off while the empty state is shown.
+	const forecastQuery = useForecastData({
+		source: 'subscriptions',
+		chartMode,
+		enabled: showForecast && hasHistoricalData
+	});
+	const forecastData = forecastQuery.data;
+	const chartData = useMemo<SalesChartData>(
+		() => addForecastDataset(
+			historicalChartData,
+			forecastData,
+			showForecast,
+			__( 'Forecast', 'burst-mainwp' )
+		),
+		[ historicalChartData, forecastData, showForecast ]
+	);
+	const isFetching = historicalQuery.isFetching ||
+		( showForecast && forecastQuery.isFetching );
+	const showEmptyState = ! isFetching &&
+		! historicalQuery.isError &&
+		! hasHistoricalData;
+	const hasForecastData = showForecast &&
+		! forecastQuery.isPlaceholderData &&
+		0 < ( forecastData?.rows.length ?? 0 );
+	const isRevenueMode = 'revenue' === chartMode;
+	const legendItems = buildForecastLegendItems(
+		historicalLabel,
+		showComparison,
+		comparisonLabel,
+		showForecast
+	);
+
+	return (
+		<Block className="row-span-1 @lg:col-span-12 group/root">
+			<BlockHeading
+				title={
+					<MetricInfo metricKey="subscription_forecast_chart" side="bottom">
+						{ __( 'Subscription renewals over time', 'burst-mainwp' ) }
+					</MetricInfo>
+				}
+				className="border-b border-gray-200"
+				isLoading={ isFetching }
+				controls={
+					! showEmptyState ? (
+						<div className="flex flex-wrap items-center justify-end gap-4">
+							<ChartLegend items={ legendItems } />
+
+							<div className="flex items-center gap-2">
+								<ForecastToggle
+									active={ showComparison }
+									label={ comparisonLabel }
+									onClick={ toggleComparison }
+								/>
+
+								{ hasHistoricalData && (
+									<ForecastToggle
+										active={ showForecast }
+										label={ __( 'Next 12 months', 'burst-mainwp' ) }
+										onClick={ toggleForecast }
+									/>
+								) }
+							</div>
+
+							<ChartModeFilter
+								id="subscriptions_forecast_chart_mode"
+								chartMode={ chartMode }
+								onApply={ setChartMode }
+							/>
+						</div>
+					) : null
+				}
+			/>
+
+			<BlockContent className="px-0 py-0">
+				{ historicalQuery.isError && (
+					<ChartErrorNotice message={ __( 'Failed to load chart data.', 'burst-mainwp' ) } />
+				) }
+
+				{ showForecast && forecastQuery.isError && (
+					<ChartErrorNotice message={ __( 'Failed to load forecast data.', 'burst-mainwp' ) } />
+				) }
+
+				{ hasForecastData && forecastData && (
+					<ForecastAnnotation
+						source="subscriptions"
+						mode={ chartMode }
+						metadata={ forecastData.metadata }
+					/>
+				) }
+
+				{ showEmptyState ? (
+					<ChartEmptyState
+						message={
+							isRevenueMode ?
+								__(
+									'There is no subscription renewal revenue available for the selected date range.',
+									'burst-mainwp'
+								) :
+								__(
+									'There are no subscription renewals available for the selected date range.',
+									'burst-mainwp'
+								)
+						}
+					/>
+				) : (
+					<div
+						style={{ height: 360 }}
+						aria-busy={ isFetching }
+						className={
+							isFetching ?
+								'animate-pulse' :
+								undefined
+						}
+					>
+						<SalesChartGraph
+							data={ chartData }
+							mode={ chartMode }
+							currency={ chartData.currency ?? 'USD' }
+							actualLabel={ historicalLabel }
+						/>
+					</div>
+				) }
+			</BlockContent>
+		</Block>
+	);
+}

@@ -49,12 +49,12 @@ const BooleanFilterSetup: React.FC<BooleanFilterSetupProps> = ({
 				include: {
 					type: 'include',
 					icon: 'bounce',
-					label: __( 'Bounced visitors', 'burst-mainwp' )
+					label: __( 'Bounced', 'burst-mainwp' )
 				},
 				exclude: {
 					type: 'exclude',
 					icon: 'user-check',
-					label: __( 'Active visitors', 'burst-mainwp' )
+					label: __( 'Active', 'burst-mainwp' )
 				}
 			};
 		} else if ( 'new_visitor' === filterKey ) {
@@ -67,12 +67,12 @@ const BooleanFilterSetup: React.FC<BooleanFilterSetupProps> = ({
 				include: {
 					type: 'include',
 					icon: 'user-plus',
-					label: __( 'New visitors', 'burst-mainwp' )
+					label: __( 'New', 'burst-mainwp' )
 				},
 				exclude: {
 					type: 'exclude',
 					icon: 'user-check',
-					label: __( 'Returning visitors', 'burst-mainwp' )
+					label: __( 'Returning', 'burst-mainwp' )
 				}
 			};
 		} else if ( 'entry_exit_pages' === filterKey ) {
@@ -85,12 +85,30 @@ const BooleanFilterSetup: React.FC<BooleanFilterSetupProps> = ({
 				entry: {
 					type: 'entry',
 					icon: 'user-plus',
-					label: __( 'Entry pages', 'burst-mainwp' )
+					label: __( 'Entry', 'burst-mainwp' )
 				},
 				exit: {
 					type: 'exit',
 					icon: 'user-check',
-					label: __( 'Exit pages', 'burst-mainwp' )
+					label: __( 'Exit', 'burst-mainwp' )
+				}
+			};
+		} else if ( 'status' === filterKey ) {
+			return {
+				all: {
+					type: 'all',
+					icon: 'total',
+					label: __( 'All statuses', 'burst-mainwp' )
+				},
+				'200': {
+					type: '200',
+					icon: 'circle-check',
+					label: __( 'OK', 'burst-mainwp' )
+				},
+				'404': {
+					type: '404',
+					icon: 'file-disabled',
+					label: __( 'Not Found', 'burst-mainwp' )
 				}
 			};
 		}

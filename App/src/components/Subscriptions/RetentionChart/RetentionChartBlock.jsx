@@ -5,6 +5,7 @@ import { ResponsiveHeatMap } from '@nivo/heatmap';
 import { Block } from '@/components/Blocks/Block';
 import { BlockHeading } from '@/components/Blocks/BlockHeading';
 import { BlockContent } from '@/components/Blocks/BlockContent';
+import { BlockFooter } from '@/components/Blocks/BlockFooter';
 import SelectInput from '@/components/Inputs/SelectInput';
 import { useDate } from '@/store/useDateStore';
 import { useSubscriptionsStore } from '@/store/useSubscriptionsStore';
@@ -100,6 +101,7 @@ function getDynamicTickValues( data, containerWidth, options = {}) {
  *
  * @return {JSX.Element} The RetentionChartBlock component.
  */
+// fallow-ignore-next-line complexity
 export function RetentionChartBlock() {
 	const { startDate, endDate, range } = useDate( ( state ) => state );
 	const retentionProductId = useSubscriptionsStore( ( state ) => state.retentionProductId );
@@ -158,6 +160,7 @@ export function RetentionChartBlock() {
 
 	// This useEffect will make sure, that product exists or not in our response, and if it does not it will go back to default option.
 	// For example: We have a product from WooCommerce_Subscriptions client deactivates that plugin and moves to subscriben then the old product selected in our dashabord won't be valid so this will reset it to 'all'.
+	// fallow-ignore-next-line complexity
 	useEffect( () => {
 		if (
 			'all' === retentionProductId ||
@@ -177,6 +180,7 @@ export function RetentionChartBlock() {
 		}
 	}, [ isFetching, productOptions, retentionData.products.length, retentionProductId, retentionQuery.isError, setRetentionProductId ]);
 
+	// fallow-ignore-next-line complexity
 	const retentionColorScale = useCallback( ( cell ) => {
 		const { value } = cell;
 		if ( null == value ) {
@@ -207,14 +211,12 @@ export function RetentionChartBlock() {
 		! isFetching && ! retentionQuery.isError && 0 === data.length;
 
 	return (
-		<Block className="row-span-2 lg:col-span-12 xl:col-span-6">
+		<Block className="row-span-2 @lg:col-span-12 @xl:col-span-6">
 			<BlockHeading
 				title={__( 'Customer retention', 'burst-mainwp' )}
 				className="border-b border-gray-200"
 				controls={
 					<div className="flex items-center gap-3 flex-wrap justify-end">
-						<RetentionLegend />
-
 						<SelectInput
 							options={productOptions}
 							value={retentionProductId}
@@ -291,6 +293,9 @@ export function RetentionChartBlock() {
 					</div>
 				)}
 			</BlockContent>
+			<BlockFooter className="border-t border-gray-200 justify-center">
+				<RetentionLegend />
+			</BlockFooter>
 		</Block>
 	);
 }

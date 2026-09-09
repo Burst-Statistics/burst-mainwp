@@ -7,6 +7,7 @@ import {
 	getDateWithOffset,
 	getAvailableRanges,
 	getDisplayDates,
+	getDatePickerLocale,
 	availableRanges,
 	BURST_START_DATE
 } from '@/utils/formatting';
@@ -70,6 +71,7 @@ export interface DateRangePickerProps {
  * @param {boolean}  props.smallLabels Whether to use small size styling (px-2 py-1 text-xs).
  * @return {JSX.Element} Date Range Trigger.
  */
+// fallow-ignore-next-line complexity
 const DateRangeTrigger = ({ range, display, isOpen, setIsOpen, disabled, smallLabels = false }: {
 	range: string;
 	display: { startDate: string; endDate: string };
@@ -123,6 +125,7 @@ const DateRangeTrigger = ({ range, display, isOpen, setIsOpen, disabled, smallLa
  * @param {DateRangePickerProps} props Component props.
  * @return {JSX.Element} Date Range Picker.
  */
+// fallow-ignore-next-line complexity
 export const DateRangePicker = ({
 	value,
 	onChange,
@@ -162,6 +165,8 @@ export const DateRangePicker = ({
 	);
 
 	const updateDateRange = useCallback(
+
+		// fallow-ignore-next-line complexity
 		( ranges: RangeKeyDict ) => {
 			if ( disabled ) {
 				return;
@@ -238,14 +243,16 @@ export const DateRangePicker = ({
 							align={align}
 							sideOffset={10}
 							arrowPadding={10}
-							id="burst-mainwp"
+							className="burst"
+							style={{ zIndex: 100001 }}
 						>
 							<span className="absolute right-4 mt-1 h-4 w-4 -translate-y-2 rotate-45 transform bg-green-50" />
 
-							<div className="z-50 rounded-lg border border-gray-200 bg-white shadow-md">
+							<div className="z-9999 rounded-lg border border-gray-200 bg-white shadow-md">
 								<ReactDateRangePicker
 									ranges={[ selectionRange ]}
 									rangeColors={[ 'var(--color-green)' ]}
+									locale={getDatePickerLocale()}
 									dateDisplayFormat="dd MMMM yyyy"
 									monthDisplayFormat="MMMM"
 									onChange={updateDateRange}

@@ -1,0 +1,66 @@
+import { __, sprintf } from '@wordpress/i18n';
+import { formatPercentage } from '@/utils/formatting';
+import type {
+	ForecastMetadata,
+	ForecastMode,
+	ForecastSource
+} from '@/types/api-endpoints';
+
+interface ForecastAnnotationProps {
+	source: ForecastSource;
+	mode: ForecastMode;
+	metadata: ForecastMetadata;
+
+	// Layout override for hosts whose container already pads (default fits
+	// the chart blocks' unpadded content area).
+	className?: string;
+}
+
+/**
+ * Shared forecast growth, churn and limited-history context.
+ */
+// fallow-ignore-next-line complexity
+export function ForecastAnnotation({
+	source,
+	mode,
+	metadata,
+	className = 'px-6 pt-3'
+}: ForecastAnnotationProps ): JSX.Element {
+	const growthRate = metadata.growth_rate;
+	const growthLabel = `${ 0 <= growthRate ? '+' : '' }${ formatPercentage( growthRate ) }`;
+	const churnRate = metadata.churn_rate ?? 0;
+
+	return (
+		<div className={ `${ className } text-xs text-text-gray-light` }>
+			<span>
+				{
+					sprintf(
+
+						/* translators: %s: projected yearly growth percentage. */
+						__( 'Based on %s projected yearly growth.', 'burst-mainwp' ),
+						growthLabel
+					)
+				}
+			</span>
+			{ 'subscriptions' === source &&
+				'revenue' === mode &&
+				0 < churnRate && (
+				<span>
+					{
+						' ' + sprintf(
+
+							/* translators: %s: revenue churn percentage. */
+							__( 'Adjusted for %s revenue churn.', 'burst-mainwp' ),
+							formatPercentage( churnRate )
+						)
+					}
+				</span>
+			) }
+			{ metadata.limited_data && (
+				<span>
+					{ ' ' + __( 'Based on limited history.', 'burst-mainwp' ) }
+				</span>
+			) }
+		</div>
+	);
+}

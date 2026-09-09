@@ -1,10 +1,12 @@
-import { getData } from '@/utils/api';
+import { getDatatableData } from '@/utils/api';
 import {
+	formatNumber,
 	formatPercentage,
 	formatTime,
 	getCountryName,
 	getContinentName,
-	formatCurrency, formatCurrencyCompact
+	formatCurrency, formatCurrencyCompact,
+	truncateMiddle
 } from '@/utils/formatting';
 import Flag from '@/components/Statistics/Flag';
 import ClickToFilter from '@/components/Common/ClickToFilter';
@@ -25,7 +27,56 @@ const FORMATS = {
 	INTEGER: 'integer',
 	REFERRER: 'referrer',
 	FLOAT: 'float',
-	CURRENCY: 'currency'
+	CURRENCY: 'currency',
+	SEARCH_RESULTS: 'search_results',
+	STRING: 'string',
+	EXTERNAL_LINK: 'external_link',
+	FORM_TITLE: 'form_title',
+	SOURCE_CATEGORY: 'source_category',
+	SOURCE: 'source'
+};
+
+export const getSourceCategoryMeta = ( key ) => {
+	const localized = window.burst_settings?.source_categories?.[ key ];
+	if ( localized ) {
+		return localized;
+	}
+
+	const defaults = {
+		search: {
+			label: __( 'Search', 'burst-mainwp' ),
+			color: 'var(--color-blue-500)'
+		},
+		social: {
+			label: __( 'Social', 'burst-mainwp' ),
+			color: 'var(--color-yellow-500)'
+		},
+		referral: {
+			label: __( 'Referral', 'burst-mainwp' ),
+			color: 'var(--color-orange-500)'
+		},
+		aiReferral: {
+			label: __( 'AI referral', 'burst-mainwp' ),
+			color: 'var(--color-primary-500)'
+		},
+		paid: {
+			label: __( 'Paid', 'burst-mainwp' ),
+			color: 'var(--color-red-500)'
+		},
+		email: {
+			label: __( 'Email', 'burst-mainwp' ),
+			color: 'var(--color-green-500)'
+		},
+		direct: {
+			label: __( 'Direct / unknown', 'burst-mainwp' ),
+			color: 'var(--color-gray-500)'
+		}
+	};
+
+	return defaults[ key ] || {
+		label: key || __( 'Unknown', 'burst-mainwp' ),
+		color: 'var(--color-gray-500)'
+	};
 };
 
 // Memoized filter components - created once, reused everywhere
@@ -39,9 +90,9 @@ const CountryFilter = memo( ({ value }) => (
 
 CountryFilter.displayName = 'CountryFilter';
 
-const ContinentFilter = memo( ({ value }) => (
+const ContinentFilter = memo( ({ value, row }) => (
 	<MemoizedClickToFilter filter="continent_code" filterValue={value}>
-		{getContinentName( value )}
+		{getContinentName( value, row?.country_code )}
 	</MemoizedClickToFilter>
 ) );
 
@@ -55,11 +106,62 @@ const UrlFilter = memo( ({ value, row }) => (
 
 UrlFilter.displayName = 'UrlFilter';
 
-const TextFilter = memo( ({ filter, value }) => (
-	<MemoizedClickToFilter filter={filter} filterValue={value}>
-		{value}
-	</MemoizedClickToFilter>
-) );
+// Location text fields where an unresolved value renders as "Unknown".
+const LOCATION_TEXT_FIELDS = [ 'state', 'city' ];
+
+/**
+ * Whether a location text value is unresolved and renders as "Unknown".
+ *
+ * @param {*} value The city/state value.
+ * @return {boolean} True when the value is empty or the literal 'Unknown'.
+ */
+const isEmptyLocationValue = ( value ) => ! value || 'Unknown' === value;
+
+/**
+ * Whether a row represents an unresolved location: any city/state field it
+ * carries is empty, so it renders as "Unknown". One such row aggregates many
+ * different unresolved locations.
+ *
+ * @param {Object} row Datatable row.
+ * @return {boolean} True when the row has an unresolved city/state field.
+ */
+export const isUnknownLocationRow = ( row ) =>
+	LOCATION_TEXT_FIELDS.some(
+		( field ) => field in row && isEmptyLocationValue( row[field])
+	);
+
+// fallow-ignore-next-line complexity
+const TextFilter = memo( ({ filter, value }) => {
+	const isEmptyLocation =
+		LOCATION_TEXT_FIELDS.includes( filter ) && isEmptyLocationValue( value );
+
+	if ( isEmptyLocation ) {
+		return (
+			<HelpTooltip
+				content={ __(
+					'Burst resolves visitor IP addresses using MaxMind GeoLite2 databases on your server. Certain IPs (such as local networks, VPNs, or unassigned ranges) cannot be resolved and are categorized as Unknown.',
+					'burst-mainwp'
+				) }
+			>
+				<span className="inline-flex items-center gap-1.5 text-text-gray cursor-help">
+					<span>{ __( 'Unknown', 'burst-mainwp' ) }</span>
+					<Icon
+						name="help"
+						size={14}
+						color="blue"
+						className="bg-blue-50 rounded-full shrink-0"
+					/>
+				</span>
+			</HelpTooltip>
+		);
+	}
+
+	return (
+		<MemoizedClickToFilter filter={filter} filterValue={value}>
+			{value}
+		</MemoizedClickToFilter>
+	);
+});
 
 TextFilter.displayName = 'TextFilter';
 
@@ -71,6 +173,71 @@ const ReferrerFilter = memo( ({ value }) => (
 
 ReferrerFilter.displayName = 'ReferrerFilter';
 
+const SourceFilter = memo( ({ value }) => (
+	<MemoizedClickToFilter filter="source" filterValue={value}>
+		{value}
+	</MemoizedClickToFilter>
+) );
+
+SourceFilter.displayName = 'SourceFilter';
+
+const SourceCategoryFilter = memo( ({ value }) => {
+	const key = String( value || '' );
+	const meta = getSourceCategoryMeta( key );
+	return (
+		<MemoizedClickToFilter filter="source_category" filterValue={key}>
+			<span className="inline-flex items-center gap-2">
+				<span
+					className="inline-block h-2.5 w-2.5 rounded-full"
+					style={{ backgroundColor: meta.color }}
+				/>
+				<span>{ meta.label }</span>
+			</span>
+		</MemoizedClickToFilter>
+	);
+});
+
+SourceCategoryFilter.displayName = 'SourceCategoryFilter';
+
+/**
+ * Renders the "Results" cell for the search-terms datatable.
+ *
+ * Zero results are highlighted with a warning icon so they stand out
+ * immediately. Non-zero values are rendered as a link that opens the live
+ * site-search results page in a new tab.
+ */
+const SearchResultsCell = memo( ({ value, term }) => {
+	if ( ! value || 0 === parseInt( value, 10 ) ) {
+		return (
+			<span className="inline-flex items-center gap-1 text-red font-medium">
+				<Icon name="warning-triangle" size={ 13 } color="red" />
+				{ __( 'None', 'burst-mainwp' ) }
+			</span>
+		);
+	}
+
+	const siteUrl =
+		window.burst_settings?.site_url?.replace( /\/$/, '' ) ??
+		window.location.origin;
+	const searchUrl = `${ siteUrl }/?s=${ encodeURIComponent( term ?? '' ) }`;
+
+	return (
+		<a
+			href={ searchUrl }
+			target="_blank"
+			rel="noopener noreferrer"
+			className="inline-flex items-center gap-1 text-text-black font-medium hover:text-blue-600 transition-colors"
+			title={ __( 'View search results', 'burst-mainwp' ) }
+		>
+			{ formatNumber( parseInt( value, 10 ), 0, false ) }
+			<Icon name="external-link" size={ 11 } color="gray" />
+		</a>
+	);
+});
+
+SearchResultsCell.displayName = 'SearchResultsCell';
+
+// fallow-ignore-next-line complexity
 const CurrencyValue = memo( ({ value }) => {
 	const exactValue = value?.value || 0;
 
@@ -112,12 +279,76 @@ const COLUMN_FORMATTERS = {
 		}
 		return <CountryFilter value={value} />;
 	},
-	[FORMATS.CONTINENT]: ( value ) => <ContinentFilter value={value} />,
+	[FORMATS.CONTINENT]: ( value, _columnId, row ) => <ContinentFilter value={value} row={row} />,
 	[FORMATS.URL]: ( value, columnId, row ) => <UrlFilter filter={columnId} value={value} row={row} />,
-	[FORMATS.TEXT]: ( value, columnId ) => <TextFilter filter={columnId} value={value} />,
+	[FORMATS.TEXT]: ( value, columnId, row ) => <TextFilter filter={columnId} value={value} row={row} />,
 	[FORMATS.REFERRER]: ( value ) => <ReferrerFilter value={value} />,
 	[FORMATS.FLOAT]: ( value ) => parseFloat( value ),
-	[FORMATS.CURRENCY]: ( value ) => <CurrencyValue value={value} />
+	[FORMATS.CURRENCY]: ( value ) => <CurrencyValue value={value} />,
+	[FORMATS.SEARCH_RESULTS]: ( value, _columnId, row ) => (
+		<SearchResultsCell value={value} term={ row?.term } />
+	),
+	[FORMATS.STRING]: ( value ) => value,
+	[FORMATS.SOURCE_CATEGORY]: ( value ) => <SourceCategoryFilter value={value} />,
+	[FORMATS.SOURCE]: ( value ) => <SourceFilter value={value} />,
+	[FORMATS.EXTERNAL_LINK]: ( value ) => {
+		let display = value;
+		try {
+			const parsed = new URL( value );
+			display = parsed.hostname + ( '/' !== parsed.pathname ? parsed.pathname : '' );
+		} catch {
+
+			// Fall back to the raw URL if parsing fails.
+		}
+
+		return (
+			<a
+				href={ value }
+				target="_blank"
+				rel="noopener noreferrer"
+				className="inline-flex items-center gap-1 text-text-black hover:text-blue-600 transition-colors"
+				title={ value }
+			>
+				<span>{ truncateMiddle( display, 44 ) }</span>
+				<Icon name="external-link" size={ 11 } color="gray" className="shrink-0" />
+			</a>
+		);
+	},
+	[FORMATS.FORM_TITLE]: ( value, _columnId, row ) => {
+		const submissionsUrl = row?.submissions_url;
+		const providerLabel = row?.form_provider_label;
+
+		const titleContent = submissionsUrl ? (
+			<a
+				href={ submissionsUrl }
+				target="_blank"
+				rel="noopener noreferrer"
+				className="inline-flex items-center gap-1 text-text-black hover:text-blue-600 transition-colors font-medium min-w-0"
+				title={ value }
+			>
+				<span className="truncate">{ value }</span>
+				<Icon name="external-link" size={ 11 } color="gray" className="shrink-0" />
+			</a>
+		) : (
+			<span
+				className="block truncate font-medium text-text-black"
+				title={ value }
+			>
+				{ value }
+			</span>
+		);
+
+		return (
+			<span className="flex flex-col min-w-0">
+				{ titleContent }
+				{ providerLabel && (
+					<span className="text-xs text-text-gray truncate">
+						{ providerLabel }
+					</span>
+				) }
+			</span>
+		);
+	}
 };
 
 /**
@@ -136,6 +367,7 @@ const createSortFunction = ( columnId, format ) => {
 
 	const isCurrency = format === FORMATS.CURRENCY;
 
+	// fallow-ignore-next-line complexity
 	return ( rowA, rowB ) => {
 		const valueA = rowA[columnId];
 		const valueB = rowB[columnId];
@@ -191,6 +423,7 @@ const createSortFunction = ( columnId, format ) => {
 	};
 };
 
+// fallow-ignore-next-line complexity
 const addABTestIcon = ( content, row ) => {
 	if ( ! row.is_ab_test ) {
 		return content;
@@ -236,6 +469,7 @@ const createCellFormatter = ( format, columnId ) => {
 		return ( row ) => row[columnId] || '';
 	}
 
+	// fallow-ignore-next-line complexity
 	return ( row ) => {
 		try {
 			const value = row[columnId] ?? '';
@@ -336,6 +570,7 @@ const transformDataTableData = ( response, columnOptions ) => {
  * @param {Object} params - Input parameters
  * @throws {Error} If required parameters are missing
  */
+// fallow-ignore-next-line complexity
 const validateParams = ({ startDate, endDate, range, columnsOptions }) => {
 	if ( ! startDate || ! endDate || ! range ) {
 		throw new Error( 'Missing required parameters: startDate, endDate, range' );
@@ -363,9 +598,9 @@ const getDataTableData = async( params ) => {
 
 		const { startDate, endDate, range, args, columnsOptions, type } = params;
 
-		const endpoint = 'ecommerce-datatable' === type ? 'ecommerce/datatable' : 'datatable';
-
-		const { data } = await getData( endpoint, startDate, endDate, range, args );
+		const isEcommerce = 'ecommerce-datatable' === type;
+		const response = await getDatatableData( args.id, isEcommerce, startDate, endDate, range, args );
+		const data = response?.data;
 
 		if ( ! data ) {
 			throw new Error( 'No data received from API' );
@@ -387,13 +622,7 @@ const getDataTableData = async( params ) => {
 
 export {
 	FORMATS,
-	COLUMN_FORMATTERS,
-	createSortFunction,
-	createCellFormatter,
-	transformColumn,
-	transformDataTableData,
-	validateResponse,
-	validateParams
+	COLUMN_FORMATTERS
 };
 
 export default getDataTableData;
