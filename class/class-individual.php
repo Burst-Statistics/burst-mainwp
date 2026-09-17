@@ -401,26 +401,58 @@ class Individual {
 			$localization_data[ $key ] = $value;
 		}
 
-		// Remove "Customization" sub-menu from the "Reporting" menu if it exists, as it's not working in the MainWP context.
 		if ( isset( $localization_data['menu'] ) && is_array( $localization_data['menu'] ) ) {
-			foreach ( $localization_data['menu'] as &$menu_item ) {
-				if (
-					isset( $menu_item['id'], $menu_item['menu_items'] ) &&
-					'reporting' === $menu_item['id'] &&
-					is_array( $menu_item['menu_items'] )
-				) {
-					$menu_item['menu_items'] = array_values(
-						array_filter(
-							$menu_item['menu_items'],
-							fn( $sub_menu_item ) => ! ( isset( $sub_menu_item['id'] ) && 'customization' === $sub_menu_item['id'] )
-						)
-					);
-				}
-			}
-			unset( $menu_item );
+			$localization_data['menu'] = self::remove_unsupported_menu_items( $localization_data['menu'] );
 		}
 
 		return apply_filters( 'burst_mainwp_localize_script', $localization_data );
+	}
+
+	/**
+	 * Sub-menu pages the child site offers that do not work inside the MainWP
+	 * dashboard, keyed by parent menu id.
+	 *
+	 * - reporting/customization: the report customization UI needs the child's
+	 *   own admin context.
+	 * - settings/data: import/export (Burst 3.7.1+) uploads chunked files to the
+	 *   child site directly; the bundled app has no field components for it and
+	 *   would render "Unknown field type".
+	 *
+	 * @return array<string, array<int, string>>
+	 */
+	private static function unsupported_menu_items(): array {
+		return [
+			'reporting' => [ 'customization' ],
+			'settings'  => [ 'data' ],
+		];
+	}
+
+	/**
+	 * Strip the sub-menu pages listed in unsupported_menu_items() from the
+	 * child site's menu before it is handed to the React app.
+	 *
+	 * @param array<int, array<string, mixed>> $menu Menu as sent by the child site.
+	 * @return array<int, array<string, mixed>>
+	 */
+	public static function remove_unsupported_menu_items( array $menu ): array {
+		$unsupported = self::unsupported_menu_items();
+		foreach ( $menu as &$menu_item ) {
+			if ( ! isset( $menu_item['id'], $menu_item['menu_items'] ) || ! is_array( $menu_item['menu_items'] ) ) {
+				continue;
+			}
+			$remove = $unsupported[ $menu_item['id'] ] ?? [];
+			if ( [] === $remove ) {
+				continue;
+			}
+			$menu_item['menu_items'] = array_values(
+				array_filter(
+					$menu_item['menu_items'],
+					fn( $sub_menu_item ) => ! ( isset( $sub_menu_item['id'] ) && in_array( $sub_menu_item['id'], $remove, true ) )
+				)
+			);
+		}
+		unset( $menu_item );
+		return $menu;
 	}
 
 	/**
