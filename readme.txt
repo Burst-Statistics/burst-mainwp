@@ -59,6 +59,9 @@ No. No external account is needed for this extension itself. A Burst Pro license
 
 == Changelog ==
 
+= 1.1.2 =
+* Fix: the "Start Tour" button on the General settings page is left out of the MainWP dashboard; the interactive tour only runs on the child site itself.
+
 = 1.1.1 =
 * Release date: September 17th 2026
 * Improvement: updated the bundled Burst dashboard app to the latest Burst release (Burst 3.7.1).

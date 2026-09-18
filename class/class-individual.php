@@ -405,6 +405,10 @@ class Individual {
 			$localization_data['menu'] = self::remove_unsupported_menu_items( $localization_data['menu'] );
 		}
 
+		if ( isset( $localization_data['fields'] ) && is_array( $localization_data['fields'] ) ) {
+			$localization_data['fields'] = self::remove_unsupported_fields( $localization_data['fields'] );
+		}
+
 		return apply_filters( 'burst_mainwp_localize_script', $localization_data );
 	}
 
@@ -453,6 +457,38 @@ class Individual {
 		}
 		unset( $menu_item );
 		return $menu;
+	}
+
+	/**
+	 * Settings fields the child site offers that do not work inside the MainWP
+	 * dashboard.
+	 *
+	 * - interactive_tour: the "Start Tour" button (Burst 3.7.1+). The tour runs
+	 *   on the child's own dashboard only; the button redirects to the child's
+	 *   wp-admin. Burst 3.7.2+ children omit the field for MainWP requests
+	 *   themselves; this keeps older children consistent.
+	 *
+	 * @return array<int, string>
+	 */
+	private static function unsupported_field_ids(): array {
+		return [ 'interactive_tour' ];
+	}
+
+	/**
+	 * Strip the settings fields listed in unsupported_field_ids() from the
+	 * child site's field list before it is handed to the React app.
+	 *
+	 * @param array<int, array<string, mixed>> $fields Fields as sent by the child site.
+	 * @return array<int, array<string, mixed>>
+	 */
+	public static function remove_unsupported_fields( array $fields ): array {
+		$unsupported = self::unsupported_field_ids();
+		return array_values(
+			array_filter(
+				$fields,
+				fn( $field ) => ! ( isset( $field['id'] ) && in_array( $field['id'], $unsupported, true ) )
+			)
+		);
 	}
 
 	/**
