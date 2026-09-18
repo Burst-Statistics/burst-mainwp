@@ -5,7 +5,7 @@ Tags: analytics, statistics, mainwp, burst, dashboard
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -58,6 +58,11 @@ All statistics remain on your child sites. The extension only reads and displays
 No. No external account is needed for this extension itself. A Burst Pro license, if used, is managed on the child site as usual.
 
 == Changelog ==
+
+= 1.1.1 =
+* Release date: September 17th 2026
+* Improvement: updated the bundled Burst dashboard app to the latest Burst release (Burst 3.7.1).
+* Fix: child sites running Burst 3.7.1 or later offer a Data settings page for importing and exporting statistics; that page cannot be used from the MainWP dashboard and showed "Unknown field type" instead, so it is now left out of the Settings menu, like Reporting > Customization.
 
 = 1.1.0 =
 * Release date: September 8th 2026

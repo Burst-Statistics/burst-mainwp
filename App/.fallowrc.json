@@ -82,11 +82,10 @@
 			"src/styles/theme/dark-scope-tokens.css",
 			"src/styles/theme/tokens.css",
 			"src/tailwind.generated.css",
-			"src/components/NotFoundPages/useNotFoundPagesData.ts",
-			"src/components/SearchTerms/useSearchTermsData.ts",
 			"src/components/Sources/SourcesChartBlock.jsx",
 			"src/components/Common/ChatAssistantModal.tsx",
-			"src/components/DataTable/DataTableOverlay.tsx"
+			"src/components/DataTable/DataTableOverlay.tsx",
+			"src/components/Tour/tourMockData.js"
 		]
 	},
 	"health": {
@@ -101,7 +100,20 @@
 			"src/components/Pages/PageSummary/PageSummaryBlock.tsx",
 			"src/components/OutgoingLinks/useOutgoingLinksData.ts",
 			"src/components/Inputs/SelectInput.tsx",
-			"src/components/Common/MobileMenuDrawer.jsx"
+			"src/components/Common/MobileMenuDrawer.jsx",
+			"src/components/Tour/TourGuide.tsx",
+			"src/components/Tour/TourOverlay.tsx",
+			"src/components/Tour/TourTooltip.tsx",
+			"src/components/Tour/TourActionHint.tsx",
+			"src/components/Tour/ResumeTourModal.tsx",
+			"src/components/Tour/tourSections.ts",
+			"src/components/Tour/tourReset.ts",
+			"src/components/Tour/tourMockData.js",
+			"src/store/useTourStore.ts",
+			"src/components/Common/ChatAssistantModal.tsx",
+			"src/components/Common/SettingsNavigationItem.jsx",
+			"src/components/Common/SubNavigation/SubNavigationItem.jsx",
+			"src/components/Statistics/SearchConsoleBlock.tsx"
 		]
 	}
 }
