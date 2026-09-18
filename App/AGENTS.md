@@ -9,18 +9,17 @@ Run from `includes/Admin/App/`:
 | Command | Purpose |
 | ------- | ------- |
 | `npm run start` | Webpack dev (wp-scripts) |
-| `npm run build` | Production bundle → `build/` |
-| `npm run build:css` | Compile Tailwind → `src/tailwind.generated.css` |
+| `npm run build` | Production bundle → `build/` (runs `build:css` afterwards) |
+| `npm run build:css` | Compile Tailwind → `build/tailwind.generated.css` |
 | `npm run build:css:watch` | Watch Tailwind (run alongside `start`) |
 | `npm run lint` / `lint:fix` | ESLint (includes `react-compiler`) |
 
-After UI/CSS changes: run `build:css` and commit `tailwind.generated.css` when new utilities were added.
+After UI/CSS changes: run `build:css` to refresh the stylesheet. `build/` is gitignored, so the generated CSS is never committed; every build and release pipeline regenerates it.
 
 ## Do not edit
 
 - `src/routeTree.gen.ts` — TanStack Router codegen
-- `src/tailwind.generated.css` (+ `.map`) — PostCSS output
-- `build/*` — webpack output
+- `build/*` — webpack output and `tailwind.generated.css` (+ `.map`, PostCSS output)
 
 ## Directory map
 

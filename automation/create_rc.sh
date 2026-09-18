@@ -95,6 +95,7 @@ create_rc_zip() {
     "--exclude=.eslintignore"
     "--exclude=.eslintrc.json"
     "--exclude=.gitignore"
+    "--exclude=.distignore"
     "--exclude=.github/"
     "--exclude=.gitlab/"
     "--exclude=.million/"
