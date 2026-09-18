@@ -32,6 +32,10 @@ The Burst Statistics MainWP Extension brings your privacy-friendly analytics int
 
 Burst Statistics is a privacy-friendly Google Analytics alternative for WordPress, trusted by 200,000+ sites. Built by the team behind UpdraftPlus, WP-Optimize, and All-In-One Security. Learn more at [burst-statistics.com](https://burst-statistics.com).
 
+= Source code =
+
+The extension ships the compiled dashboard in `App/build/`. The human-readable React/TypeScript source (`App/src/`) and the build tooling are published on [GitHub](https://github.com/Burst-Statistics/burst-mainwp).
+
 = Disclaimer =
 
 This plugin is an independent extension developed by Burst Statistics. It is not affiliated with, endorsed by, or sponsored by MainWP or MainWP LLC. "MainWP" is a trademark of its respective owner and is used here only to describe compatibility with the MainWP Dashboard plugin.
