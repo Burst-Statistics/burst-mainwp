@@ -81,7 +81,6 @@
 			"src/styles/integrations/date-range.css",
 			"src/styles/theme/dark-scope-tokens.css",
 			"src/styles/theme/tokens.css",
-			"src/tailwind.generated.css",
 			"src/components/Sources/SourcesChartBlock.jsx",
 			"src/components/Common/ChatAssistantModal.tsx",
 			"src/components/DataTable/DataTableOverlay.tsx",

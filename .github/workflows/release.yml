@@ -57,10 +57,8 @@ jobs:
             --exclude App
 
           mkdir -p staging/App/build
-          mkdir -p staging/App/src
 
           cp -r App/build/. staging/App/build/
-          cp App/src/tailwind.generated.css staging/App/src/tailwind.generated.css
 
           cd staging && zip -r ../burst-mainwp-${{ github.ref_name }}.zip .
 
