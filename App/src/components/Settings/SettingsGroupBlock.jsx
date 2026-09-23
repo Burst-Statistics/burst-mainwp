@@ -3,7 +3,7 @@ import { Block } from '@/components/Blocks/Block';
 import { BlockHeading } from '@/components/Blocks/BlockHeading';
 import { BlockContent } from '@/components/Blocks/BlockContent';
 import ErrorBoundary from '@/components/Common/ErrorBoundary';
-import Field from '@/components/Fields/Field';
+import Field, { fieldComponents } from '@/components/Fields/Field';
 import Overlay from '@/components/Common/Overlay';
 import ButtonInput from '@/components/Inputs/ButtonInput';
 import { __ } from '@wordpress/i18n';
@@ -14,9 +14,23 @@ import clsx from 'clsx';
 const SettingsGroupBlock = memo( ({ group, fields, control, isLastGroup, isShowingFooter = true }) => {
 		const { isLicenseValid } = useLicenseData();
 
+		// Filter out fields whose type is not registered, so they don't count toward
+		// the "group has renderable fields" check (Field.jsx already logs a warning for them).
+		const knownFields = fields.filter(
+			( field ) => 'goals' === field.type || !! fieldComponents[field.type]
+		);
+
 		const className = clsx( 'p-0', isLastGroup && isShowingFooter ? 'rounded-b-none' : 'mb-5', 'license' === group.id ? '' : 'pb-4' );
 
-		if ( 0 === fields.length ) {
+		if ( 0 === knownFields.length ) {
+
+			// When the entire group is hidden, log any unknown fields so tests and developers notice them.
+			fields.forEach( ( field ) => {
+				if ( 'goals' !== field.type && ! fieldComponents[field.type]) {
+					// eslint-disable-next-line no-console
+					console.log( `[Burst] Unknown field type "${ field.type }" for field "${ field.id }". The field will not be rendered.` );
+				}
+			});
 			return null; // No fields to display
 		}
 
