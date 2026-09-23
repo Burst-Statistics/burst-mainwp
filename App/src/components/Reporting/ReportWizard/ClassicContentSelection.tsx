@@ -1,5 +1,7 @@
 import FieldWrapper from '@/components/Fields/FieldWrapper';
 import { memo } from 'react';
+import * as Checkbox from '@radix-ui/react-checkbox';
+import clsx from 'clsx';
 import useLicenseData from '@/hooks/useLicenseData';
 import ProBadge from '@/components/Common/ProBadge';
 import { ContentBlockId, ContentItem } from '@/store/reports/types';
@@ -12,7 +14,8 @@ import {
 
 /**
  * Classic content selection component.
- * Displays a grid of content blocks with checkboxes for enabling/disabling blocks.
+ * Displays a list of content blocks with checkboxes for enabling/disabling blocks.
+ * Each block is a label wrapping its checkbox, so a click anywhere on the block toggles it.
  */
 const ClassicContentSelection = () => {
 	const {
@@ -31,10 +34,6 @@ const ClassicContentSelection = () => {
 	};
 
 	const handleToggle = ( block: ContentItem ) => {
-		if ( block.pro && ( ! isLicenseValid || ! isPro ) ) {
-			return;
-		}
-
 		const index = content.findIndex( item => item.id === block.id );
 		if ( -1 === index ) {
 			addContent( block.id );
@@ -50,28 +49,29 @@ const ClassicContentSelection = () => {
 					getSelectableContentBlocks( availableContent, shouldLoadEcommerce, false )
 
 						// fallow-ignore-next-line complexity
-						.map( ( block:ContentItem, index ) => {
+						.map( ( block:ContentItem ) => {
 							const isBlockSelected = isSelected( block.id );
 							const isBlockProDisabled = block.pro && ( ! isLicenseValid || ! isPro );
 
 							return (
-								<div
-									key={index}
-									onClick={() => handleToggle( block )}
-									className={`
-										flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-all
-										${isBlockSelected ? 'border-green bg-green-50' : 'border-gray-200 hover:border-gray-300 bg-white'}
-										${isBlockProDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'}
-									`}
+								<label
+									key={block.id}
+									className={clsx(
+										'flex items-center gap-3 p-4 rounded-lg border transition-all',
+										isBlockSelected ? 'border-green bg-green-50' : 'border-gray-200 bg-white',
+										isBlockProDisabled ?
+											'opacity-50 cursor-not-allowed' :
+											'cursor-pointer hover:border-gray-300 hover:bg-gray-50'
+									)}
 								>
 									{block.icon && (
 										<div className={`shrink-0 ${isBlockSelected ? 'text-green' : 'text-text-gray-light'}`}>
 											<Icon name={block.icon} size={18} />
 										</div>
 									)}
-									<label htmlFor={block.id} className="flex-1 text-sm text-text-gray cursor-pointer">
+									<span className="flex-1 text-sm text-text-gray">
 										{block.label}
-									</label>
+									</span>
 									{
 										block.pro && ! isLicenseValid && (
 											<div className="shrink-0">
@@ -79,22 +79,18 @@ const ClassicContentSelection = () => {
 											</div>
 										)
 									}
-									<div className="shrink-0">
-										<input
-											type="checkbox"
-											id={block.id}
-											checked={isBlockSelected}
-											onChange={() => {
-handleToggle( block );
-}}
-											onClick={( e ) => {
-												e.stopPropagation();
-											}}
-											className="h-4 w-4 text-green border-gray-300 rounded focus:ring-2 focus:ring-blue"
-											disabled={ isBlockProDisabled }
-										/>
-									</div>
-								</div>
+									<Checkbox.Root
+										id={block.id}
+										checked={isBlockSelected}
+										disabled={isBlockProDisabled}
+										onCheckedChange={() => handleToggle( block )}
+										className="flex h-4 w-4 shrink-0 items-center justify-center rounded border-2 border-gray-300 bg-white transition-colors hover:border-gray-400 focus:outline-hidden focus:ring-2 focus:ring-blue data-[state=checked]:border-green disabled:cursor-not-allowed"
+									>
+										<Checkbox.Indicator>
+											<Icon name="check" size={14} color="green" strokeWidth={2} />
+										</Checkbox.Indicator>
+									</Checkbox.Root>
+								</label>
 							);
 						})
 				}
