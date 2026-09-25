@@ -51,7 +51,7 @@ const ProBadge: React.FC<ProBadgeProps> = ({
 
     const altText = isTrial ?
         __( 'Enjoy full access for the remainder of your trial.', 'burst-mainwp' ) :
-        __( 'Unlock this feature with Pro. Upgrade for more insights and control.', 'burst-mainwp' );
+        __( 'This feature needs Pro. Upgrade for more insights and control.', 'burst-mainwp' );
 
     if ( 'icon' === type ) {
         const iconContent = <Icon color="green" name="sprout" size={14} strokeWidth={1.5}/>;

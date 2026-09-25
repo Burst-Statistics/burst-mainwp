@@ -100,6 +100,7 @@
 			"src/components/OutgoingLinks/useOutgoingLinksData.ts",
 			"src/components/Inputs/SelectInput.tsx",
 			"src/components/Common/MobileMenuDrawer.jsx",
+			"src/components/Fields/SlackWebhookField.tsx",
 			"src/components/Tour/TourGuide.tsx",
 			"src/components/Tour/TourOverlay.tsx",
 			"src/components/Tour/TourTooltip.tsx",

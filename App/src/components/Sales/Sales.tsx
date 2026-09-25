@@ -60,7 +60,7 @@ const Sales = ( props:BlockComponentProps ): JSX.Element => {
 			tooltipText: null
 		},
 		'average-order': {
-			title: __( 'Average Order Value', 'burst-mainwp' ),
+			title: __( 'Average order value', 'burst-mainwp' ),
 			value: '-',
 			exactValue: null,
 			subtitle: '-',

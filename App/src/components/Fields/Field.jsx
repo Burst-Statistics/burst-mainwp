@@ -29,6 +29,7 @@ import { ReportLogsField } from '@/components/Fields/ReportLogsField';
 import GoogleSearchConsoleField from './GoogleSearchConsoleField';
 import IntegrationRowField from './IntegrationRowField';
 import IntegrationsIntroField from './IntegrationsIntroField';
+import SlackWebhookField from './SlackWebhookField';
 import ImportDataField from './ImportDataField';
 import ExportDataField from './ExportDataField';
 
@@ -61,7 +62,8 @@ export const fieldComponents = {
 	css: CssField,
 	gsc_connect: GoogleSearchConsoleField,
 	integration_row: IntegrationRowField,
-	integrations_intro: IntegrationsIntroField
+	integrations_intro: IntegrationsIntroField,
+	slack_webhook: SlackWebhookField
 };
 
 // fallow-ignore-next-line complexity

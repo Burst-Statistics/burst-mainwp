@@ -104,3 +104,23 @@ test( 'tour management endpoints are never intercepted by getFrontendTourMockDat
 	assert.strictEqual( getFrontendTourMockData( 'burst/v1/do_action/tour_dismiss' ), null );
 	assert.strictEqual( getFrontendTourMockData( 'burst/v1/get_action/tour_steps' ), null );
 });
+
+test( 'getFrontendTourMockData matches paths from plain permalinks, where the query is glued on with &', () => {
+	mockWindow.__burst_is_tour_active = () => true;
+
+	const todayMock = getFrontendTourMockData( 'burst/v1/data/today&date_start=2026-06-30&date_end=2026-06-30&nonce=abc' ) as { request_success: boolean } | null;
+	assert.ok( null !== todayMock, 'Today mock should match a plain-permalink path' );
+	assert.strictEqual( todayMock?.request_success, true );
+});
+
+test( 'getFrontendTourMockData serves ecommerce mocks for the data/ paths that getData() requests', () => {
+	mockWindow.__burst_is_tour_active = () => true;
+
+	for ( const endpoint of [ 'sales-chart', 'sales-forecast', 'top-performers', 'sales-funnel', 'quick-wins', 'growth', 'subscriptions-revenue-chart', 'subscriptions-distribution' ]) {
+		const mock = getFrontendTourMockData( `burst/v1/data/ecommerce/${ endpoint }?date_start=2026-06-23` ) as { request_success: boolean } | null;
+		assert.ok( null !== mock, `${ endpoint } mock should match its data/ path` );
+	}
+
+	const salesMock = getFrontendTourMockData( 'burst/v1/data/ecommerce/sales' ) as { data: Record<string, { label?: string }> };
+	assert.ok( salesMock.data.revenue?.label, 'Sales mock uses the keyed metric shape of Sales::get_data()' );
+});

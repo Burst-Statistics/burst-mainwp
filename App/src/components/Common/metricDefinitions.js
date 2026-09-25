@@ -63,7 +63,7 @@ export const METRIC_DEFINITIONS = {
 	},
 	other: {
 		label: __( 'Other', 'burst-mainwp' ),
-		definition: __( 'Devices that could not be classified as desktop, tablet, or mobile. Including smart TVs, game consoles, and bots that passed bot filtering.', 'burst-mainwp' )
+		definition: __( 'Devices that could not be classified as desktop, tablet, or mobile. Including smart TVs, game consoles and bots that passed bot filtering.', 'burst-mainwp' )
 	},
 
 	// Ecommerce charts.
@@ -75,7 +75,7 @@ export const METRIC_DEFINITIONS = {
 	},
 	subscription_forecast_chart: {
 		label: __( 'Subscription renewals over time', 'burst-mainwp' ),
-		definition: __( 'Subscription renewal payments per period. With "Next 12 months" enabled, the chart shows the last 12 complete months and the dashed forecast projects the next 12 from the same month last year, scaled by the net year-over-year renewal growth — which already accounts for churn and new subscribers.', 'burst-mainwp' ),
+		definition: __( 'Subscription renewal payments per period. With "Next 12 months" enabled, the chart shows the last 12 complete months and the dashed forecast projects the next 12 from the same month last year, scaled by the net year-over-year renewal growth, which already accounts for churn and new subscribers.', 'burst-mainwp' ),
 		whyItMatters: __( 'Renewals are your recurring baseline: projecting them shows the revenue you can count on before any new sales.', 'burst-mainwp' ),
 		url: 'https://burst-statistics.com/guides/how-sales-forecasts-are-calculated/'
 	},
@@ -83,13 +83,13 @@ export const METRIC_DEFINITIONS = {
 	// Growth block.
 	growth_forecast_this_year: {
 		label: __( 'Forecasted revenue this year', 'burst-mainwp' ),
-		definition: __( 'Projected total revenue for the current calendar year: the completed months as measured, plus the forecast for the remaining months — the current month extrapolated from its own pace. The change compares it with last year\'s total.', 'burst-mainwp' ),
+		definition: __( 'Projected total revenue for the current calendar year: the completed months as measured, plus the forecast for the remaining months (the current month extrapolated from its own pace). The change compares it with last year\'s total.', 'burst-mainwp' ),
 		whyItMatters: __( 'The projected year total against last year is the quickest honest read on whether your store is actually growing.', 'burst-mainwp' ),
 		url: 'https://burst-statistics.com/guides/how-sales-forecasts-are-calculated/'
 	},
 	growth_forecast_this_month: {
 		label: __( 'Forecasted revenue this month', 'burst-mainwp' ),
-		definition: __( 'Projected total revenue for the current month: what is already earned — read from your store\'s own order records, including subscription renewals, where available — extrapolated over the full month at its own pace. The change compares it with the same month last year, so seasonality does not read as growth or decline.', 'burst-mainwp' ),
+		definition: __( 'Projected total revenue for the current month: what is already earned (read from your store\'s own order records, including subscription renewals, where available) extrapolated over the full month at its own pace. The change compares it with the same month last year, so seasonality does not read as growth or decline.', 'burst-mainwp' ),
 		whyItMatters: __( 'Comparing this month to the same month last year shows whether you are ahead of your own seasonal pattern.', 'burst-mainwp' ),
 		url: 'https://burst-statistics.com/guides/how-sales-forecasts-are-calculated/'
 	},
@@ -120,7 +120,7 @@ export const METRIC_DEFINITIONS = {
 	},
 	forms: {
 		label: __( 'Forms', 'burst-mainwp' ),
-		definition: __( 'Tracks form views, starts, and submissions for any form on your site, including Contact Form 7, Gravity Forms, and WPForms.', 'burst-mainwp' ),
+		definition: __( 'Tracks form views, starts and submissions for any form on your site, including Contact Form 7, Gravity Forms and WPForms.', 'burst-mainwp' ),
 		whyItMatters: __( 'Comparing submissions to views reveals your form conversion rate and highlights drop-off points.', 'burst-mainwp' )
 	},
 	search_terms: {
@@ -136,7 +136,7 @@ export const METRIC_DEFINITIONS = {
 	},
 	reading_engagement: {
 		label: __( 'Reading engagement', 'burst-mainwp' ),
-		definition: __( 'A score (0–100) calculated by comparing average time on page against estimated reading time based on page word count (200 words per minute).', 'burst-mainwp' ),
+		definition: __( 'A score (0-100) calculated by comparing average time on page against estimated reading time based on page word count (200 words per minute).', 'burst-mainwp' ),
 		whyItMatters: __( 'Reading time alone can be misleading: spending 2 minutes on a 400-word page shows high engagement, but the same 2 minutes on a 2000-word article shows low engagement.', 'burst-mainwp' )
 	},
 

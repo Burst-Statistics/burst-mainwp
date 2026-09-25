@@ -15,7 +15,7 @@ export const getRecommendationsFooterHtml = () => `
 
 		<p style="font-weight: 700; margin: 0 0 4px 0;">${ __( 'Your Name', 'burst-mainwp' ) }</p>
 
-		<p style="margin: 0 0 28px 0;">${ __( 'Your Job Title', 'burst-mainwp' ) }</p>
+		<p style="margin: 0 0 28px 0;">${ __( 'Your job title', 'burst-mainwp' ) }</p>
 
 		<div style="margin-bottom: 20px;">
 			<p style="font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin: 0 0 4px 0;">${ __( 'Email', 'burst-mainwp' ) }</p>
