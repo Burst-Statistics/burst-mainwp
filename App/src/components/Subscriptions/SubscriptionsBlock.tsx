@@ -45,7 +45,7 @@ interface SubscriptionData {
  */
 const PLACEHOLDER_DATA: SubscriptionData = {
 	monthly_recurring_revenue: {
-		title: __( 'Monthly Recurring Revenue', 'burst-mainwp' ),
+		title: __( 'Monthly recurring revenue', 'burst-mainwp' ),
 		value: '-',
 		exactValue: null,
 		subtitle: '-',
@@ -85,7 +85,7 @@ const PLACEHOLDER_DATA: SubscriptionData = {
 		tooltipText: null
 	},
 	average_lifetime_value: {
-		title: __( 'Average Lifetime Value', 'burst-mainwp' ),
+		title: __( 'Average lifetime value', 'burst-mainwp' ),
 		value: '-',
 		exactValue: null,
 		subtitle: '-',

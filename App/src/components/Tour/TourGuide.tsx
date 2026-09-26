@@ -956,7 +956,7 @@ const TourGuide: React.FC = () => {
 						</span>
 						<span className="text-xs sm:text-sm font-semibold">
 							{ interactionComplete ?
-								__( '✨ Charts updated for all time!', 'burst-mainwp' ) :
+								__( 'Charts updated for all time!', 'burst-mainwp' ) :
 								( isDateDropdownOpen ?
 									__( 'Select "All time" from the presets list 👈', 'burst-mainwp' ) :
 									__( 'Click date range above to open the selector ↑', 'burst-mainwp' ) )

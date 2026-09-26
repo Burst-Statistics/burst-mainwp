@@ -39,7 +39,7 @@ const SettingsGroupBlock = memo( ({ group, fields, control, isLastGroup, isShowi
         {group.pro && ! isLicenseValid  && (
           <Overlay className='backdrop-blur-sm'>
             <div className='flex flex-col gap-4'>
-              <h4>{__( 'Unlock Advanced Features with Burst Pro', 'burst-mainwp' )}</h4>
+              <h4>{__( 'Get advanced features with Burst Pro', 'burst-mainwp' )}</h4>
               <p>
                 {__( 'This setting is exclusive to Pro users.', 'burst-mainwp' )}
               {group.pro && group.pro.text && ( ' ' + group.pro.text )}
