@@ -23,28 +23,28 @@ const SECTION_DEFINITIONS: SectionDefinition[] = [
 	{
 		id: 'overview',
 		title: __( 'Dashboard overview', 'burst-mainwp' ),
-		description: __( 'Live traffic, daily summary metrics, and conversion goals.', 'burst-mainwp' ),
+		description: __( 'Live traffic, daily summary metrics and conversion goals.', 'burst-mainwp' ),
 		icon: '⚡',
 		route: '/'
 	},
 	{
 		id: 'insights',
 		title: __( 'Detailed insights & graphs', 'burst-mainwp' ),
-		description: __( 'Metric trends, date ranges, shareable links, and community comparisons.', 'burst-mainwp' ),
+		description: __( 'Metric trends, date ranges, shareable links and community comparisons.', 'burst-mainwp' ),
 		icon: '📈',
 		route: '/statistics'
 	},
 	{
 		id: 'datatables',
 		title: __( 'Data tables & page analytics', 'burst-mainwp' ),
-		description: __( 'Interactive row filtering, deep-dive per-page metrics, and expandable rows.', 'burst-mainwp' ),
+		description: __( 'Interactive row filtering, deep-dive per-page metrics and expandable rows.', 'burst-mainwp' ),
 		icon: '📋',
 		route: '/statistics'
 	},
 	{
 		id: 'sources',
 		title: __( 'Traffic sources', 'burst-mainwp' ),
-		description: __( 'Acquisition channels, UTM tracking parameters, and Google Search Console.', 'burst-mainwp' ),
+		description: __( 'Acquisition channels, UTM tracking parameters and Google Search Console.', 'burst-mainwp' ),
 		icon: '🌐',
 		route: '/sources'
 	},
@@ -58,21 +58,21 @@ const SECTION_DEFINITIONS: SectionDefinition[] = [
 	{
 		id: 'engagement',
 		title: __( 'Reading engagement', 'burst-mainwp' ),
-		description: __( 'Time on page, scroll depth, and content rankings.', 'burst-mainwp' ),
+		description: __( 'Time on page, scroll depth and content rankings.', 'burst-mainwp' ),
 		icon: '📖',
 		route: '/engagement'
 	},
 	{
 		id: 'reporting',
 		title: __( 'Automated reports wizard', 'burst-mainwp' ),
-		description: __( 'Story report builder, block selections, recipients, and automated email delivery.', 'burst-mainwp' ),
+		description: __( 'Story report builder, block selections, recipients and automated email delivery.', 'burst-mainwp' ),
 		icon: '📊',
 		route: '/reporting/reports'
 	},
 	{
 		id: 'customization',
 		title: __( 'Report customization & branding', 'burst-mainwp' ),
-		description: __( 'Brand email reports with custom logos, accent colors, hero headers, and custom CSS.', 'burst-mainwp' ),
+		description: __( 'Brand email reports with custom logos, accent colors, hero headers and custom CSS.', 'burst-mainwp' ),
 		icon: '🎨',
 		route: '/reporting/customization'
 	},
@@ -86,7 +86,7 @@ const SECTION_DEFINITIONS: SectionDefinition[] = [
 	{
 		id: 'settings',
 		title: __( 'Settings, privacy & advanced', 'burst-mainwp' ),
-		description: __( 'Privacy controls, low-traffic auto updates, and stealth Ghost Mode.', 'burst-mainwp' ),
+		description: __( 'Privacy controls, low-traffic auto updates and stealth Ghost mode.', 'burst-mainwp' ),
 		icon: '⚙️',
 		route: '/settings/general'
 	}

@@ -95,6 +95,7 @@ create_rc_zip() {
     "--exclude=.eslintignore"
     "--exclude=.eslintrc.json"
     "--exclude=.gitignore"
+    "--exclude=.distignore"
     "--exclude=.github/"
     "--exclude=.gitlab/"
     "--exclude=.million/"
@@ -119,7 +120,7 @@ create_rc_zip() {
     "--exclude=/App/posts.json"
     "--exclude=/App/tsconfig.json"
     "--exclude=/App/.prettierrc.js"
-    "--exclude=/App/src/.babelrc.js"
+    "--exclude=/App/src/" # React/TS sources stay on GitHub (linked in readme.txt); the zip ships App/build/ only.
     "--exclude=/docker-compose-bitnami.yml"
     "--exclude=/dist-build/"
     "--exclude=/dist/"

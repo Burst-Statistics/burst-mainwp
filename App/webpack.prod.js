@@ -2,6 +2,29 @@ const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
 const { TanStackRouterWebpack } = require( '@tanstack/router-plugin/webpack' );
 const path = require( 'path' );
 
+/**
+ * Fail the build process when the compilation has errors.
+ *
+ * webpack-cli sets process.exitCode = 1 for a compilation with errors, but
+ * @tanstack/router-plugin (code splitter and route generator) calls
+ * process.exit(0) from a timer after the `done` hook in production mode, which
+ * discards that exit code: `npm run build` then succeeds although no index
+ * bundle was emitted (seen in CI on 2026-09-21, the settings page 404'd on the
+ * script and showed the adblocker overlay). The exit code is decided here.
+ */
+class FailOnCompilationErrorsPlugin {
+  apply( compiler ) {
+    compiler.hooks.done.tap( 'BurstFailOnCompilationErrors', ( stats ) => {
+      if ( ! stats.hasErrors() ) {
+        return;
+      }
+      process.exitCode = 1;
+      const exit = process.exit.bind( process );
+      process.exit = ( code ) => exit( code ? code : 1 );
+    });
+  }
+}
+
 module.exports = {
   ...defaultConfig,
   target: 'web',
@@ -13,7 +36,8 @@ module.exports = {
   output: {
     ...defaultConfig.output,
     filename: '[name].[contenthash].js',
-    chunkFilename: '[name].[contenthash].js'
+    chunkFilename: '[name].[contenthash].js',
+    clean: { keep: /^(fonts|images)\/|^tailwind\.generated\.css(\.map)?$/ }, // keep wp-scripts' fonts/images rule, plus the postcss output that lives next to the JS bundle
   },
   resolve: {
     ...defaultConfig.resolve,
@@ -45,7 +69,8 @@ module.exports = {
   },
   plugins: [
     ...defaultConfig.plugins,
-    TanStackRouterWebpack({ target: 'react', autoCodeSplitting: true }) // Add TanStackRouterWebpack plugin
+    TanStackRouterWebpack({ target: 'react', autoCodeSplitting: true }), // Add TanStackRouterWebpack plugin
+    new FailOnCompilationErrorsPlugin()
   ],
   optimization: {
     ...defaultConfig.optimization,

@@ -128,7 +128,7 @@ const CompareBlock = ( props ) => {
 	if ( includePageMetrics ) {
 		metrics.reading_engagement_score = __( 'Engagement score', 'burst-mainwp' );
 	}
-	metrics.bounce_rate = __( 'Bounce Rate', 'burst-mainwp' );
+	metrics.bounce_rate = __( 'Bounce rate', 'burst-mainwp' );
 	if ( includePageMetrics ) {
 		metrics.conversions = __( 'Conversions', 'burst-mainwp' );
 	} else {

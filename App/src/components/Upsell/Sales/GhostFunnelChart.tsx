@@ -28,7 +28,7 @@ const GhostFunnelChart = (): JSX.Element => {
 		{
 			id: 'step_add_to_cart',
 			value: 25892,
-			label: __( 'Add To Cart', 'burst-mainwp' )
+			label: __( 'Add to cart', 'burst-mainwp' )
 		},
 		{
 			id: 'step_purchased',

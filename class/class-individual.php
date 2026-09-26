@@ -239,7 +239,7 @@ class Individual {
 
 		wp_enqueue_style(
 			'burst-mainwp-tailwind',
-			BURST_MAINWP_APP_URL . '/src/tailwind.generated.css',
+			BURST_MAINWP_APP_URL . '/build/tailwind.generated.css',
 			[],
 			$version
 		);
