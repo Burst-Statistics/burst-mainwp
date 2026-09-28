@@ -222,7 +222,9 @@ const GoalsSettings = () => {
 																	className="shrink-0 text-text-gray"
 																/>
 																<span className="truncate">
-																	{goal.title +
+																	{( goal.title ||
+																		goal.id ||
+																		'' ) +
 																		' (' +
 																		getGoalTypeNice( goal.type ) +
 																		')'}
