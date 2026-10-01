@@ -120,6 +120,12 @@ export interface BurstSettings {
 	burst_date_picker_start_date: number;
 	menu: BurstMenuConfig;
 	fields?: Record<string, unknown>;
+
+	/** Channel new reports start with (Report::get_default_channels()). */
+	default_report_channels?: 'email' | 'both';
+
+	/** Required start of a Slack webhook URL. Localized by Pro only. */
+	slack_webhook_prefix?: string;
 	chat_availability?: Record<string, unknown>;
 	shouldLoadEcommerce?: boolean;
 	ecommerceActivationTime?: number;
