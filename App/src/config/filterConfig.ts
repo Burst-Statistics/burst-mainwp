@@ -138,14 +138,6 @@ export const FILTER_CONFIG: Record<string, FilterConfig> = {
 		category: 'behavior',
 		exclusion_allowed: false
 	},
-	bounce_rate: {
-		label: __( 'Bounce rate', 'burst-mainwp' ),
-		icon: 'bounce',
-		type: 'int',
-		pro: true,
-		category: 'behavior',
-		coming_soon: true
-	},
 	entry_exit_pages: {
 		label: __( 'Page type', 'burst-mainwp' ),
 		icon: 'bounce',
@@ -153,14 +145,6 @@ export const FILTER_CONFIG: Record<string, FilterConfig> = {
 		pro: true,
 		category: 'behavior',
 		exclusion_allowed: false
-	},
-	conversion_rate: {
-		label: __( 'Conversion rate', 'burst-mainwp' ),
-		icon: 'conversion',
-		type: 'int',
-		pro: true,
-		category: 'behavior',
-		coming_soon: true
 	},
 	parameter: {
 		label: __( 'URL parameter', 'burst-mainwp' ),

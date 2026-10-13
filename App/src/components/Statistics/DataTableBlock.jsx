@@ -10,7 +10,7 @@ import DataTable from '@/components/DataTable/DataTable';
 import { useQuery } from '@tanstack/react-query';
 import getDataTableData from '@/api/getDataTableData';
 import { getPageParameterCounts } from '@/api/getPageParameters';
-import ParameterVariationsRow from './ParameterVariationsRow';
+import ParameterVariationsRow from './Parameters/ParameterVariationsRow';
 import SourceReferrersRow from './SourceReferrersRow';
 import { Block } from '@/components/Blocks/Block';
 import { BlockHeading } from '@/components/Blocks/BlockHeading';
@@ -22,6 +22,9 @@ import DownloadCsvButton from '@/components/Statistics/DownloadCsvButton';
 import { COLUMN_FORMATTERS, FORMATS, isUnknownLocationRow } from '@/api/getDataTableData';
 import ClickToFilter from '@/components/Common/ClickToFilter';
 import NotFoundHitsCell from '@/components/NotFoundPages/NotFoundHitsCell';
+import SmartMatchSummary from '@/components/SearchTerms/SmartMatchSummary';
+import { getSearchTermsTableConfig } from '@/components/SearchTerms/searchTermsTableConfig';
+import { isSmartMatchActive as getIsSmartMatchActive } from '@/components/SearchTerms/isSmartMatchActive';
 import {
 	getCountryName,
 	getContinentName,
@@ -113,6 +116,91 @@ const getExpandableRowsProps = ({ paramVariationsEnabled, isPro, selectedConfig,
 	}
 
 	return {};
+};
+
+const CANDIDATE_KEY_FIELDS = [
+	'page_url',
+	'referrer',
+	'source',
+	'country',
+	'device',
+	'browser',
+	'platform',
+	'campaign',
+	'utm_source',
+	'utm_medium',
+	'utm_campaign',
+	'utm_term',
+	'utm_content',
+	'name',
+	'title'
+];
+
+/**
+ * Assign a stable, unique ID to each row in the paginated slice so
+ * react-data-table-component tracks rows by identity across sort and
+ * pagination rather than falling back to array indices.
+ *
+ * Builds the ID from all active group_by columns (or candidate key fields)
+ * and falls back to the row index when a duplicate occurs.
+ *
+ * @param {Array}  rows           The paginated row slice.
+ * @param {string} selectedConfig The active datatable variant.
+ * @param {number} startIndex     Offset in the full dataset.
+ * @param {Array}  groupByColumns Active group-by column identifiers.
+ *
+ * @return {Array} Rows with guaranteed unique `id` properties.
+ */
+// fallow-ignore-next-line complexity
+const assignRowIds = ( rows, selectedConfig, startIndex, groupByColumns = []) => {
+	const result = [];
+	const seenIds = new Set();
+
+	for ( let index = 0; index < rows.length; index++ ) {
+		const row = rows[index];
+		if ( ! row ) {
+			continue;
+		}
+
+		let rowId = null;
+		if ( undefined !== row.id && null !== row.id && '' !== row.id && ! seenIds.has( String( row.id ) ) ) {
+			rowId = String( row.id );
+		} else {
+			const parts = [];
+			if ( Array.isArray( groupByColumns ) && 0 < groupByColumns.length ) {
+				for ( const col of groupByColumns ) {
+					const val = row[col];
+					if ( undefined !== val && null !== val && '' !== val ) {
+						parts.push( String( val ) );
+					}
+				}
+			}
+			if ( 0 === parts.length ) {
+				for ( const field of CANDIDATE_KEY_FIELDS ) {
+					const val = row[field];
+					if ( undefined !== val && null !== val && '' !== val ) {
+						parts.push( String( val ) );
+					}
+				}
+			}
+
+			const compositeKey = parts.join( '-' );
+			const candidateId = compositeKey ? `${ selectedConfig }-${ compositeKey }` : null;
+
+			if ( candidateId && ! seenIds.has( candidateId ) ) {
+				rowId = candidateId;
+			} else {
+				rowId = `${ selectedConfig }-${ startIndex + index }`;
+			}
+		}
+
+		seenIds.add( rowId );
+		result.push({
+			...row,
+			id: rowId
+		});
+	}
+	return result;
 };
 
 /**
@@ -256,6 +344,9 @@ const DataTableBlock = ( /** @type {BlockComponentProps} */ props ) => {
 
 	// Check if eCommerce features should be loaded.
 	const shouldLoadEcommerce = window.burst_settings?.shouldLoadEcommerce || false;
+
+	// The AI match column only exists while the SmartMatch Search plugin is active.
+	const isSmartMatchActive = getIsSmartMatchActive();
 
 	const config = {
 		pages: {
@@ -602,30 +693,7 @@ const DataTableBlock = ( /** @type {BlockComponentProps} */ props ) => {
 			}
 		}
 	},
-		search_terms: {
-			label: __( 'Website searches', 'burst-mainwp' ),
-			searchable: true,
-			defaultColumns: [ 'term', 'volume', 'results' ],
-			columnsOptions: {
-				term: {
-					label: __( 'Search term', 'burst-mainwp' ),
-					default: true,
-					format: 'string',
-					align: 'left',
-					group_by: true
-				},
-				volume: {
-					label: __( 'Volume', 'burst-mainwp' ),
-					format: 'integer',
-					align: 'right'
-				},
-				results: {
-					label: __( 'Results', 'burst-mainwp' ),
-					format: 'search_results',
-					align: 'right'
-				}
-			}
-		},
+		search_terms: getSearchTermsTableConfig( isSmartMatchActive ),
 		not_found_pages: {
 			label: __( '404 Pages', 'burst-mainwp' ),
 			searchable: true,
@@ -837,12 +905,7 @@ const DataTableBlock = ( /** @type {BlockComponentProps} */ props ) => {
 	const defaultColumns = useMemo( () => configDetails?.defaultColumns || [], [ configDetails ]);
 
 	const [ columns, setColumnsState ] = useState( () => {
-		const initialColumns = getColumnsStore( selectedConfig, defaultColumns );
-		const availableColumns = Object.keys( columnsOptions );
-
-		return initialColumns.filter( ( column ) =>
-			availableColumns.includes( column )
-		);
+		return getColumnsStore( selectedConfig, defaultColumns, columnsOptions );
 	});
 
 	// Filter out pro columns if the license is not valid to prevent empty pro columns from showing on deactivation.
@@ -871,7 +934,7 @@ const DataTableBlock = ( /** @type {BlockComponentProps} */ props ) => {
 
 			if ( JSON.stringify( orderedColumns ) !== JSON.stringify( columns ) ) {
 				setColumnsState( orderedColumns );
-				setColumnsStore( selectedConfig, orderedColumns );
+				setColumnsStore( selectedConfig, orderedColumns, Object.keys( columnsOptions ) );
 			}
 		},
 		[ selectedConfig, columns, columnsOptions, setColumnsStore ]
@@ -886,10 +949,7 @@ const DataTableBlock = ( /** @type {BlockComponentProps} */ props ) => {
 	);
 
 	useEffect( () => {
-		const newColumns = getColumnsStore(
-			selectedConfig,
-			config[selectedConfig]?.defaultColumns || []
-		);
+		const newColumns = getColumnsStore( selectedConfig, defaultColumns, columnsOptions );
 		setColumns( newColumns );
 
 		const savedSort = getSortConfig( selectedConfig );
@@ -1255,12 +1315,17 @@ const DataTableBlock = ( /** @type {BlockComponentProps} */ props ) => {
 	const rowsPerPageLimit = 'all' === rowsPerPage ? totalRows : Number( rowsPerPage );
 	const totalPages = Math.max( 1, Math.ceil( totalRows / rowsPerPageLimit ) );
 
+	const activeGroupByColumns = useMemo( () => {
+		return activeColumns.filter( ( col ) => columnsOptions[col]?.group_by );
+	}, [ activeColumns, columnsOptions ]);
+
 	// Paginate the enriched data so the parameter-variations badge and the
 	// expandable rows still work correctly inside the current page slice.
 	const paginatedData = useMemo( () => {
 		const start = ( currentPage - 1 ) * rowsPerPageLimit;
-		return enrichedFilteredData.slice( start, start + rowsPerPageLimit );
-	}, [ enrichedFilteredData, currentPage, rowsPerPageLimit ]);
+		const slice = enrichedFilteredData.slice( start, start + rowsPerPageLimit );
+		return assignRowIds( slice, selectedConfig, start, activeGroupByColumns );
+	}, [ enrichedFilteredData, currentPage, rowsPerPageLimit, selectedConfig, activeGroupByColumns ]);
 
 	const isLoading = query.isLoading || query.isFetching;
 	const error = query.error;
@@ -1294,6 +1359,7 @@ const DataTableBlock = ( /** @type {BlockComponentProps} */ props ) => {
 			const sortFieldId = getActiveSortFieldId( enhancedColumnsData, sortField );
 
 			const baseProps = {
+				keyField: 'id',
 				className: 'burst-data-table',
 				columns: enhancedColumnsData,
 				data: paginatedData,
@@ -1490,8 +1556,11 @@ const DataTableBlock = ( /** @type {BlockComponentProps} */ props ) => {
 				}
 			/>
 			<BlockContent className="px-0 py-0 overflow-y-auto min-h-0">
-				<DataTable {...dataTableProps} />
+				<DataTable key={ `${ selectedConfig }-${ currentPage }-${ rowsPerPage }` } { ...dataTableProps } />
 			</BlockContent>
+			{ 'search_terms' === selectedConfig && isSmartMatchActive && activeColumns.includes( 'ai_match' ) && (
+				<SmartMatchSummary rows={ tableData } />
+			) }
 			{ 0 < totalRows && (
 				<BlockFooter className={`border-t border-gray-200 gap-4 ${ ! isInOverlay ? 'justify-center' : '' }`}>
 					{ isInOverlay && (

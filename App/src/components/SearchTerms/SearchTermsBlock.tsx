@@ -12,6 +12,8 @@ import { useSearchTermsData } from './useSearchTermsData';
 import { getSearchTermsColumns } from './columns';
 import MetricInfo from '@/components/Common/MetricInfo';
 import useColumnsBySiteUrl from '@/hooks/useColumnsBySiteUrl';
+import SmartMatchSummary from './SmartMatchSummary';
+import { isSmartMatchActive } from './isSmartMatchActive';
 
 type SearchTermsBlockProps = {
 
@@ -107,6 +109,7 @@ const SearchTermsBlock = memo( ({ className = '' }: SearchTermsBlockProps ) => {
 					}
 				/>
 			</BlockContent>
+			{isSmartMatchActive() && <SmartMatchSummary rows={Array.isArray( data ) ? data : []} />}
 		</Block>
 	);
 });
