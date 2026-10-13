@@ -15,6 +15,9 @@ import { safeDecodeURI } from '@/utils/lib';
 import { __ } from '@wordpress/i18n';
 import Icon from '@/utils/Icon';
 import HelpTooltip from '@/components/Common/HelpTooltip';
+import AiMatchCell from '@/components/SearchTerms/AiMatchCell';
+import AiMatchHeader from '@/components/SearchTerms/AiMatchHeader';
+import SearchVolume from '@/components/SearchTerms/SearchVolume';
 
 // Column format constants
 const FORMATS = {
@@ -29,6 +32,8 @@ const FORMATS = {
 	FLOAT: 'float',
 	CURRENCY: 'currency',
 	SEARCH_RESULTS: 'search_results',
+	AI_MATCH: 'ai_match',
+	SEARCH_VOLUME: 'search_volume',
 	STRING: 'string',
 	EXTERNAL_LINK: 'external_link',
 	FORM_TITLE: 'form_title',
@@ -288,6 +293,10 @@ const COLUMN_FORMATTERS = {
 	[FORMATS.SEARCH_RESULTS]: ( value, _columnId, row ) => (
 		<SearchResultsCell value={value} term={ row?.term } />
 	),
+	[FORMATS.AI_MATCH]: ( _value, _columnId, row ) => <AiMatchCell row={ row } />,
+	[FORMATS.SEARCH_VOLUME]: ( value, _columnId, row ) => (
+		<SearchVolume volume={ parseInt( value, 10 ) } aiShown={ parseInt( row?.ai_shown ?? 0, 10 ) } />
+	),
 	[FORMATS.STRING]: ( value ) => value,
 	[FORMATS.SOURCE_CATEGORY]: ( value ) => <SourceCategoryFilter value={value} />,
 	[FORMATS.SOURCE]: ( value ) => <SourceFilter value={value} />,
@@ -362,7 +371,9 @@ const createSortFunction = ( columnId, format ) => {
 		FORMATS.PERCENTAGE,
 		FORMATS.TIME,
 		FORMATS.INTEGER,
-		FORMATS.FLOAT
+		FORMATS.FLOAT,
+		FORMATS.AI_MATCH,
+		FORMATS.SEARCH_VOLUME
 	].includes( format );
 
 	const isCurrency = format === FORMATS.CURRENCY;
@@ -531,6 +542,13 @@ const transformColumn = ( column, columnOptions ) => {
 		sortFunction: createSortFunction( column.id, format ),
 		cell: createCellFormatter( format, column.id )
 	};
+
+	// The AI match column carries its own header and needs room for the page title.
+	if ( FORMATS.AI_MATCH === format ) {
+		transformedColumn.name = <AiMatchHeader />;
+		transformedColumn.minWidth = '220px';
+		transformedColumn.grow = 2;
+	}
 
 	return transformedColumn;
 };

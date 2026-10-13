@@ -9,11 +9,19 @@ import HelpTooltip from '@/components/Common/HelpTooltip';
 import useLicenseData from '@/hooks/useLicenseData';
 import {AnimatePresence, motion} from 'framer-motion';
 
+interface FieldContext {
+	text?: string;
+	url?: string;
+
+	/** Label of the link to url. Defaults to "More info". */
+	link_text?: string;
+}
+
 interface FieldWrapperProps {
 	label: string;
 
-	// Allow context to be a ReactNode or an object with text and url.
-	context?: React.ReactNode | { text?: string; url?: string };
+	// Allow context to be a ReactNode or an object with text, url and an optional link label.
+	context?: React.ReactNode | FieldContext;
 	help?: string;
 	error?: string;
 	reverseLabel?: boolean;
@@ -31,7 +39,7 @@ interface FieldWrapperProps {
 
 const isContextObject = (
 	value: any // eslint-disable-line @typescript-eslint/no-explicit-any
-): value is { text?: string; url?: string } => {
+): value is FieldContext => {
 	return value && 'object' === typeof value && ! React.isValidElement( value );
 };
 
@@ -190,7 +198,7 @@ const FieldWrapper = memo(
 								href={context.url}
 								target="_blank"
 							>
-								{__( 'More info', 'burst-mainwp' )}
+								{context.link_text || __( 'More info', 'burst-mainwp' )}
 							</a>
 						)}
 					</p>
