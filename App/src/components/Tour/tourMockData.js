@@ -1403,20 +1403,95 @@ export const getFrontendTourMockData = ( path ) => {
 		};
 	}
 
-	if ( 'data/page-parameters' === cleanPath || 'page-parameters' === cleanPath ) {
+	if ( 'data/page-parameter-keys' === cleanPath || 'page-parameter-keys' === cleanPath ) {
 		return {
 			request_success: true,
 			data: {
 				columns: [
 					{ id: 'parameter', name: __( 'Parameter', 'burst-mainwp' ), align: 'left' },
-					{ id: 'pageviews', name: __( 'Pageviews', 'burst-mainwp' ), align: 'right' },
-					{ id: 'visitors', name: __( 'Visitors', 'burst-mainwp' ), align: 'right' }
+					{ id: 'pageviews', name: __( 'Views', 'burst-mainwp' ), align: 'right' },
+					{ id: 'visitors', name: __( 'Visitors', 'burst-mainwp' ), align: 'right' },
+					{ id: 'share', name: __( 'Share of page views', 'burst-mainwp' ), align: 'right' }
 				],
 				data: [
-					{ parameter: 'utm_source=google', pageviews: 420, visitors: 310 },
-					{ parameter: 'utm_source=twitter', pageviews: 180, visitors: 140 },
-					{ parameter: 'ref=newsletter', pageviews: 95, visitors: 78 }
+					{
+						parameter: 'utm_source',
+						pageviews: 7841,
+						visitors: 5302,
+						value_count: 9,
+						high_cardinality: false
+					},
+					{
+						parameter: 'utm_campaign',
+						pageviews: 6204,
+						visitors: 4118,
+						value_count: 18,
+						high_cardinality: false
+					},
+					{
+						parameter: 'utm_medium',
+						pageviews: 2930,
+						visitors: 1904,
+						value_count: 5,
+						high_cardinality: false
+					}
+				],
+				total_pageviews: 20573,
+				total_visitors: 13704,
+				tagged_pageviews: 12480,
+				untagged_pageviews: 8093,
+				untagged_visitors: 5611
+			}
+		};
+	}
+
+	if ( 'data/page-parameters' === cleanPath || 'page-parameters' === cleanPath ) {
+		const searchParam = ( query.get( 'search' ) || '' ).toLowerCase().trim();
+		const allData = [
+			{
+				value: 'burst-free-3.*',
+				pageviews: 4209,
+				visitors: 2812,
+				group: true,
+				member_count: 11,
+				min_version: '3.1.4',
+				max_version: '3.6.3',
+				newest_value: '3.6.3',
+				newest_views: 571,
+				members: [
+					{ value: 'burst-free-3.6.3', pageviews: 571, visitors: 390 },
+					{ value: 'burst-free-3.6.2', pageviews: 480, visitors: 320 }
 				]
+			},
+			{ value: 'burstpricing', pageviews: 812, visitors: 601, group: false },
+			{ value: 'burst-readme', pageviews: 604, visitors: 448, group: false },
+			{ value: 'paac', pageviews: 379, visitors: 291, group: false }
+		];
+
+		const filteredData = searchParam ?
+			allData.filter( ( item ) => {
+				if ( item.value.toLowerCase().includes( searchParam ) ) {
+					return true;
+				}
+				if ( item.members && item.members.some( ( m ) => m.value.toLowerCase().includes( searchParam ) ) ) {
+					return true;
+				}
+				return false;
+			}) :
+			allData;
+
+		return {
+			request_success: true,
+			data: {
+				columns: [
+					{ id: 'value', name: __( 'Value', 'burst-mainwp' ), align: 'left' },
+					{ id: 'pageviews', name: __( 'Views', 'burst-mainwp' ), align: 'right' },
+					{ id: 'visitors', name: __( 'Visitors', 'burst-mainwp' ), align: 'right' },
+					{ id: 'share', name: __( 'Share', 'burst-mainwp' ), align: 'right' }
+				],
+				data: filteredData,
+				has_more: false,
+				total_values: filteredData.length
 			}
 		};
 	}
