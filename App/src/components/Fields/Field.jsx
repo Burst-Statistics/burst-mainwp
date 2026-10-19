@@ -10,7 +10,6 @@ import SwitchField from './SwitchField';
 import ButtonControlField from './ButtonControlField';
 import ReportingField from './ReportingField';
 import CheckboxGroupField from './CheckboxGroupField';
-import GoalsSettings from '../Goals/GoalsSettings';
 import LicenseField from './LicenseField';
 import SelectField from './SelectField';
 import NumberField from './NumberField';
@@ -48,7 +47,6 @@ export const fieldComponents = {
 	button: ButtonControlField,
 	email_reports: ReportingField,
 	checkbox_group: CheckboxGroupField,
-	goals: GoalsSettings,
 	license: LicenseField,
 	select: SelectField,
 	image_picker: ImagePickerField,
@@ -75,15 +73,6 @@ export const fieldComponents = {
 // fallow-ignore-next-line complexity
 const Field = memo( ({ setting, control, ...props }) => {
 	const { isLicenseValid, tier } = useLicenseData();
-
-	// Special handling for goal(s) type that should not be wrapped in a controller.
-	if ( 'goals' === setting.type ) {
-		return (
-			<ErrorBoundary>
-				<GoalsSettings />
-			</ErrorBoundary>
-		);
-	}
 
 	const FieldComponent = fieldComponents[setting.type];
 

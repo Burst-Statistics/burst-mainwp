@@ -6,6 +6,7 @@ import {
 	getCountryName,
 	getContinentName,
 	formatCurrency, formatCurrencyCompact,
+	formatFileSize,
 	truncateMiddle
 } from '@/utils/formatting';
 import Flag from '@/components/Statistics/Flag';
@@ -18,6 +19,7 @@ import HelpTooltip from '@/components/Common/HelpTooltip';
 import AiMatchCell from '@/components/SearchTerms/AiMatchCell';
 import AiMatchHeader from '@/components/SearchTerms/AiMatchHeader';
 import SearchVolume from '@/components/SearchTerms/SearchVolume';
+import { formatEmissions } from '@/components/PageWeight/pageWeightFormat';
 
 // Column format constants
 const FORMATS = {
@@ -27,6 +29,8 @@ const FORMATS = {
 	CONTINENT: 'continent',
 	URL: 'url',
 	TEXT: 'text',
+	CO2: 'co2',
+	FILESIZE: 'filesize',
 	INTEGER: 'integer',
 	REFERRER: 'referrer',
 	FLOAT: 'float',
@@ -287,6 +291,12 @@ const COLUMN_FORMATTERS = {
 	[FORMATS.CONTINENT]: ( value, _columnId, row ) => <ContinentFilter value={value} row={row} />,
 	[FORMATS.URL]: ( value, columnId, row ) => <UrlFilter filter={columnId} value={value} row={row} />,
 	[FORMATS.TEXT]: ( value, columnId, row ) => <TextFilter filter={columnId} value={value} row={row} />,
+	[FORMATS.CO2]: ( value ) => (
+		isUnmeasuredValue( value ) ? '—' : formatEmissions( Number( value ) )
+	),
+	[FORMATS.FILESIZE]: ( value ) => (
+		isUnmeasuredValue( value ) ? '—' : formatFileSize( Number( value ) )
+	),
 	[FORMATS.REFERRER]: ( value ) => <ReferrerFilter value={value} />,
 	[FORMATS.FLOAT]: ( value ) => parseFloat( value ),
 	[FORMATS.CURRENCY]: ( value ) => <CurrencyValue value={value} />,
@@ -361,6 +371,15 @@ const COLUMN_FORMATTERS = {
 };
 
 /**
+ * Page weight is sampled, so a page Burst has not measured yet has no value at
+ * all. That is different from a measured zero and is shown as such.
+ * @param {*} value - The raw cell value.
+ * @returns {boolean} Whether the value is missing rather than zero.
+ */
+const isUnmeasuredValue = ( value ) =>
+	null === value || undefined === value || '' === value;
+
+/**
  * Unified sorting function that handles all data types
  * @param {string} columnId - The column identifier
  * @param {string} format - The column format type
@@ -370,6 +389,8 @@ const createSortFunction = ( columnId, format ) => {
 	const isNumeric = [
 		FORMATS.PERCENTAGE,
 		FORMATS.TIME,
+		FORMATS.CO2,
+		FORMATS.FILESIZE,
 		FORMATS.INTEGER,
 		FORMATS.FLOAT,
 		FORMATS.AI_MATCH,

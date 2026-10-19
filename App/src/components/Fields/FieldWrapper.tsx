@@ -22,7 +22,7 @@ interface FieldWrapperProps {
 
 	// Allow context to be a ReactNode or an object with text, url and an optional link label.
 	context?: React.ReactNode | FieldContext;
-	help?: string;
+	help?: React.ReactNode;
 	error?: string;
 	reverseLabel?: boolean;
 	alignWithLabel?: boolean;

@@ -138,6 +138,14 @@ export const FILTER_CONFIG: Record<string, FilterConfig> = {
 		category: 'behavior',
 		exclusion_allowed: false
 	},
+	sales: {
+		label: __( 'Orders', 'burst-mainwp' ),
+		icon: 'shopping-cart',
+		type: 'boolean',
+		pro: true,
+		category: 'behavior',
+		exclusion_allowed: false
+	},
 	entry_exit_pages: {
 		label: __( 'Page type', 'burst-mainwp' ),
 		icon: 'bounce',
@@ -305,6 +313,18 @@ export const FILTER_CONFIG: Record<string, FilterConfig> = {
 		multi_select: true,
 		countNoun: { singular: __( 'browser', 'burst-mainwp' ), plural: __( 'browsers', 'burst-mainwp' ) }
 	}
+};
+
+/**
+ * Whether the sales filter can be offered: ecommerce is active and the user may
+ * view sales. Shared-link viewers never get it, the server drops it for them too.
+ *
+ * @return True when the sales filter should be listed.
+ */
+export const isSalesFilterAvailable = (): boolean => {
+	const settings: Partial<Window['burst_settings']> = window.burst_settings ?? {};
+	const isSharedViewer = Boolean( settings.share_link_permissions?.is_shareable_link_viewer );
+	return [ settings.shouldLoadEcommerce, settings.view_sales_burst_statistics, ! isSharedViewer ].every( Boolean );
 };
 
 // Get all filter keys from config.

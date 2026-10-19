@@ -143,6 +143,11 @@ export const useFilterDisplay = ( reportBlockIndex ) => {
 				__( 'New', 'burst-mainwp' ) :
 				__( 'Returning', 'burst-mainwp' );
 
+		case 'sales':
+			return 'include' === value ?
+				__( 'With an order', 'burst-mainwp' ) :
+				__( 'Without an order', 'burst-mainwp' );
+
 		case 'entry_exit_pages':
 			if ( 'entry' === value ) {
 				return __( 'Entry', 'burst-mainwp' );
