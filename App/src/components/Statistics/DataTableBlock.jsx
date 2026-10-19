@@ -12,6 +12,7 @@ import getDataTableData from '@/api/getDataTableData';
 import { getPageParameterCounts } from '@/api/getPageParameters';
 import ParameterVariationsRow from './Parameters/ParameterVariationsRow';
 import SourceReferrersRow from './SourceReferrersRow';
+import EventPropertiesRow from './EventPropertiesRow';
 import { Block } from '@/components/Blocks/Block';
 import { BlockHeading } from '@/components/Blocks/BlockHeading';
 import { BlockContent } from '@/components/Blocks/BlockContent';
@@ -95,6 +96,7 @@ const isReferrerRowDisabled = ( row, activeColumns ) => {
 	return ! category || 'referral' === category || 'direct' === category;
 };
 
+// fallow-ignore-next-line complexity -- One more variant branch (events), same shape as referrers/param-variations above it.
 const getExpandableRowsProps = ({ paramVariationsEnabled, isPro, selectedConfig, startDate, endDate, range, activeColumns }) => {
 	if ( paramVariationsEnabled ) {
 		return {
@@ -111,6 +113,19 @@ const getExpandableRowsProps = ({ paramVariationsEnabled, isPro, selectedConfig,
 			expandableRows: true,
 			expandableRowDisabled: ( row ) => isReferrerRowDisabled( row, activeColumns ),
 			expandableRowsComponent: SourceReferrersRow,
+			expandableRowsComponentProps: { startDate, endDate, range }
+		};
+	}
+
+	// No precomputed per-row property count (unlike paramVariationsEnabled's
+	// parameter_count): every event row is expandable, and EventPropertiesRow
+	// shows an empty state itself when that event has no properties. Properties
+	// are Pro-only (see Pro/Frontend/Events/Events::store_properties()), so free never has
+	// anything to show here.
+	if ( isPro && 'events' === selectedConfig ) {
+		return {
+			expandableRows: true,
+			expandableRowsComponent: EventPropertiesRow,
 			expandableRowsComponentProps: { startDate, endDate, range }
 		};
 	}
@@ -771,6 +786,37 @@ const DataTableBlock = ( /** @type {BlockComponentProps} */ props ) => {
 				}
 			}
 		},
+		page_weight: {
+			label: __( 'Page weight', 'burst-mainwp' ),
+			searchable: true,
+			defaultColumns: [ 'page_url', 'page_weight', 'pageviews' ],
+			columnsOptions: {
+				page_url: {
+					label: __( 'Page', 'burst-mainwp' ),
+					default: true,
+					format: 'url',
+					align: 'left',
+					group_by: true
+				},
+				page_weight: {
+					label: __( 'Weight', 'burst-mainwp' ),
+					category: 'traffic',
+					format: 'filesize',
+					align: 'right'
+				},
+				pageviews: {
+					label: __( 'Views', 'burst-mainwp' ),
+					category: 'traffic',
+					align: 'right'
+				},
+				co2: {
+					label: __( 'CO2', 'burst-mainwp' ),
+					category: 'traffic',
+					format: 'co2',
+					align: 'right'
+				}
+			}
+		},
 		outgoing_links: {
 			label: __( 'Outgoing links', 'burst-mainwp' ),
 			searchable: true,
@@ -856,6 +902,24 @@ const DataTableBlock = ( /** @type {BlockComponentProps} */ props ) => {
 					category: 'engagement',
 					format: 'percentage',
 					pro: true,
+					align: 'right'
+				}
+			}
+		},
+		events: {
+			label: __( 'Events', 'burst-mainwp' ),
+			searchable: true,
+			defaultColumns: [ 'name', 'count' ],
+			columnsOptions: {
+				name: {
+					label: __( 'Event', 'burst-mainwp' ),
+					default: true,
+					format: 'string',
+					align: 'left',
+					group_by: true
+				},
+				count: {
+					label: __( 'Count', 'burst-mainwp' ),
 					align: 'right'
 				}
 			}

@@ -148,6 +148,12 @@ export interface BurstSettings {
 	/** True once the first external-links scraping cycle has completed. */
 	external_links_first_cycle_completed?: boolean;
 
+	/** True when the server rejects hook goals (headless site without cookies). PHP localizes it as `"1"` / `""`. */
+	hide_hook_goals?: boolean | string;
+
+	/** True when the site records custom events; the settings fields are manage-only, so viewers read it here. */
+	custom_events_enabled?: boolean;
+
 	/** Pro license bootstrap (localized before React Query fetch). */
 	licenseStatus?: string;
 	tier?: string;

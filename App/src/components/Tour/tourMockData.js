@@ -29,126 +29,11 @@ const defaultMockGoals = [
 		status: 'active',
 		type: 'visits',
 		page_or_website: 'page',
-		selector: '/thank-you',
+		specific_page: '/thank-you',
 		conversion_metric: 'visitors',
 		date_start: 0,
 		date_end: 0,
 		value: '10'
-	}
-];
-
-const mockGoalFields = [
-	{
-		id: 'title',
-		type: 'hidden',
-		default: false
-	},
-	{
-		id: 'status',
-		type: 'hidden',
-		default: false
-	},
-	{
-		id: 'type',
-		type: 'radio-buttons',
-		label: __( 'What type of goal do you want to set?', 'burst-mainwp' ),
-		options: {
-			clicks: {
-				label: __( 'Clicks', 'burst-mainwp' ),
-				description: __( 'Track clicks on element', 'burst-mainwp' ),
-				type: 'clicks',
-				icon: 'mouse'
-			},
-			views: {
-				label: __( 'Views', 'burst-mainwp' ),
-				description: __( 'Track views of element', 'burst-mainwp' ),
-				type: 'views',
-				icon: 'eye'
-			},
-			visits: {
-				label: __( 'Visits', 'burst-mainwp' ),
-				description: __( 'Track visits to page', 'burst-mainwp' ),
-				type: 'visits',
-				icon: 'visitors'
-			},
-			hook: {
-				label: __( 'Hook', 'burst-mainwp' ),
-				description: __( 'Track execution of a WordPress hook', 'burst-mainwp' ),
-				type: 'hook',
-				icon: 'hook',
-				server_side: true
-			}
-		},
-		disabled: false,
-		default: 'clicks'
-	},
-	{
-		id: 'page_or_website',
-		type: 'radio-buttons',
-		label: __( 'Do you want to track a specific page or the entire website?', 'burst-mainwp' ),
-		options: {
-			page: {
-				label: __( 'Page', 'burst-mainwp' ),
-				description: __( 'Track page specific', 'burst-mainwp' ),
-				type: 'page',
-				icon: 'page'
-			},
-			website: {
-				label: __( 'Website', 'burst-mainwp' ),
-				description: __( 'Track on whole site', 'burst-mainwp' ),
-				type: 'website',
-				icon: 'website'
-			}
-		},
-		disabled: false,
-		default: 'website',
-		react_conditions: {
-			type: [ 'clicks', 'views', 'hook' ]
-		}
-	},
-	{
-		id: 'selector',
-		type: 'selector',
-		label: __( 'What element do you want to track?', 'burst-mainwp' ),
-		disabled: false,
-		default: '.checkout-btn, #buy-now',
-		react_conditions: {
-			type: [ 'clicks', 'views' ]
-		}
-	},
-	{
-		id: 'hook',
-		type: 'hook',
-		label: __( 'What hook do you want to track?', 'burst-mainwp' ),
-		disabled: false,
-		default: '',
-		react_conditions: {
-			type: [ 'hook' ]
-		}
-	},
-	{
-		id: 'conversion_metric',
-		type: 'radio-buttons',
-		label: __( 'What metric do you want to use to calculate the conversion rate?', 'burst-mainwp' ),
-		options: {
-			visitors: {
-				label: __( 'Visitors', 'burst-mainwp' ),
-				type: 'visitors',
-				icon: 'visitors'
-			},
-			sessions: {
-				label: __( 'Sessions', 'burst-mainwp' ),
-				type: 'sessions',
-				icon: 'sessions'
-			},
-			pageviews: {
-				label: __( 'Pageviews', 'burst-mainwp' ),
-				type: 'pageviews',
-				icon: 'pageviews'
-			}
-		},
-		disabled: false,
-		default: 'visitors'
 	}
 ];
 
@@ -495,7 +380,6 @@ export const getFrontendTourMockData = ( path ) => {
 			request_success: true,
 			goals: dynamicMockGoals,
 			predefinedGoals: [],
-			goalFields: mockGoalFields,
 			goal_limit: -1,
 			active_goals_count: dynamicMockGoals.length
 		};
@@ -712,38 +596,6 @@ export const getFrontendTourMockData = ( path ) => {
 					}
 				],
 				total_rows: 3
-			}
-		};
-	}
-
-	// 14b. Internal Links
-	if (
-		'data/internal-links' === cleanPath ||
-		'internal-links' === cleanPath ||
-		'data/datatable/internal-links' === cleanPath ||
-		cleanPath.includes( 'internal-links' ) ||
-		cleanPath.includes( 'internal_links' ) ||
-		'internal_links' === query.get( 'type' ) ||
-		'internal_links' === query.get( 'config' ) ||
-		'internal-links' === query.get( 'type' ) ||
-		'internal-links' === query.get( 'config' )
-	) {
-		return {
-			request_success: true,
-			data: {
-				columns: [
-					{ id: 'url', name: __( 'Page URL', 'burst-mainwp' ), format: 'url', sortable: true, align: 'left' },
-					{ id: 'clicks', name: __( 'Clicks', 'burst-mainwp' ), format: 'integer', sortable: true, align: 'right' },
-					{ id: 'previous_clicks', name: __( 'Previous', 'burst-mainwp' ), format: 'integer', sortable: true, align: 'right' }
-				],
-				data: [
-					{ url: '/pricing', clicks: 940, previous_clicks: 780 },
-					{ url: '/features', clicks: 710, previous_clicks: 620 },
-					{ url: '/blog/getting-started-with-analytics', clicks: 520, previous_clicks: 430 },
-					{ url: '/documentation', clicks: 380, previous_clicks: 310 },
-					{ url: '/contact', clicks: 195, previous_clicks: 160 }
-				],
-				total_rows: 5
 			}
 		};
 	}
@@ -1028,28 +880,6 @@ export const getFrontendTourMockData = ( path ) => {
 						}
 					],
 					total_rows: 3
-				}
-			};
-		}
-
-		// Internal links datatable
-		if ( cleanPath.includes( 'internal' ) || 'internal_links' === query.get( 'type' ) || 'internal_links' === query.get( 'config' ) || 'internal-links' === query.get( 'type' ) || 'internal-links' === query.get( 'config' ) ) {
-			return {
-				request_success: true,
-				data: {
-					columns: [
-						{ id: 'url', name: __( 'Page URL', 'burst-mainwp' ), format: 'url', sortable: true, align: 'left' },
-						{ id: 'clicks', name: __( 'Clicks', 'burst-mainwp' ), format: 'integer', sortable: true, align: 'right' },
-						{ id: 'previous_clicks', name: __( 'Previous', 'burst-mainwp' ), format: 'integer', sortable: true, align: 'right' }
-					],
-					data: [
-						{ url: '/pricing', clicks: 940, previous_clicks: 780 },
-						{ url: '/features', clicks: 710, previous_clicks: 620 },
-						{ url: '/blog/getting-started-with-analytics', clicks: 520, previous_clicks: 430 },
-						{ url: '/documentation', clicks: 380, previous_clicks: 310 },
-						{ url: '/contact', clicks: 195, previous_clicks: 160 }
-					],
-					total_rows: 5
 				}
 			};
 		}

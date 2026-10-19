@@ -107,3 +107,37 @@ Use **[docs/FEATURE_TEMPLATE.md](docs/FEATURE_TEMPLATE.md)**.
 - E2E: `tests/e2e/specs/hasDashboard.spec.js`, reporting, goals specs. Suggest to add e2e tests after creating something.
 - Unit: `npm run test` runs the `*.test.ts` files listed in `package.json`. Add new test files to that list
 - PHP changes may need `tests/phpunit/`
+
+## Burst Statistics design philosophy
+
+Principles behind every product, design and engineering decision. The code mapping, token reference and UI checklist live in [docs/DESIGN_PHILOSOPHY.md](docs/DESIGN_PHILOSOPHY.md).
+
+Burst Statistics is built on a simple premise: analytics should provide clarity, not overwhelm. We do not believe in vanity metrics, cluttered dashboards, or tracking users simply because we can. Our goal is to build a privacy-first, locally-hosted WordPress analytics tool that respects both the website owner and the website visitor.
+
+### Respect focus through visual restraint
+
+Every element on the screen demands cognitive energy, so we do not waste our users' time with decorative charts or inefficient UI. We design for deep focus. To achieve this, we rely heavily on ten specific shades of gray to build the foundation of our interface. The most important data point on the screen is visible through more visual weight e.g. white space, font-weight and size or in some cases color. For visualisations, we can use multiple colours if that makes the information clearer. If an element does not immediately help the user make a decision, it is removed.
+
+### Solve the root problem, do not just build features
+
+More features do not equal a better user experience. When users ask for new capabilities, our default answer is not to just add another button. Instead, we conduct customer interviews to identify the underlying friction they are experiencing. We build our product on the absolute rule of quality over quantity. We will always choose to do one meaningful thing thought through rather than ten things without thinking.
+
+### Privacy is architecture, not a marketing toggle
+
+We are fundamentally an ethical software product. Because Burst is locally-hosted, data ownership remains completely with the user. We do not build dark patterns or encourage invasive tracking. Ethical engineering means making the right thing the easiest thing to do.
+
+### Tell the hard truth with data
+
+Raw data is just noise until it is given context. We design our dashboards to tell a specific story.
+
+- We use active titles that state clear conclusions rather than passive, generic labels.
+- We categorize data logically, cutting through the noise of ambiguous metrics like "direct" traffic.
+- We never sugarcoat numbers with deceptive, pretty visualizations like 3D pie charts. We use the most practical chart to communicate reality, even if that reality is uncomfortable.
+
+### Empathy through progressive disclosure
+
+Analytics can be deeply intimidating. To show empathy to our users, we do not throw all our data at them at once. Instead, we structure our interface to guide them naturally. We lean on progressive disclosure, using shepherds and clear explainer content to introduce complex information only when the user is ready for it.
+
+### Engineering in service of simplicity
+
+As a tool built with React, Tailwind, and PHP, we care deeply about clean code structure and performance. However, technical complexity should never bleed into the interface. The backend logic can be complex, but the frontend must always feel structural, clear, and effortless.

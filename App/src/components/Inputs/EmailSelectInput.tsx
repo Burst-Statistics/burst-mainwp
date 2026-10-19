@@ -75,8 +75,9 @@ export const EmailSelectInput = forwardRef<HTMLInputElement, EmailSelectInputPro
 			setInputValue( event.target.value );
 		};
 
-		const handleRemove = ( email: string ): void => {
-			onChange( value.filter( ( e ) => e !== email ) );
+		// By position, not by address: removing one of two identical entries keeps the other.
+		const handleRemove = ( index: number ): void => {
+			onChange( value.filter( ( _, i ) => i !== index ) );
 		};
 
 		const handleBlur = (): void => {
@@ -115,7 +116,7 @@ export const EmailSelectInput = forwardRef<HTMLInputElement, EmailSelectInputPro
 										__( 'Remove %s', 'burst-mainwp' ),
 										email
 									)}
-									onClick={() => handleRemove( email )}
+									onClick={() => handleRemove( index )}
 									className="ml-1 rounded-full hover:bg-primary hover:text-text-white"
 								>
 									✕
