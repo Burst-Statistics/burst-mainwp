@@ -21,6 +21,130 @@ interface RadioOptions {
 	[key: string]: RadioOption;
 }
 
+/**
+ * Radio options per boolean filter key, built on call so translations are loaded.
+ *
+ * @return Options keyed by filter key.
+ */
+const getBooleanFilterOptions = (): Record<string, RadioOptions> => ({
+	bounces: {
+		'': {
+			type: '',
+			icon: 'user',
+			label: __( 'All visitors (default)', 'burst-mainwp' )
+		},
+		include: {
+			type: 'include',
+			icon: 'bounce',
+			label: __( 'Bounced', 'burst-mainwp' )
+		},
+		exclude: {
+			type: 'exclude',
+			icon: 'user-check',
+			label: __( 'Active', 'burst-mainwp' )
+		}
+	},
+	new_visitor: {
+		'': {
+			type: '',
+			icon: 'user',
+			label: __( 'All visitors (default)', 'burst-mainwp' )
+		},
+		include: {
+			type: 'include',
+			icon: 'user-plus',
+			label: __( 'New', 'burst-mainwp' )
+		},
+		exclude: {
+			type: 'exclude',
+			icon: 'user-check',
+			label: __( 'Returning', 'burst-mainwp' )
+		}
+	},
+	sales: {
+		'': {
+			type: '',
+			icon: 'user',
+			label: __( 'All visits (default)', 'burst-mainwp' )
+		},
+		include: {
+			type: 'include',
+			icon: 'shopping-cart',
+			label: __( 'Visits with an order', 'burst-mainwp' )
+		},
+		exclude: {
+			type: 'exclude',
+			icon: 'user',
+			label: __( 'Visits without an order', 'burst-mainwp' )
+		}
+	},
+	entry_exit_pages: {
+		'': {
+			type: '',
+			icon: 'user',
+			label: __( 'All pages', 'burst-mainwp' )
+		},
+		entry: {
+			type: 'entry',
+			icon: 'user-plus',
+			label: __( 'Entry', 'burst-mainwp' )
+		},
+		exit: {
+			type: 'exit',
+			icon: 'user-check',
+			label: __( 'Exit', 'burst-mainwp' )
+		}
+	},
+	status: {
+		all: {
+			type: 'all',
+			icon: 'total',
+			label: __( 'All statuses', 'burst-mainwp' )
+		},
+		'200': {
+			type: '200',
+			icon: 'circle-check',
+			label: __( 'OK', 'burst-mainwp' )
+		},
+		'404': {
+			type: '404',
+			icon: 'file-disabled',
+			label: __( 'Not Found', 'burst-mainwp' )
+		}
+	},
+
+	// Fallback for any other boolean filters.
+	fallback: {
+		'': {
+			type: '',
+			icon: 'user',
+			label: __( 'All visitors (default)', 'burst-mainwp' ),
+			description: __(
+				'Show all visitors without filtering',
+				'burst-mainwp'
+			)
+		},
+		include: {
+			type: 'include',
+			icon: 'check',
+			label: __( 'Include', 'burst-mainwp' ),
+			description: __(
+				'Include visitors matching this criteria',
+				'burst-mainwp'
+			)
+		},
+		exclude: {
+			type: 'exclude',
+			icon: 'times',
+			label: __( 'Exclude', 'burst-mainwp' ),
+			description: __(
+				'Exclude visitors matching this criteria',
+				'burst-mainwp'
+			)
+		}
+	}
+});
+
 const BooleanFilterSetup: React.FC<BooleanFilterSetupProps> = ({
 	filterKey,
 	initialValue = '',
@@ -37,115 +161,8 @@ const BooleanFilterSetup: React.FC<BooleanFilterSetupProps> = ({
 		onChange( newValue );
 	};
 
-	// Get filter-specific options based on the filter key
-	const getFilterOptions = (): RadioOptions => {
-		if ( 'bounces' === filterKey ) {
-			return {
-				'': {
-					type: '',
-					icon: 'user',
-					label: __( 'All visitors (default)', 'burst-mainwp' )
-				},
-				include: {
-					type: 'include',
-					icon: 'bounce',
-					label: __( 'Bounced', 'burst-mainwp' )
-				},
-				exclude: {
-					type: 'exclude',
-					icon: 'user-check',
-					label: __( 'Active', 'burst-mainwp' )
-				}
-			};
-		} else if ( 'new_visitor' === filterKey ) {
-			return {
-				'': {
-					type: '',
-					icon: 'user',
-					label: __( 'All visitors (default)', 'burst-mainwp' )
-				},
-				include: {
-					type: 'include',
-					icon: 'user-plus',
-					label: __( 'New', 'burst-mainwp' )
-				},
-				exclude: {
-					type: 'exclude',
-					icon: 'user-check',
-					label: __( 'Returning', 'burst-mainwp' )
-				}
-			};
-		} else if ( 'entry_exit_pages' === filterKey ) {
-			return {
-				'': {
-					type: '',
-					icon: 'user',
-					label: __( 'All pages', 'burst-mainwp' )
-				},
-				entry: {
-					type: 'entry',
-					icon: 'user-plus',
-					label: __( 'Entry', 'burst-mainwp' )
-				},
-				exit: {
-					type: 'exit',
-					icon: 'user-check',
-					label: __( 'Exit', 'burst-mainwp' )
-				}
-			};
-		} else if ( 'status' === filterKey ) {
-			return {
-				all: {
-					type: 'all',
-					icon: 'total',
-					label: __( 'All statuses', 'burst-mainwp' )
-				},
-				'200': {
-					type: '200',
-					icon: 'circle-check',
-					label: __( 'OK', 'burst-mainwp' )
-				},
-				'404': {
-					type: '404',
-					icon: 'file-disabled',
-					label: __( 'Not Found', 'burst-mainwp' )
-				}
-			};
-		}
-
-		// Fallback for any other boolean filters
-		return {
-			'': {
-				type: '',
-				icon: 'user',
-				label: __( 'All visitors (default)', 'burst-mainwp' ),
-				description: __(
-					'Show all visitors without filtering',
-					'burst-mainwp'
-				)
-			},
-			include: {
-				type: 'include',
-				icon: 'check',
-				label: __( 'Include', 'burst-mainwp' ),
-				description: __(
-					'Include visitors matching this criteria',
-					'burst-mainwp'
-				)
-			},
-			exclude: {
-				type: 'exclude',
-				icon: 'times',
-				label: __( 'Exclude', 'burst-mainwp' ),
-				description: __(
-					'Exclude visitors matching this criteria',
-					'burst-mainwp'
-				)
-			}
-		};
-	};
-
-	const radioOptions = getFilterOptions();
+	const filterOptions = getBooleanFilterOptions();
+	const radioOptions = filterOptions[filterKey] ?? filterOptions.fallback;
 
 	return (
 		<div className="flex flex-col gap-6">

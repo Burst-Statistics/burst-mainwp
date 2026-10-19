@@ -20,6 +20,7 @@ export type BurstCoreDataType =
 /** Pro / filter handlers (`burst_get_data`). */
 export type BurstProDataType =
 	| 'geo'
+	| 'page_weight'
 	| 'not_found_pages'
 	| 'not_found_page_referrers'
 	| 'page-parameters'

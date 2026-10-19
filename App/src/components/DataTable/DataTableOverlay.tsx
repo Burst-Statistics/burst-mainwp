@@ -23,7 +23,9 @@ const VARIANT_META: Record<string, { label: string; icon: string }> = {
 	not_found_pages: { label: __( '404 Pages', 'burst-mainwp' ), icon: 'page' },
 	outgoing_links: { label: __( 'Outgoing links', 'burst-mainwp' ), icon: 'external-link' },
 	forms: { label: __( 'Forms', 'burst-mainwp' ), icon: 'chat' },
-	reading_engagement: { label: __( 'Reading engagement', 'burst-mainwp' ), icon: 'page' }
+	reading_engagement: { label: __( 'Reading engagement', 'burst-mainwp' ), icon: 'page' },
+	events: { label: __( 'Events', 'burst-mainwp' ), icon: 'zap' },
+	page_weight: { label: __( 'Page weight', 'burst-mainwp' ), icon: 'page' }
 };
 
 /**
