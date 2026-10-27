@@ -5,7 +5,7 @@ Tags: analytics, statistics, mainwp, burst, dashboard
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 1.1.3
+Stable tag: 1.1.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -62,6 +62,10 @@ All statistics remain on your child sites. The extension only reads and displays
 No. No external account is needed for this extension itself. A Burst Pro license, if used, is managed on the child site as usual.
 
 == Changelog ==
+
+= 1.1.4 =
+* Release date: October 27th 2026
+* Improvement: updated the bundled Burst dashboard app to the latest Burst release (Burst 3.7.4).
 
 = 1.1.3 =
 * Release date: October 19th 2026
