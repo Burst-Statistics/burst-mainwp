@@ -1,6 +1,6 @@
 {
 	"$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
-	"entry": ["src/index.tsx"],
+	"entry": ["src/index.tsx", "src/editor.tsx"],
 	"ignorePatterns": [
 		"build/**",
 		"dist/**",
@@ -16,6 +16,9 @@
 		"@nivo/text",
 		"@react-spring/web",
 		"@wordpress/babel-plugin-import-jsx-pragma",
+		"@wordpress/data",
+		"@wordpress/editor",
+		"@wordpress/plugins",
 		"@svgr/webpack",
 		"@types/react-date-range",
 		"eslint-webpack-plugin",
