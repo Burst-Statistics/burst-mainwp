@@ -9,3 +9,9 @@ namespace BurstMainWP {
 	define( 'WP_CONTENT_DIR', ABSPATH . 'wp-content' );
 	define( 'WP_LANG_DIR', WP_CONTENT_DIR . '/languages' );
 }
+
+namespace {
+	if ( ! defined( 'DAY_IN_SECONDS' ) ) {
+		define( 'DAY_IN_SECONDS', 86400 );
+	}
+}
