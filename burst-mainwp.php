@@ -143,4 +143,5 @@ function burst_mainwp_init(): void {
 	$initialized = true;
 
 	\BurstMainWP\Individual::instance();
+	\BurstMainWP\Reports_Integration::instance();
 }
