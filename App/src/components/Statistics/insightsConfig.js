@@ -9,7 +9,8 @@ export const METRIC_LABELS = {
 	visitors: __( 'Visitors', 'burst-mainwp' ),
 	sessions: __( 'Sessions', 'burst-mainwp' ),
 	bounces: __( 'Bounces', 'burst-mainwp' ),
-	conversions: __( 'Conversions', 'burst-mainwp' )
+	conversions: __( 'Conversions', 'burst-mainwp' ),
+	goal_conversions: __( 'Conversions', 'burst-mainwp' )
 };
 
 /**
@@ -22,5 +23,6 @@ export const METRIC_COLORS = {
 	visitors: 'var(--color-blue-400)',
 	bounces: 'var(--color-red-500)',
 	sessions: 'var(--color-orange-500)',
-	conversions: 'var(--color-primary-700)'
+	conversions: 'var(--color-primary-700)',
+	goal_conversions: 'var(--color-primary-700)'
 };

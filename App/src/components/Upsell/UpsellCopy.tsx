@@ -165,6 +165,28 @@ const upsellConfigs: UpsellConfigsProps = {
 			}
 		}
 	},
+	goals: {
+		upgradePlan: {
+			header: __( 'See what leads to each goal', 'burst-mainwp' ),
+			subTitle: __(
+				'Burst Pro shows the sources and entry pages behind every conversion, so you know where to put your effort.',
+				'burst-mainwp'
+			),
+			licenseInsufficient: __(
+				'Your current license does not include goal breakdowns.',
+				'burst-mainwp'
+			)
+		},
+		testID: 'goals-upsell-copy-v1',
+		variations: {
+			A: {
+				utm_medium: 'goals-upsell-variation-a',
+				title: __( 'Which visitors reach your goals?', 'burst-mainwp' ),
+				description: '',
+				bullets: []
+			}
+		}
+	},
 	forms: {
 		upgradePlan: {
 			header: __( 'Track form submissions and conversion rates', 'burst-mainwp' ),
