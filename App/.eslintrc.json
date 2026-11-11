@@ -33,7 +33,16 @@
     "react/react-in-jsx-scope": "off",
     "react/jsx-no-undef": "off",
     "react/jsx-no-target-blank": "off",
-    "react/prop-types": "off"
+    "react/prop-types": "off",
+    "no-use-before-define": "off",
+    "@typescript-eslint/no-use-before-define": ["error", {
+      "functions": false,
+      "classes": false,
+      "variables": false,
+      "enums": false,
+      "typedefs": false,
+      "ignoreTypeReferences": true
+    }]
   },
   "settings": {
     "react": {
